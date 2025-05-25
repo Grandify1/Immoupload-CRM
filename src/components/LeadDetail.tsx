@@ -10,11 +10,12 @@ import {
   MapPin,
   Globe,
   Edit2,
-  Plus,
-  Send
+  Send,
+  ArrowRight
 } from 'lucide-react';
 import { Lead, Activity } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface LeadDetailProps {
   lead: Lead;
@@ -30,12 +31,12 @@ const statusColors = {
   potential: 'bg-gray-500',
   contacted: 'bg-blue-500',
   qualified: 'bg-green-500',
-  closed: 'bg-purple-500'
+  closed: 'bg-red-500'
 };
 
 const statusLabels = {
   potential: 'Potential',
-  contacted: 'Contacted', 
+  contacted: 'Contacted',
   qualified: 'Qualified',
   closed: 'Closed'
 };
@@ -126,7 +127,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center space-x-2 mb-3">
+        <div className="flex items-center space-x-2">
           <button className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
             <MessageSquare className="w-4 h-4" />
             <span>Note</span>
@@ -140,13 +141,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             <span>Call</span>
           </button>
         </div>
-
-        <button 
-          onClick={onConvertToDeal}
-          className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700"
-        >
-          Convert to Deal
-        </button>
       </div>
 
       {/* Content */}
@@ -206,15 +200,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                   rows={2}
                 />
               </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Description</label>
-                <textarea
-                  value={editForm.description || ''}
-                  onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                  rows={3}
-                />
-              </div>
               <div className="flex space-x-2">
                 <button
                   onClick={handleSave}
@@ -236,42 +221,46 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
           ) : (
             <div className="space-y-3">
               {lead.email && (
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{lead.email}</span>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Mail className="w-4 h-4 mr-2" />
+                  <span>{lead.email}</span>
                 </div>
               )}
               {lead.phone && (
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{lead.phone}</span>
-                </div>
-              )}
-              {lead.address && (
-                <div className="flex items-start space-x-2">
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                  <span className="text-sm text-gray-600">{lead.address}</span>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Phone className="w-4 h-4 mr-2" />
+                  <span>{lead.phone}</span>
                 </div>
               )}
               {lead.website && (
-                <div className="flex items-center space-x-2">
-                  <Globe className="w-4 h-4 text-gray-400" />
-                  <a 
-                    href={lead.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    {lead.website}
-                  </a>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Globe className="w-4 h-4 mr-2" />
+                  <span>{lead.website}</span>
                 </div>
               )}
-              {lead.description && (
-                <p className="text-sm text-gray-600">{lead.description}</p>
+              {lead.address && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  <span>{lead.address}</span>
+                </div>
               )}
             </div>
           )}
         </div>
+
+        {/* Convert to Deal */}
+        {lead.status === 'qualified' && (
+          <div className="p-4 border-b border-gray-200">
+            <Button 
+              onClick={onConvertToDeal} 
+              className="w-full"
+              variant="default"
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Convert to Deal
+            </Button>
+          </div>
+        )}
 
         {/* Add Note */}
         <div className="p-4">

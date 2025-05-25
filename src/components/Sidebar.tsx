@@ -1,20 +1,8 @@
 
 import React from 'react';
-import { 
-  Target, 
-  Users, 
-  BarChart3, 
-  Settings,
-  Search,
-  Plus,
-  Filter,
-  LogOut
-} from 'lucide-react';
-import { SavedFilter } from '@/types/database';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
-import { Button } from '@/components/ui/button';
+import { Users, Target, BarChart3, Settings, Filter } from 'lucide-react';
+import { SavedFilter } from '@/types/database';
 
 interface SidebarProps {
   activeSection: 'leads' | 'opportunities' | 'reports';
@@ -31,108 +19,79 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentFilters,
   onFilterSelect
 }) => {
-  const { signOut } = useAuth();
-  const { profile, team } = useProfile();
-
   const menuItems = [
-    { icon: Users, label: 'Leads', key: 'leads' as const },
-    { icon: Target, label: 'Opportunities', key: 'opportunities' as const },
-    { icon: BarChart3, label: 'Reports', key: 'reports' as const },
+    {
+      id: 'leads' as const,
+      label: 'Leads',
+      icon: Users,
+      count: null
+    },
+    {
+      id: 'opportunities' as const,
+      label: 'Opportunities',
+      icon: Target,
+      count: null
+    },
+    {
+      id: 'reports' as const,
+      label: 'Reports',
+      icon: BarChart3,
+      count: null
+    }
   ];
 
-  const entityFilters = savedFilters.filter(filter => 
-    filter.entity_type === (activeSection === 'opportunities' ? 'deal' : activeSection === 'leads' ? 'lead' : '')
-  );
-
   return (
-    <div className="w-64 bg-gray-900 text-white flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold">
-            {profile?.first_name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium truncate">
-              {profile?.first_name} {profile?.last_name}
-            </div>
-            <div className="text-xs text-gray-400 truncate">{team?.name}</div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            className="text-gray-400 hover:text-white p-1"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Search */}
+    <div className="w-64 bg-white border-r border-gray-200 h-full">
       <div className="p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full bg-gray-800 border border-gray-700 rounded px-10 py-2 text-sm focus:outline-none focus:border-blue-500"
-          />
-        </div>
-      </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">CRM Dashboard</h2>
+        
+        {/* Navigation */}
+        <nav className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSectionChange(item.id)}
+                className={cn(
+                  "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                  activeSection === item.id
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <Icon className="w-5 h-5 mr-3" />
+                {item.label}
+                {item.count && (
+                  <span className="ml-auto bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs">
+                    {item.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4">
-        {menuItems.map((item) => (
-          <div
-            key={item.key}
-            onClick={() => onSectionChange(item.key)}
-            className={cn(
-              "flex items-center space-x-3 px-2 py-2 rounded text-sm cursor-pointer hover:bg-gray-800 transition-colors",
-              activeSection === item.key && "bg-gray-800 text-white"
-            )}
-          >
-            <item.icon className="w-4 h-4" />
-            <span>{item.label}</span>
-          </div>
-        ))}
-      </nav>
-
-      {/* Smart Views */}
-      {(activeSection === 'leads' || activeSection === 'opportunities') && (
-        <div className="px-4 py-4 border-t border-gray-700">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-300">SMART VIEWS</h3>
-            <Filter className="w-4 h-4 text-gray-400" />
-          </div>
-          
-          {entityFilters.map((filter) => (
-            <div
-              key={filter.id}
-              onClick={() => onFilterSelect(filter.filters)}
-              className={cn(
-                "flex items-center space-x-2 px-2 py-2 rounded text-sm cursor-pointer hover:bg-gray-800 transition-colors",
-                JSON.stringify(currentFilters) === JSON.stringify(filter.filters) && "bg-gray-800"
-              )}
-            >
-              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-              <span className="truncate">{filter.name}</span>
+        {/* Saved Filters */}
+        {savedFilters.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
+              <Filter className="w-4 h-4 mr-2" />
+              Saved Filters
+            </h3>
+            <div className="space-y-1">
+              {savedFilters.map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => onFilterSelect(filter.filters)}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  {filter.name}
+                </button>
+              ))}
             </div>
-          ))}
-          
-          <div className="flex items-center space-x-2 px-2 py-2 text-sm text-gray-400 cursor-pointer hover:text-white">
-            <Plus className="w-3 h-3" />
-            <span>Show all</span>
           </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-700">
-        <div className="flex items-center space-x-3 px-2 py-2 text-sm text-gray-400 cursor-pointer hover:text-white">
-          <Settings className="w-4 h-4" />
-          <span>Settings</span>
-        </div>
+        )}
       </div>
     </div>
   );
