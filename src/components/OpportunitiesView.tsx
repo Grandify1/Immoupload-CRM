@@ -10,58 +10,60 @@ import {
   List,
   ArrowUpDown,
   Search,
-  Upload
+  DollarSign
 } from 'lucide-react';
-import { Lead } from '@/types/database';
+import { Deal } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-interface LeadsViewProps {
-  leads: Lead[];
+interface OpportunitiesViewProps {
+  deals: Deal[];
   view: 'table' | 'kanban';
   onViewChange: (view: 'table' | 'kanban') => void;
   filters: Record<string, any>;
-  onLeadSelect: (lead: Lead) => void;
-  onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
+  onDealSelect: (deal: Deal) => void;
+  onDealUpdate: (dealId: string, updates: Partial<Deal>) => void;
   onRefresh: () => void;
 }
 
 const statusColors = {
-  potential: 'bg-gray-500',
-  contacted: 'bg-blue-500',
-  qualified: 'bg-green-500',
-  closed: 'bg-purple-500'
+  lead: 'bg-gray-500',
+  qualified: 'bg-blue-500',
+  proposal: 'bg-yellow-500',
+  negotiation: 'bg-orange-500',
+  won: 'bg-green-500',
+  lost: 'bg-red-500'
 };
 
 const statusLabels = {
-  potential: 'Potential',
-  contacted: 'Contacted', 
+  lead: 'Lead',
   qualified: 'Qualified',
-  closed: 'Closed'
+  proposal: 'Proposal',
+  negotiation: 'Negotiation',
+  won: 'Won',
+  lost: 'Lost'
 };
 
-export const LeadsView: React.FC<LeadsViewProps> = ({
-  leads,
+export const OpportunitiesView: React.FC<OpportunitiesViewProps> = ({
+  deals,
   view,
   onViewChange,
   filters,
-  onLeadSelect,
-  onLeadUpdate,
+  onDealSelect,
+  onDealUpdate,
   onRefresh
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<keyof Lead>('updated_at');
+  const [sortField, setSortField] = useState<keyof Deal>('updated_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  const filteredLeads = useMemo(() => {
-    let filtered = leads.filter(lead => {
+  const filteredDeals = useMemo(() => {
+    let filtered = deals.filter(deal => {
       // Apply search
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        if (!lead.name.toLowerCase().includes(searchLower) &&
-            !lead.email?.toLowerCase().includes(searchLower) &&
-            !lead.phone?.toLowerCase().includes(searchLower)) {
+        if (!deal.name.toLowerCase().includes(searchLower)) {
           return false;
         }
       }
@@ -69,8 +71,8 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       // Apply filters
       for (const [key, value] of Object.entries(filters)) {
         if (value !== undefined && value !== '') {
-          const leadValue = lead[key as keyof Lead];
-          if (leadValue !== value) {
+          const dealValue = deal[key as keyof Deal];
+          if (dealValue !== value) {
             return false;
           }
         }
@@ -83,6 +85,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     filtered.sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' 
+          ? aValue - bValue
+          : bValue - aValue;
+      }
       
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         if (aValue.includes('T') && bValue.includes('T')) {
@@ -104,9 +112,9 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     });
 
     return filtered;
-  }, [leads, searchTerm, filters, sortField, sortDirection]);
+  }, [deals, searchTerm, filters, sortField, sortDirection]);
 
-  const handleSort = (field: keyof Lead) => {
+  const handleSort = (field: keyof Deal) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -129,20 +137,23 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(value);
+  };
+
   const renderTableView = () => (
     <div className="flex-1 bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Leads</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Opportunities</h1>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm">
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
             <Button size="sm">
               <Plus className="w-4 h-4 mr-2" />
-              Add Lead
+              Add Deal
             </Button>
           </div>
         </div>
@@ -169,7 +180,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Search leads..."
+                placeholder="Search opportunities..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -183,7 +194,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           </Button>
           
           <span className="text-sm text-gray-500">
-            {filteredLeads.length} Leads
+            {filteredDeals.length} Opportunities
           </span>
         </div>
       </div>
@@ -203,7 +214,13 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 </button>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contact
+                <button 
+                  onClick={() => handleSort('value')}
+                  className="flex items-center space-x-1 hover:text-gray-700"
+                >
+                  <span>Value</span>
+                  <ArrowUpDown className="w-3 h-3" />
+                </button>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 <button 
@@ -215,7 +232,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 </button>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Website
+                Expected Close
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Last Updated
@@ -226,43 +243,39 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredLeads.map((lead) => (
+            {filteredDeals.map((deal) => (
               <tr 
-                key={lead.id} 
-                onClick={() => onLeadSelect(lead)}
+                key={deal.id} 
+                onClick={() => onDealSelect(deal)}
                 className="hover:bg-gray-50 cursor-pointer"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-600 mr-3">
-                      {lead.name.charAt(0).toUpperCase()}
+                      {deal.name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{lead.name}</span>
+                    <span className="text-sm font-medium text-gray-900">{deal.name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    {lead.email && <div>{lead.email}</div>}
-                    {lead.phone && <div className="text-gray-500">{lead.phone}</div>}
+                  <div className="flex items-center text-sm text-gray-900">
+                    <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+                    {formatCurrency(deal.value)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={cn(
                     "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white",
-                    statusColors[lead.status]
+                    statusColors[deal.status]
                   )}>
-                    {statusLabels[lead.status]}
+                    {statusLabels[deal.status]}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800">
-                  {lead.website && (
-                    <a href={lead.website} target="_blank" rel="noopener noreferrer">
-                      {lead.website}
-                    </a>
-                  )}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {deal.expected_close_date ? new Date(deal.expected_close_date).toLocaleDateString() : '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(lead.updated_at)}
+                  {formatDate(deal.updated_at)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center space-x-2">
@@ -286,23 +299,17 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   );
 
   const renderKanbanView = () => {
-    const statusColumns = ['potential', 'contacted', 'qualified', 'closed'] as const;
+    const statusColumns = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'] as const;
     
     return (
       <div className="flex-1 bg-gray-100 p-6">
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-semibold text-gray-900">Leads - Kanban View</h1>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Upload className="w-4 h-4 mr-2" />
-                Import
-              </Button>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Lead
-              </Button>
-            </div>
+            <h1 className="text-2xl font-semibold text-gray-900">Opportunities - Kanban View</h1>
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Deal
+            </Button>
           </div>
           <div className="flex items-center space-x-4">
             <Button 
@@ -324,37 +331,41 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-6 gap-4 overflow-x-auto">
           {statusColumns.map((status) => {
-            const columnLeads = filteredLeads.filter(lead => lead.status === status);
+            const columnDeals = filteredDeals.filter(deal => deal.status === status);
+            const totalValue = columnDeals.reduce((sum, deal) => sum + deal.value, 0);
             
             return (
-              <div key={status} className="bg-white rounded-lg shadow-sm">
+              <div key={status} className="bg-white rounded-lg shadow-sm min-w-64">
                 <div className="p-4 border-b border-gray-200">
                   <h3 className="font-medium text-gray-900 capitalize">{statusLabels[status]}</h3>
-                  <span className="text-sm text-gray-500">{columnLeads.length} leads</span>
+                  <div className="text-sm text-gray-500">
+                    {columnDeals.length} deals • {formatCurrency(totalValue)}
+                  </div>
                 </div>
                 <div className="p-4 space-y-3 min-h-96">
-                  {columnLeads.map((lead) => (
+                  {columnDeals.map((deal) => (
                     <div
-                      key={lead.id}
-                      onClick={() => onLeadSelect(lead)}
+                      key={deal.id}
+                      onClick={() => onDealSelect(deal)}
                       className="bg-white border border-gray-200 rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow"
                     >
-                      <h4 className="font-medium text-gray-900 text-sm mb-2">{lead.name}</h4>
-                      {lead.email && (
-                        <p className="text-xs text-gray-600 mb-1">{lead.email}</p>
-                      )}
-                      <div className="flex items-center justify-between mt-2">
+                      <h4 className="font-medium text-gray-900 text-sm mb-2">{deal.name}</h4>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center text-sm text-green-600">
+                          <DollarSign className="w-4 h-4 mr-1" />
+                          {formatCurrency(deal.value)}
+                        </div>
                         <span className={cn(
                           "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white",
-                          statusColors[lead.status]
+                          statusColors[deal.status]
                         )}>
-                          {statusLabels[lead.status]}
+                          {statusLabels[deal.status]}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {formatDate(lead.updated_at)}
-                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatDate(deal.updated_at)}
                       </div>
                     </div>
                   ))}

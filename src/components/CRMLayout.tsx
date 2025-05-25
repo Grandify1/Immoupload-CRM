@@ -1,158 +1,329 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { LeadsView } from './LeadsView';
+import { OpportunitiesView } from './OpportunitiesView';
+import { ReportsView } from './ReportsView';
 import { LeadDetail } from './LeadDetail';
-import { cn } from '@/lib/utils';
-
-export interface Lead {
-  id: string;
-  name: string;
-  status: 'potential' | 'contacted' | 'qualified' | 'closed';
-  email?: string;
-  phone?: string;
-  website?: string;
-  address?: string;
-  description?: string;
-  owner?: string;
-  activities: Activity[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Activity {
-  id: string;
-  type: 'note' | 'call' | 'email' | 'meeting' | 'task';
-  content: string;
-  author: string;
-  createdAt: Date;
-}
-
-export interface SavedFilter {
-  id: string;
-  name: string;
-  filters: Record<string, any>;
-  isDefault?: boolean;
-}
+import { DealDetail } from './DealDetail';
+import { Lead, Deal, Activity, SavedFilter } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import { useProfile } from '@/hooks/useProfile';
+import { useToast } from '@/hooks/use-toast';
 
 const CRMLayout = () => {
+  const { team } = useProfile();
+  const { toast } = useToast();
+  
+  const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports'>('leads');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [view, setView] = useState<'table' | 'kanban'>('table');
   const [currentFilters, setCurrentFilters] = useState<Record<string, any>>({});
-  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([
-    { id: '1', name: 'Hot Leads', filters: { status: 'qualified' }, isDefault: true },
-    { id: '2', name: 'Warm Leads', filters: { status: 'contacted' } },
-    { id: '3', name: 'Cold Leads', filters: { status: 'potential' } },
-    { id: '4', name: 'No Website', filters: { website: '' } },
-  ]);
+  
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [leads, setLeads] = useState<Lead[]>([
-    {
-      id: '1',
-      name: 'Immobilien Haunhorst GmbH',
-      status: 'potential',
-      email: 'info@haunhorst.de',
-      phone: '+49 228 123456',
-      website: 'https://www.mietwas.com',
-      address: 'Meerhausener Str. 22, 53227 Bonn, Germany',
-      description: 'Ihre Immobilienagentur in Bonn.',
-      owner: 'dustin althaus',
-      activities: [
-        {
-          id: '1',
-          type: 'note',
-          content: 'Bulk imported',
-          author: 'dustin althaus',
-          createdAt: new Date(Date.now() - 5 * 60 * 1000)
-        }
-      ],
-      createdAt: new Date(Date.now() - 5 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 5 * 60 * 1000)
-    },
-    {
-      id: '2',
-      name: 'Stephan & Raab Hausverwaltung + Immobilien',
-      status: 'potential',
-      email: 'info@stephan-raab.de',
-      website: 'http://www.stephan-raab.de/',
-      owner: 'dustin althaus',
-      activities: [],
-      createdAt: new Date(Date.now() - 10 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 10 * 60 * 1000)
-    },
-    {
-      id: '3',
-      name: 'Schneider & Wegener Immobilienberatung',
-      status: 'contacted',
-      email: 'info@schneider-wegener.de',
-      website: 'https://www.schneider-wegener.de',
-      owner: 'dustin althaus',
-      activities: [
-        {
-          id: '2',
-          type: 'call',
-          content: 'Initial contact made',
-          author: 'dustin althaus',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
-        }
-      ],
-      createdAt: new Date(Date.now() - 15 * 60 * 1000),
-      updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000)
+  useEffect(() => {
+    if (team) {
+      fetchData();
     }
-  ]);
+  }, [team]);
 
-  const addActivity = (leadId: string, activity: Omit<Activity, 'id' | 'createdAt'>) => {
-    setLeads(prev => prev.map(lead => {
-      if (lead.id === leadId) {
-        const newActivity: Activity = {
-          ...activity,
-          id: Math.random().toString(36).substr(2, 9),
-          createdAt: new Date()
-        };
-        return {
-          ...lead,
-          activities: [newActivity, ...lead.activities],
-          updatedAt: new Date()
-        };
-      }
-      return lead;
-    }));
+  const fetchData = async () => {
+    if (!team) return;
+    
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchLeads(),
+        fetchDeals(),
+        fetchSavedFilters()
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateLead = (leadId: string, updates: Partial<Lead>) => {
+  const fetchLeads = async () => {
+    if (!team) return;
+    
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('team_id', team.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching leads:', error);
+      return;
+    }
+
+    setLeads(data || []);
+  };
+
+  const fetchDeals = async () => {
+    if (!team) return;
+    
+    const { data, error } = await supabase
+      .from('deals')
+      .select('*')
+      .eq('team_id', team.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching deals:', error);
+      return;
+    }
+
+    setDeals(data || []);
+  };
+
+  const fetchSavedFilters = async () => {
+    if (!team) return;
+    
+    const { data, error } = await supabase
+      .from('saved_filters')
+      .select('*')
+      .eq('team_id', team.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching saved filters:', error);
+      return;
+    }
+
+    setSavedFilters(data || []);
+  };
+
+  const addActivity = async (entityType: 'lead' | 'deal', entityId: string, activity: Omit<Activity, 'id' | 'team_id' | 'created_at'>) => {
+    if (!team) return;
+
+    const { data, error } = await supabase
+      .from('activities')
+      .insert({
+        ...activity,
+        team_id: team.id,
+        entity_type: entityType,
+        entity_id: entityId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding activity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add activity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Activity added successfully",
+    });
+
+    return data;
+  };
+
+  const updateLead = async (leadId: string, updates: Partial<Lead>) => {
+    if (!team) return;
+
+    const { data, error } = await supabase
+      .from('leads')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', leadId)
+      .eq('team_id', team.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating lead:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update lead",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLeads(prev => prev.map(lead => 
-      lead.id === leadId 
-        ? { ...lead, ...updates, updatedAt: new Date() }
-        : lead
+      lead.id === leadId ? data : lead
     ));
+
+    if (selectedLead && selectedLead.id === leadId) {
+      setSelectedLead(data);
+    }
+
+    toast({
+      title: "Success",
+      description: "Lead updated successfully",
+    });
+  };
+
+  const updateDeal = async (dealId: string, updates: Partial<Deal>) => {
+    if (!team) return;
+
+    const { data, error } = await supabase
+      .from('deals')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', dealId)
+      .eq('team_id', team.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating deal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update deal",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDeals(prev => prev.map(deal => 
+      deal.id === dealId ? data : deal
+    ));
+
+    if (selectedDeal && selectedDeal.id === dealId) {
+      setSelectedDeal(data);
+    }
+
+    toast({
+      title: "Success",
+      description: "Deal updated successfully",
+    });
+  };
+
+  const convertLeadToDeal = async (lead: Lead) => {
+    if (!team) return;
+
+    try {
+      // Create deal from lead
+      const { data: dealData, error: dealError } = await supabase
+        .from('deals')
+        .insert({
+          team_id: team.id,
+          name: lead.name,
+          status: 'lead',
+          value: 0,
+          lead_id: lead.id,
+          owner_id: lead.owner_id,
+          custom_fields: lead.custom_fields,
+        })
+        .select()
+        .single();
+
+      if (dealError) throw dealError;
+
+      // Update lead status
+      await updateLead(lead.id, { status: 'qualified' });
+
+      setDeals(prev => [dealData, ...prev]);
+      setSelectedLead(null);
+      setSelectedDeal(dealData);
+      setActiveSection('opportunities');
+
+      toast({
+        title: "Success",
+        description: "Lead converted to deal successfully",
+      });
+    } catch (error) {
+      console.error('Error converting lead to deal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to convert lead to deal",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-gray-500">Loading...</div>
+        </div>
+      );
+    }
+
+    switch (activeSection) {
+      case 'leads':
+        return (
+          <LeadsView
+            leads={leads}
+            view={view}
+            onViewChange={setView}
+            filters={currentFilters}
+            onLeadSelect={setSelectedLead}
+            onLeadUpdate={updateLead}
+            onRefresh={fetchLeads}
+          />
+        );
+      case 'opportunities':
+        return (
+          <OpportunitiesView
+            deals={deals}
+            view={view}
+            onViewChange={setView}
+            filters={currentFilters}
+            onDealSelect={setSelectedDeal}
+            onDealUpdate={updateDeal}
+            onRefresh={fetchDeals}
+          />
+        );
+      case 'reports':
+        return <ReportsView leads={leads} deals={deals} />;
+      default:
+        return null;
+    }
   };
 
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar 
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
         savedFilters={savedFilters}
         currentFilters={currentFilters}
         onFilterSelect={(filters) => setCurrentFilters(filters)}
       />
       
-      <div className="flex-1 flex">
-        <LeadsView
-          leads={leads}
-          view={view}
-          onViewChange={setView}
-          filters={currentFilters}
-          onLeadSelect={setSelectedLead}
-          onLeadUpdate={updateLead}
-        />
+      <div className="flex-1 flex min-w-0">
+        {renderContent()}
         
         {selectedLead && (
           <LeadDetail
             lead={selectedLead}
             onClose={() => setSelectedLead(null)}
-            onAddActivity={addActivity}
+            onAddActivity={(activity) => addActivity('lead', selectedLead.id, activity)}
             onUpdateLead={updateLead}
+            onConvertToDeal={() => convertLeadToDeal(selectedLead)}
             allLeads={leads}
             onLeadSelect={setSelectedLead}
+          />
+        )}
+
+        {selectedDeal && (
+          <DealDetail
+            deal={selectedDeal}
+            onClose={() => setSelectedDeal(null)}
+            onAddActivity={(activity) => addActivity('deal', selectedDeal.id, activity)}
+            onUpdateDeal={updateDeal}
+            allDeals={deals}
+            onDealSelect={setSelectedDeal}
           />
         )}
       </div>
