@@ -11,70 +11,73 @@ import {
   Globe,
   Edit2,
   Plus,
-  Send
+  Send,
+  DollarSign
 } from 'lucide-react';
-import { Lead, Activity } from '@/types/database';
+import { Deal, Activity } from '@/types/database';
 import { cn } from '@/lib/utils';
 
-interface LeadDetailProps {
-  lead: Lead;
+interface DealDetailProps {
+  deal: Deal;
   onClose: () => void;
   onAddActivity: (activity: Omit<Activity, 'id' | 'team_id' | 'created_at'>) => void;
-  onUpdateLead: (leadId: string, updates: Partial<Lead>) => void;
-  onConvertToDeal: () => void;
-  allLeads: Lead[];
-  onLeadSelect: (lead: Lead) => void;
+  onUpdateDeal: (dealId: string, updates: Partial<Deal>) => void;
+  allDeals: Deal[];
+  onDealSelect: (deal: Deal) => void;
 }
 
 const statusColors = {
-  potential: 'bg-gray-500',
-  contacted: 'bg-blue-500',
-  qualified: 'bg-green-500',
-  closed: 'bg-purple-500'
+  lead: 'bg-gray-500',
+  qualified: 'bg-blue-500',
+  proposal: 'bg-yellow-500',
+  negotiation: 'bg-orange-500',
+  won: 'bg-green-500',
+  lost: 'bg-red-500'
 };
 
 const statusLabels = {
-  potential: 'Potential',
-  contacted: 'Contacted', 
+  lead: 'Lead',
   qualified: 'Qualified',
-  closed: 'Closed'
+  proposal: 'Proposal',
+  negotiation: 'Negotiation',
+  won: 'Won',
+  lost: 'Lost'
 };
 
-export const LeadDetail: React.FC<LeadDetailProps> = ({
-  lead,
+export const DealDetail: React.FC<DealDetailProps> = ({
+  deal,
   onClose,
   onAddActivity,
-  onUpdateLead,
-  onConvertToDeal,
-  allLeads,
-  onLeadSelect
+  onUpdateDeal,
+  allDeals,
+  onDealSelect
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState(lead);
+  const [editForm, setEditForm] = useState(deal);
   const [newNote, setNewNote] = useState('');
 
-  const currentIndex = allLeads.findIndex(l => l.id === lead.id);
+  const currentIndex = allDeals.findIndex(d => d.id === deal.id);
   const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < allLeads.length - 1;
+  const hasNext = currentIndex < allDeals.length - 1;
 
   const navigateTo = (direction: 'prev' | 'next') => {
     if (direction === 'prev' && hasPrevious) {
-      onLeadSelect(allLeads[currentIndex - 1]);
+      onDealSelect(allDeals[currentIndex - 1]);
     } else if (direction === 'next' && hasNext) {
-      onLeadSelect(allLeads[currentIndex + 1]);
+      onDealSelect(allDeals[currentIndex + 1]);
     }
   };
 
   const handleSave = () => {
-    onUpdateLead(lead.id, editForm);
+    onUpdateDeal(deal.id, editForm);
     setIsEditing(false);
   };
 
   const handleAddNote = () => {
     if (newNote.trim()) {
       onAddActivity({
-        entity_type: 'lead',
-        entity_id: lead.id,
+        entity_type: 'deal',
+        entity_id: deal.id,
         type: 'note',
         content: newNote,
         author_id: '', // This will be set by the backend
@@ -84,12 +87,19 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(value);
+  };
+
   return (
     <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">{lead.name}</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{deal.name}</h2>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateTo('prev')}
@@ -120,13 +130,17 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
         <div className="flex items-center space-x-2 mb-3">
           <span className={cn(
             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white",
-            statusColors[lead.status]
+            statusColors[deal.status]
           )}>
-            {statusLabels[lead.status]}
+            {statusLabels[deal.status]}
           </span>
+          <div className="flex items-center text-sm text-green-600">
+            <DollarSign className="w-4 h-4 mr-1" />
+            {formatCurrency(deal.value)}
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2 mb-3">
+        <div className="flex items-center space-x-2">
           <button className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
             <MessageSquare className="w-4 h-4" />
             <span>Note</span>
@@ -140,13 +154,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             <span>Call</span>
           </button>
         </div>
-
-        <button 
-          onClick={onConvertToDeal}
-          className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700"
-        >
-          Convert to Deal
-        </button>
       </div>
 
       {/* Content */}
@@ -174,45 +181,21 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Email</label>
+                <label className="block text-xs text-gray-500 mb-1">Value</label>
                 <input
-                  value={editForm.email || ''}
-                  onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                  type="number"
+                  value={editForm.value}
+                  onChange={(e) => setEditForm({...editForm, value: parseFloat(e.target.value) || 0})}
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                <label className="block text-xs text-gray-500 mb-1">Expected Close Date</label>
                 <input
-                  value={editForm.phone || ''}
-                  onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                  type="date"
+                  value={editForm.expected_close_date || ''}
+                  onChange={(e) => setEditForm({...editForm, expected_close_date: e.target.value})}
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Website</label>
-                <input
-                  value={editForm.website || ''}
-                  onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Address</label>
-                <textarea
-                  value={editForm.address || ''}
-                  onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Description</label>
-                <textarea
-                  value={editForm.description || ''}
-                  onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                  rows={3}
                 />
               </div>
               <div className="flex space-x-2">
@@ -225,7 +208,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                 <button
                   onClick={() => {
                     setIsEditing(false);
-                    setEditForm(lead);
+                    setEditForm(deal);
                   }}
                   className="px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50"
                 >
@@ -235,39 +218,14 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {lead.email && (
-                <div className="flex items-center space-x-2">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{lead.email}</span>
+              <div className="flex items-center text-sm text-green-600">
+                <DollarSign className="w-4 h-4 mr-1" />
+                <span>{formatCurrency(deal.value)}</span>
+              </div>
+              {deal.expected_close_date && (
+                <div className="text-sm text-gray-600">
+                  Expected close: {new Date(deal.expected_close_date).toLocaleDateString()}
                 </div>
-              )}
-              {lead.phone && (
-                <div className="flex items-center space-x-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{lead.phone}</span>
-                </div>
-              )}
-              {lead.address && (
-                <div className="flex items-start space-x-2">
-                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                  <span className="text-sm text-gray-600">{lead.address}</span>
-                </div>
-              )}
-              {lead.website && (
-                <div className="flex items-center space-x-2">
-                  <Globe className="w-4 h-4 text-gray-400" />
-                  <a 
-                    href={lead.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    {lead.website}
-                  </a>
-                </div>
-              )}
-              {lead.description && (
-                <p className="text-sm text-gray-600">{lead.description}</p>
               )}
             </div>
           )}

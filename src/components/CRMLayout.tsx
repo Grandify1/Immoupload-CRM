@@ -68,7 +68,8 @@ const CRMLayout = () => {
       return;
     }
 
-    setLeads(data || []);
+    // Cast the data to proper Lead type
+    setLeads((data || []) as Lead[]);
   };
 
   const fetchDeals = async () => {
@@ -85,7 +86,8 @@ const CRMLayout = () => {
       return;
     }
 
-    setDeals(data || []);
+    // Cast the data to proper Deal type
+    setDeals((data || []) as Deal[]);
   };
 
   const fetchSavedFilters = async () => {
@@ -102,7 +104,8 @@ const CRMLayout = () => {
       return;
     }
 
-    setSavedFilters(data || []);
+    // Cast the data to proper SavedFilter type
+    setSavedFilters((data || []) as SavedFilter[]);
   };
 
   const addActivity = async (entityType: 'lead' | 'deal', entityId: string, activity: Omit<Activity, 'id' | 'team_id' | 'created_at'>) => {
@@ -158,12 +161,13 @@ const CRMLayout = () => {
       return;
     }
 
+    const updatedLead = data as Lead;
     setLeads(prev => prev.map(lead => 
-      lead.id === leadId ? data : lead
+      lead.id === leadId ? updatedLead : lead
     ));
 
     if (selectedLead && selectedLead.id === leadId) {
-      setSelectedLead(data);
+      setSelectedLead(updatedLead);
     }
 
     toast({
@@ -193,12 +197,13 @@ const CRMLayout = () => {
       return;
     }
 
+    const updatedDeal = data as Deal;
     setDeals(prev => prev.map(deal => 
-      deal.id === dealId ? data : deal
+      deal.id === dealId ? updatedDeal : deal
     ));
 
     if (selectedDeal && selectedDeal.id === dealId) {
-      setSelectedDeal(data);
+      setSelectedDeal(updatedDeal);
     }
 
     toast({
@@ -231,9 +236,10 @@ const CRMLayout = () => {
       // Update lead status
       await updateLead(lead.id, { status: 'qualified' });
 
-      setDeals(prev => [dealData, ...prev]);
+      const newDeal = dealData as Deal;
+      setDeals(prev => [newDeal, ...prev]);
       setSelectedLead(null);
-      setSelectedDeal(dealData);
+      setSelectedDeal(newDeal);
       setActiveSection('opportunities');
 
       toast({
