@@ -1,4 +1,3 @@
-
 export interface Lead {
   id: string;
   team_id: string;
@@ -13,6 +12,7 @@ export interface Lead {
   custom_fields: Record<string, any>;
   created_at: string;
   updated_at: string;
+  activities?: Activity[];
 }
 
 export interface Deal {
@@ -27,6 +27,7 @@ export interface Deal {
   custom_fields: Record<string, any>;
   created_at: string;
   updated_at: string;
+  activities?: Activity[];
 }
 
 export interface Activity {
@@ -64,6 +65,19 @@ export interface CustomField {
   entity_type: 'lead' | 'deal';
   options: string[];
   sort_order: number;
+  created_at: string;
+}
+
+export interface ActivityTemplate {
+  id: string;
+  team_id: string;
+  name: string;
+  fields: Array<{
+    name: string;
+    type: 'text' | 'number' | 'date' | 'select' | 'checkbox';
+    options?: string[];
+    required?: boolean;
+  }>;
   created_at: string;
 }
 

@@ -5,8 +5,8 @@ import { Users, Target, BarChart3, Settings, Filter } from 'lucide-react';
 import { SavedFilter } from '@/types/database';
 
 interface SidebarProps {
-  activeSection: 'leads' | 'opportunities' | 'reports';
-  onSectionChange: (section: 'leads' | 'opportunities' | 'reports') => void;
+  activeSection: 'leads' | 'opportunities' | 'reports' | 'settings';
+  onSectionChange: (section: 'leads' | 'opportunities' | 'reports' | 'settings') => void;
   savedFilters: SavedFilter[];
   currentFilters: Record<string, any>;
   onFilterSelect: (filters: Record<string, any>) => void;
@@ -37,13 +37,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Reports',
       icon: BarChart3,
       count: null
+    },
+    {
+      id: 'settings' as const,
+      label: 'Settings',
+      icon: Settings,
+      count: null
     }
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full">
+    <div className="w-64 bg-gray-800 border-r border-gray-700 h-full text-white">
       <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">CRM Dashboard</h2>
+        <h2 className="text-lg font-semibold text-white mb-6">CRM Dashboard</h2>
         
         {/* Navigation */}
         <nav className="space-y-2">
@@ -56,8 +62,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={cn(
                   "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                   activeSection === item.id
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-gray-700 text-blue-300"
+                    : "text-gray-300 hover:bg-gray-700"
                 )}
               >
                 <Icon className="w-5 h-5 mr-3" />
@@ -75,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Saved Filters */}
         {savedFilters.length > 0 && (
           <div className="mt-8">
-            <h3 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
+            <h3 className="text-sm font-medium text-gray-300 mb-3 flex items-center">
               <Filter className="w-4 h-4 mr-2" />
               Saved Filters
             </h3>
@@ -84,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={filter.id}
                   onClick={() => onFilterSelect(filter.filters)}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                  className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded"
                 >
                   {filter.name}
                 </button>
