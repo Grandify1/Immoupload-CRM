@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { useProfile } from '@/hooks/useProfile';
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   customFields,
   activityTemplates
 }) => {
+  const { profile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState(lead);
   const [newNote, setNewNote] = useState('');
@@ -80,7 +82,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const [selectedActivityTemplate, setSelectedActivityTemplate] = useState<string | null>(null);
   const [activityFormData, setActivityFormData] = useState<Record<string, any>>({});
   
-  // Stellen Sie sicher, dass editForm immer aktualisiert wird, wenn sich lead ändert
   useEffect(() => {
     setEditForm(lead);
   }, [lead]);
@@ -102,24 +103,22 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     setIsEditing(false);
   };
 
-  // Funktion zum Hinzufügen einer Notiz
   const handleAddNote = () => {
-    if (newNote.trim()) {
+    if (newNote.trim() && profile) {
       onAddActivity({
         entity_type: 'lead',
         entity_id: lead.id,
         type: 'note',
         content: newNote,
-        author_id: null, // Wir lassen die author_id null, damit die Funktion in CRMLayout die team_id verwendet
+        author_id: profile.id,
         template_data: {}
       });
       setNewNote('');
     }
   };
   
-  // Funktion zum Hinzufügen einer benutzerdefinierten Aktivität
   const handleAddCustomActivity = () => {
-    if (!selectedActivityTemplate) return;
+    if (!selectedActivityTemplate || !profile) return;
     
     const template = activityTemplates?.find(t => t.id === selectedActivityTemplate);
     if (!template) return;
@@ -129,20 +128,18 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
       entity_id: lead.id,
       type: 'custom',
       content: `${template.name} für ${lead.name}`,
-      author_id: null, // Wir lassen die author_id null, damit die Funktion in CRMLayout die team_id verwendet
-      template_data: activityFormData
+      author_id: profile.id,
+      template_data: activityFormData,
+      template_id: selectedActivityTemplate,
     });
     
-    // Zurücksetzen des Formulars
     setSelectedActivityTemplate(null);
     setActivityFormData({});
   };
   
-  // Funktion zum Formatieren von URLs als klickbare Links
   const formatUrlAsLink = (url: string) => {
     if (!url) return '';
     
-    // Prüfen, ob die URL mit http:// oder https:// beginnt
     const hasProtocol = url.startsWith('http://') || url.startsWith('https://');
     const formattedUrl = hasProtocol ? url : `https://${url}`;
     
@@ -160,7 +157,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
   return (
     <div className="w-3/5 bg-white border-l border-gray-200 flex flex-col h-full shadow-lg transition-all duration-300 ease-in-out" style={{ minWidth: '600px' }}>
-      {/* Header mit Titel und wichtigen Buttons */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-900">{lead.name}</h2>
@@ -235,7 +231,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               setSelectedActivityTemplate(null);
             }}
           >
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="w-4 h-4 mr-2" />
             <span>Note</span>
           </button>
           <button className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">
@@ -247,11 +243,10 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             <span>Call</span>
           </button>
           
-          {/* Dropdown für benutzerdefinierte Aktivitäten */}
           <Popover>
             <PopoverTrigger asChild>
               <button className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 mr-2" />
                 <span>Mehr</span>
               </button>
             </PopoverTrigger>
@@ -265,12 +260,13 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                     onClick={() => {
                       setSelectedActivityTemplate(template.id);
                       setActiveTab('custom-activity');
-                      // Initialisiere das Formular mit Standardwerten
                       const initialData: Record<string, any> = {};
                       template.fields.forEach(field => {
                         initialData[field.name] = '';
                       });
                       setActivityFormData(initialData);
+                      console.log('Selected template ID:', template.id);
+                      console.log('Activity Templates:', activityTemplates);
                     }}
                   >
                     {template.name}
@@ -282,11 +278,8 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
         </div>
       </div>
 
-      {/* Content - Zweispaltiges Layout */}
       <div className="flex-1 overflow-y-auto flex">
-        {/* Linke Spalte - Wichtige Informationen */}
         <div className="w-2/5 border-r border-gray-200">
-          {/* About Section */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium text-gray-900">ABOUT</h4>
@@ -347,7 +340,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                       />
                     </div>
                     
-                    {/* Benutzerdefinierte Felder */}
                     <div className="border-t border-gray-200 pt-3 mt-3">
                       <h4 className="text-xs font-medium text-gray-500 mb-3">BENUTZERDEFINIERTE FELDER</h4>
                       <div className="space-y-3">
@@ -422,70 +414,66 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             </div>
 
             <div className="space-y-3">
-                {lead.email && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                    <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">{lead.email}</a>
-                  </div>
-                )}
-                {lead.phone && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                    <a href={`tel:${lead.phone}`} className="text-blue-600 hover:underline">{lead.phone}</a>
-                  </div>
-                )}
-                {lead.website && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Globe className="w-4 h-4 mr-2 text-gray-400" />
-                    {formatUrlAsLink(lead.website)}
-                  </div>
-                )}
-                {lead.address && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                    <span>{lead.address}</span>
-                  </div>
-                )}
-                
-                {/* Benutzerdefinierte Felder */}
-                {customFields?.filter(cf => cf.entity_type === 'lead').map(field => {
-                  const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                  const fieldValue = lead.custom_fields?.[fieldKey];
-                  
-                  if (!fieldValue) return null;
-                  
-                  return (
-                    <div key={field.id} className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium mr-2">{field.name}:</span>
-                      <span>{fieldValue}</span>
-                    </div>
-                  );
-                })}
-                
-                <div className="pt-3">
-                  <Button
-                    onClick={onConvertToDeal}
-                    className={cn(
-                      "w-full flex items-center justify-center",
-                      lead.status === 'qualified' 
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    )}
-                  >
-                    <ArrowRight className="w-4 h-4 mr-2" />
-                    Convert to Deal
-                  </Button>
+              {lead.email && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <Mail className="w-4 h-4 mr-2 text-gray-400" />
+                  <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">{lead.email}</a>
                 </div>
+              )}
+              {lead.phone && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                  <a href={`tel:${lead.phone}`} className="text-blue-600 hover:underline">{lead.phone}</a>
+                </div>
+              )}
+              {lead.website && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <Globe className="w-4 h-4 mr-2 text-gray-400" />
+                  {formatUrlAsLink(lead.website)}
+                </div>
+              )}
+              {lead.address && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                  <span>{lead.address}</span>
+                </div>
+              )}
+              
+              {customFields?.filter(cf => cf.entity_type === 'lead').map(field => {
+                const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
+                const fieldValue = lead.custom_fields?.[fieldKey];
+                
+                if (!fieldValue) return null;
+                
+                return (
+                  <div key={field.id} className="flex items-center text-sm text-gray-600">
+                    <span className="font-medium mr-2">{field.name}:</span>
+                    <span>{fieldValue}</span>
+                  </div>
+                );
+              })}
+              
+              <div className="pt-3">
+                <Button
+                  onClick={onConvertToDeal}
+                  className={cn(
+                    "w-full flex items-center justify-center",
+                    lead.status === 'qualified' 
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  )}
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Convert to Deal
+                </Button>
               </div>
-            )}
+            </div>
           </div>
         </div>
         
-        {/* Rechte Spalte - Verlauf mit Notizen und Aktivitäten */}
         <div className="w-3/5 p-4">
           <h4 className="text-sm font-medium text-gray-900 mb-4">AKTIVITÄTEN & NOTIZEN</h4>
           
-          {/* Formular für neue Notizen */}
           <div className="mb-4">
             <Textarea
               placeholder="Notiz hinzufügen..."
@@ -504,30 +492,63 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             </Button>
           </div>
           
-          {/* Tabs für verschiedene Aktivitätstypen */}
-          <Tabs defaultValue="all" className="mt-4">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
             <TabsList className="mb-4">
               <TabsTrigger value="all">Alle</TabsTrigger>
               <TabsTrigger value="notes">Notizen</TabsTrigger>
               <TabsTrigger value="activities">Aktivitäten</TabsTrigger>
+              {selectedActivityTemplate && (
+                <TabsTrigger value="custom-activity">
+                  {activityTemplates?.find(t => t.id === selectedActivityTemplate)?.name || 'Custom Activity'}
+                </TabsTrigger>
+              )}
             </TabsList>
             
             <TabsContent value="all" className="space-y-4">
-              {lead.activities?.map(activity => (
-                <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs text-gray-500">
-                      {new Date(activity.created_at).toLocaleString()}
-                    </span>
-                    <Badge variant="outline">
-                      {activity.type === 'note' ? 'Notiz' : 'Aktivität'}
-                    </Badge>
-                  </div>
-                  <p className="text-sm">{activity.content}</p>
+              {activityTemplates ? (
+                lead.activities?.map(activity => {
+                  console.log('Rendering activity:', activity);
+                  const template = activity.type === 'custom' && activity.template_id ? 
+                    activityTemplates?.find(t => t.id === activity.template_id) : null;
+                  
+                  const activityTitle = activity.type === 'note' ? 'Notiz' : 
+                                        activity.type === 'custom' ? template?.name || 'Custom Activity' : 
+                                        activity.type;
+
+                  return (
+                    <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs text-gray-500">
+                          {new Date(activity.created_at).toLocaleString()}
+                        </span>
+                        <Badge variant="outline">
+                          {activityTitle}
+                        </Badge>
+                      </div>
+                      {activity.type === 'custom' ? (
+                        template ? (
+                          <div className="text-sm">
+                            <p className="font-semibold">{activityTitle}</p>
+                            {Object.entries(activity.template_data || {}).map(([key, value]) => (
+                              <p key={key}><span className="font-medium">{key}:</span> {String(value)}</p>
+                            ))}
+                          </div>
+                        ) : (
+                           <div className="text-sm text-gray-500">Details für unbekannte benutzerdefinierte Aktivität (ID: {activity.template_id || 'N/A'})</div>
+                        )
+                      ) : (
+                        <p className="text-sm">{activity.content}</p>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Lädt Aktivitäten...</p>
                 </div>
-              ))}
-              
-              {(!lead.activities || lead.activities.length === 0) && (
+              )}
+
+              {activityTemplates && (!lead.activities || lead.activities.length === 0) && (
                 <div className="text-center py-8 text-gray-500">
                   <p>Keine Aktivitäten vorhanden</p>
                 </div>
@@ -554,26 +575,136 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             </TabsContent>
             
             <TabsContent value="activities" className="space-y-4">
-              {lead.activities?.filter(a => a.type !== 'note').map(activity => (
-                <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs text-gray-500">
-                      {new Date(activity.created_at).toLocaleString()}
-                    </span>
-                    <Badge variant="outline">
-                      {activity.type}
-                    </Badge>
-                  </div>
-                  <p className="text-sm">{activity.content}</p>
+              {activityTemplates ? (
+                lead.activities?.filter(a => a.type !== 'note').map(activity => {
+                  console.log('Rendering activity (filtered):', activity);
+                  const template = activity.type === 'custom' && activity.template_id ? 
+                    activityTemplates?.find(t => t.id === activity.template_id) : null;
+                  
+                  const activityTitle = activity.type === 'custom' ? template?.name || 'Custom Activity' : activity.type;
+
+                  return (
+                    <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs text-gray-500">
+                          {new Date(activity.created_at).toLocaleString()}
+                        </span>
+                        <Badge variant="outline">
+                          {activityTitle}
+                        </Badge>
+                      </div>
+                      {activity.type === 'custom' ? (
+                        template ? (
+                          <div className="text-sm">
+                            <p className="font-semibold">{activityTitle}</p>
+                            {Object.entries(activity.template_data || {}).map(([key, value]) => (
+                              <p key={key}><span className="font-medium">{key}:</span> {String(value)}</p>
+                            ))}
+                          </div>
+                        ) : (
+                           <div className="text-sm text-gray-500">Details für unbekannte benutzerdefinierte Aktivität (ID: {activity.template_id || 'N/A'})</div>
+                        )
+                      ) : (
+                        <p className="text-sm">{activity.content}</p>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Lädt Aktivitäten...</p>
                 </div>
-              ))}
-              
-              {(!lead.activities || lead.activities.filter(a => a.type !== 'note').length === 0) && (
+              )}
+
+              {activityTemplates && (!lead.activities || lead.activities.filter(a => a.type !== 'note').length === 0) && (
                 <div className="text-center py-8 text-gray-500">
                   <p>Keine Aktivitäten vorhanden</p>
                 </div>
               )}
             </TabsContent>
+            
+            {selectedActivityTemplate && (
+              <TabsContent value="custom-activity" className="space-y-4">
+                <h4 className="text-md font-medium mb-4">
+                  Details für {activityTemplates?.find(t => t.id === selectedActivityTemplate)?.name || 'Custom Activity'}
+                </h4>
+                
+                <div className="space-y-4">
+                  {activityTemplates?.find(t => t.id === selectedActivityTemplate)?.fields.map((field, index) => (
+                    <div key={index}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {field.name}{field.required && <span className="text-red-500">*</span>}
+                      </label>
+                      {field.type === 'text' && (
+                        <Input
+                          type="text"
+                          value={activityFormData[field.name] || ''}
+                          onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.value})}
+                          required={field.required}
+                        />
+                      )}
+                      {field.type === 'number' && (
+                        <Input
+                          type="number"
+                          value={activityFormData[field.name] || ''}
+                          onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.value})}
+                          required={field.required}
+                        />
+                      )}
+                      {field.type === 'date' && (
+                        <Input
+                          type="date"
+                          value={activityFormData[field.name] || ''}
+                          onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.value})}
+                          required={field.required}
+                        />
+                      )}
+                      {field.type === 'select' && field.options && (
+                        <Select
+                          value={activityFormData[field.name] || ''}
+                          onValueChange={(value) => setActivityFormData({...activityFormData, [field.name]: value})}
+                          required={field.required}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={`Select ${field.name}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option, optionIndex) => (
+                              <SelectItem key={optionIndex} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {field.type === 'checkbox' && (
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={!!activityFormData[field.name]}
+                            onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.checked})}
+                            required={field.required}
+                            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                          <label className="ml-2 block text-sm text-gray-900">
+                            {field.name}
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <Button 
+                  onClick={handleAddCustomActivity}
+                  className="w-full"
+                  disabled={!activityTemplates?.find(t => t.id === selectedActivityTemplate)?.fields.every(field => !field.required || activityFormData[field.name])}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Aktivität speichern
+                </Button>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>

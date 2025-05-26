@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -33,31 +32,38 @@ export const useProfile = () => {
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) return;
-
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const { data: userData, error: userError } = await supabase.auth.getUser();
 
-      if (profileError) throw profileError;
+      if (userError) {
+        console.error(`Error fetching user: ${userError.message}`, userError);
+        setLoading(false);
+        return;
+      }
 
-      setProfile(profileData);
+      const user = userData?.user;
 
-      if (profileData.team_id) {
-        const { data: teamData, error: teamError } = await supabase
-          .from('teams')
-          .select('*')
-          .eq('id', profileData.team_id)
+      if (user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*, teams(*)') // Select team data as well
+          .eq('id', user.id)
           .single();
 
-        if (teamError) throw teamError;
-        setTeam(teamData);
+        if (profileError) {
+          console.error(`Error fetching profile: ${profileError.message}`, profileError);
+          setLoading(false);
+          return;
+        }
+
+        setProfile(profileData);
+        setTeam(profileData?.teams as Team | null); // Set team data
+      } else {
+        setProfile(null);
+        setTeam(null);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('An unexpected error occurred while fetching profile:', error);
     } finally {
       setLoading(false);
     }

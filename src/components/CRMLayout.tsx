@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { LeadsView } from './LeadsView';
@@ -29,13 +28,12 @@ const CRMLayout = () => {
   const [activityTemplates, setActivityTemplates] = useState<ActivityTemplate[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Einmaliges Laden der Daten beim Initialisieren der Komponente
+  // Einmaliges Laden der Daten beim Initialisieren der Komponente und bei Änderung des ausgewählten Leads/Teams
   useEffect(() => {
     if (team) {
       fetchData();
     }
-    // Keine Abhängigkeiten, die ein erneutes Laden auslösen würden
-  }, [team]);
+  }, [team, selectedLead]); // Abhängigkeit zu selectedLead hinzugefügt
 
   const fetchData = async () => {
     if (!team) return;
@@ -71,7 +69,7 @@ const CRMLayout = () => {
       .order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching leads:', error);
+      console.error(`Error fetching leads: ${error.message}`, error);
       return;
     }
 
@@ -89,7 +87,7 @@ const CRMLayout = () => {
       .order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching deals:', error);
+      console.error(`Error fetching deals: ${error.message}`, error);
       return;
     }
 
@@ -107,7 +105,7 @@ const CRMLayout = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching saved filters:', error);
+      console.error(`Error fetching saved filters: ${error.message}`, error);
       return;
     }
 
@@ -125,7 +123,7 @@ const CRMLayout = () => {
       .order('sort_order', { ascending: true });
 
     if (error) {
-      console.error('Error fetching custom fields:', error);
+      console.error(`Error fetching custom fields: ${error.message}`, error);
       return;
     }
 
@@ -143,7 +141,7 @@ const CRMLayout = () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching activity templates:', error);
+      console.error(`Error fetching activity templates: ${error.message}`, error);
       return;
     }
 
@@ -155,20 +153,18 @@ const CRMLayout = () => {
     if (!team) return null;
     
     try {
-      // Verwende immer die Team-ID als Autor-ID, um Probleme mit Foreign Key Constraints zu vermeiden
-      let validAuthorId = team.id;
-      
-      // Füge die Aktivität mit einer gültigen Autor-ID hinzu
+      // Füge die Aktivität mit der übergebenen author_id hinzu
       const { data, error } = await supabase
         .from('activities')
         .insert({
           ...activity,
-          author_id: validAuthorId, // Verwende die validierte Autor-ID
           team_id: team.id,
           entity_type: entityType,
           entity_id: entityId,
+          ...(activity.type === 'custom' && { template_id: activity.template_id }),
+          ...(activity.type === 'custom' && { template_data: activity.template_data }),
         })
-        .select()
+        .select('*, template_id, template_data')
         .single();
 
       if (error) {
