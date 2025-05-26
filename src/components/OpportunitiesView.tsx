@@ -719,9 +719,9 @@ export const OpportunitiesView = ({
   };
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-1 p-6 overflow-hidden relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 sticky top-0 z-10 bg-white p-6 -mx-6">
         <h1 className="text-2xl font-bold">Sales Pipeline</h1>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
@@ -769,7 +769,7 @@ export const OpportunitiesView = ({
         </div>
 
        {/* Toolbar (Filters, Columns, Smart Views, Export) */}
-        <div className="bg-white rounded-lg border mb-6">
+        <div className="bg-white rounded-lg border mb-6 relative z-[5]">
            <div className="p-2 border-b border-gray-200 flex items-center justify-between relative z-10">
              <div className="flex items-center space-x-2">
                {/* Filter Button and Menu */}
@@ -1052,29 +1052,31 @@ export const OpportunitiesView = ({
            )}
         </div>
 
-      {/* Views */}
-      {view === 'table' ? (
-        <TableView
-          deals={filteredDeals}
-          visibleColumns={visibleColumns}
-          onDealSelect={onDealSelect}
-          formatCurrency={formatCurrency}
-          formatDate={formatDate}
-          onDealUpdate={onDealUpdate}
-          statusLabels={statusLabels}
-          statusColors={statusColors}
-          allowedStatuses={allowedStatuses}
-        />
-      ) : (
-        <KanbanView
-          deals={filteredDeals}
-          onDealSelect={onDealSelect}
-          onDealUpdate={onDealUpdate}
-          statusLabels={statusLabels}
-          statusColors={statusColors}
-          allowedStatuses={allowedStatuses}
-        />
-      )}
+      {/* Views Container */}
+      <div className="flex-1 overflow-x-auto">
+        {view === 'table' ? (
+          <TableView
+            deals={filteredDeals}
+            visibleColumns={visibleColumns}
+            onDealSelect={onDealSelect}
+            formatCurrency={formatCurrency}
+            formatDate={formatDate}
+            onDealUpdate={onDealUpdate}
+            statusLabels={statusLabels}
+            statusColors={statusColors}
+            allowedStatuses={allowedStatuses}
+          />
+        ) : (
+          <KanbanView
+            deals={filteredDeals}
+            onDealSelect={onDealSelect}
+            onDealUpdate={onDealUpdate}
+            statusLabels={statusLabels}
+            statusColors={statusColors}
+            allowedStatuses={allowedStatuses}
+          />
+        )}
+      </div>
 
       {/* New Deal Dialog */}
       <Dialog open={showNewDealForm} onOpenChange={setShowNewDealForm}>
