@@ -10,6 +10,7 @@ import { Lead, Deal, Activity, SavedFilter, CustomField, ActivityTemplate } from
 import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const CRMLayout = () => {
   const { team } = useProfile();
@@ -868,13 +869,19 @@ const CRMLayout = () => {
           created_at: activity.created_at // Behalte den ursprünglichen Erstellungszeitpunkt bei
         }));
 
+        // Versuche, die Aktivitäten als Batch einzufügen
         const { error: activitiesError } = await supabase
           .from('activities')
           .insert(activitiesToCopy);
 
         if (activitiesError) {
           console.error('Error copying activities to deal:', activitiesError);
-          // Wir werfen keinen Fehler, da die Konvertierung des Deals trotzdem erfolgreich war
+          // Gib eine Warnung aus, aber fahre mit der Konvertierung fort
+          toast({
+            title: "Warnung",
+            description: "Einige Aktivitäten konnten nicht kopiert werden.",
+            variant: "default",
+          });
         }
       }
 
@@ -947,37 +954,37 @@ const CRMLayout = () => {
     }
   };
 
-  const importDeals = async (dealsToImport: Omit<Deal, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => {
+  const importDeals = async (leadsToImport: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => {
     if (!team) return;
     try {
-      const dealsWithTeamId = dealsToImport.map(deal => ({
-        ...deal,
+      const leadsWithTeamId = leadsToImport.map(lead => ({
+        ...lead,
         team_id: team.id
       }));
       const { data, error } = await supabase
-        .from('deals')
-        .insert(dealsWithTeamId)
+        .from('leads')
+        .insert(leadsWithTeamId)
         .select();
       if (error) {
-        console.error('Error importing deals:', error);
+        console.error('Error importing leads:', error);
         toast({
           title: 'Error',
-          description: 'Failed to import deals',
+          description: 'Failed to import leads',
           variant: 'destructive',
         });
         return;
       }
-      const importedDeals = data as Deal[];
-      setDeals(prev => [...importedDeals, ...prev]);
+      const importedLeads = data as Lead[];
+      setLeads(prev => [...importedLeads, ...prev]);
       toast({
         title: 'Success',
-        description: `${importedDeals.length} deals imported successfully`,
+        description: `${importedLeads.length} leads imported successfully`,
       });
     } catch (error) {
-      console.error('Error in importDeals:', error);
+      console.error('Error in importLeads (via importDeals prop):', error);
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred during import',
+        description: 'An unexpected error occurred during lead import',
         variant: 'destructive',
       });
     }
@@ -1045,7 +1052,7 @@ const CRMLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar 
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -1054,9 +1061,29 @@ const CRMLayout = () => {
         onFilterSelect={(filters) => setCurrentFilters(filters)}
       />
       
-      <div className="flex-1 flex min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {renderContent()}
         
+        <Dialog open={!!selectedDeal} onOpenChange={(open) => {!open && setSelectedDeal(null)}}>
+          {selectedDeal && (
+            <DealDetail
+              deal={selectedDeal}
+              onClose={() => setSelectedDeal(null)}
+              onAddActivity={(activity) => addActivity('deal', selectedDeal.id, activity)}
+              onUpdateDeal={updateDeal}
+              allDeals={deals}
+              onDealSelect={setSelectedDeal}
+              onDeleteActivity={deleteActivity}
+              linkedLead={selectedDeal.lead_id ? leads.find(lead => lead.id === selectedDeal.lead_id) : undefined}
+              onLeadClick={(lead) => {
+                setSelectedDeal(null);
+                setSelectedLead(lead);
+                setActiveSection('leads');
+              }}
+            />
+          )}
+        </Dialog>
+
         {selectedLead && (
           <LeadDetail
             lead={selectedLead}
@@ -1069,18 +1096,12 @@ const CRMLayout = () => {
             customFields={customFields}
             activityTemplates={activityTemplates}
             onDeleteActivity={deleteActivity}
-          />
-        )}
-
-        {selectedDeal && (
-          <DealDetail
-            deal={selectedDeal}
-            onClose={() => setSelectedDeal(null)}
-            onAddActivity={(activity) => addActivity('deal', selectedDeal.id, activity)}
-            onUpdateDeal={updateDeal}
-            allDeals={deals}
-            onDealSelect={setSelectedDeal}
-            onDeleteActivity={deleteActivity}
+            isOpen={!!selectedLead}
+            onAddCustomField={addCustomField}
+            onShowGlobalCustomFieldSettings={() => {
+              setSelectedLead(null); // Close lead detail view
+              setActiveSection('settings'); // Navigate to settings
+            }}
           />
         )}
       </div>

@@ -16,7 +16,11 @@ import {
   CheckCircle,
   Clock,
   FileText,
-  Trash2
+  Trash2,
+  StickyNote,
+  User,
+  FolderOpen,
+  Briefcase
 } from 'lucide-react';
 import { Lead, Activity, CustomField, ActivityTemplate } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -28,27 +32,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { useProfile } from '@/hooks/useProfile';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface LeadDetailProps {
   lead: Lead;
   onClose: () => void;
   onAddActivity: (activity: Omit<Activity, 'id' | 'team_id' | 'created_at'>) => void;
   onUpdateLead: (leadId: string, updates: Partial<Lead>) => void;
-  onConvertToDeal: () => void;
+  onConvertToDeal: (lead: Lead) => Promise<any | null>;
   allLeads: Lead[];
   onLeadSelect: (lead: Lead) => void;
   customFields?: CustomField[];
   activityTemplates?: ActivityTemplate[];
   onDeleteActivity: (activityId: string, entityType: string, entityId: string) => void;
+  isOpen: boolean;
+  onAddCustomField?: (field: Omit<CustomField, 'id'>) => Promise<void>;
+  onShowGlobalCustomFieldSettings?: () => void;
 }
 
 const statusColors = {
@@ -75,7 +77,10 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   onLeadSelect,
   customFields,
   activityTemplates,
-  onDeleteActivity
+  onDeleteActivity,
+  isOpen,
+  onAddCustomField,
+  onShowGlobalCustomFieldSettings
 }) => {
   const { profile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
@@ -84,10 +89,24 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const [activeTab, setActiveTab] = useState('all');
   const [selectedActivityTemplate, setSelectedActivityTemplate] = useState<string | null>(null);
   const [activityFormData, setActivityFormData] = useState<Record<string, any>>({});
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
+  // State for the new custom field modal
+  const [showAddCustomFieldModal, setShowAddCustomFieldModal] = useState(false);
+  const [newCustomField, setNewCustomField] = useState<{
+    name: string;
+    field_type: 'text' | 'number' | 'date' | 'select' | 'checkbox';
+    options: string[];
+  }>({
+    name: '',
+    field_type: 'text',
+    options: []
+  });
+
   useEffect(() => {
+    // When the lead changes, reset the edit form state
     setEditForm(lead);
+    // Also reset edit mode when lead changes
+    setIsEditing(false);
   }, [lead]);
 
   const currentIndex = allLeads.findIndex(l => l.id === lead.id);
@@ -102,10 +121,56 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     }
   };
 
+  // Function to handle toggling edit mode
+  const handleToggleEdit = () => {
+    if (!isEditing) {
+      // When entering edit mode, initialize editForm with current lead data
+      // and ensure custom_fields are included, initialized if missing
+      const initialCustomFields: Record<string, any> = {};
+      if (customFields) {
+        customFields
+          .filter(field => field.entity_type === 'lead')
+          .forEach(field => {
+            const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
+            // Use existing value from lead if available, otherwise use a default (empty string or false)
+            initialCustomFields[fieldKey] = lead.custom_fields?.[fieldKey] ?? 
+              (field.field_type === 'checkbox' ? false : 
+               field.field_type === 'select' ? '' : 
+               field.field_type === 'number' ? '0' : '');
+          });
+      }
+      console.log('Initializing edit form with custom fields:', initialCustomFields);
+      // Merge with existing standard fields, ensuring custom_fields is the initialized object
+      setEditForm({ 
+        ...lead, 
+        custom_fields: { ...initialCustomFields, ...lead.custom_fields }
+      });
+    }
+    // When exiting edit mode (via Cancel or Save), the useEffect for lead change will reset the form if needed
+    setIsEditing(!isEditing);
+  };
+
   const handleSave = () => {
-    onUpdateLead(lead.id, editForm);
+    // Ensure custom_fields object is not undefined when saving
+    const updates = { 
+      ...editForm,
+      custom_fields: Object.fromEntries(
+        Object.entries(editForm.custom_fields || {}).filter(([_, value]) => value !== null && value !== undefined)
+      )
+    };
+    console.log('Saving lead updates:', updates);
+    console.log('Current editForm:', editForm);
+    console.log('Custom fields before save:', editForm.custom_fields);
+    
+    onUpdateLead(lead.id, updates);
+    console.log('onUpdateLead called with:', lead.id, updates);
     setIsEditing(false);
-    setIsDialogOpen(false);
+  };
+
+  const handleCancel = () => {
+    console.log('Canceling edit, reverting to:', lead);
+    setEditForm(lead); // Revert to the original lead data
+    setIsEditing(false);
   };
 
   const handleAddNote = () => {
@@ -161,581 +226,475 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     );
   };
 
+  const handleCreateCustomField = async () => {
+    if (!onAddCustomField || !newCustomField.name) return; // Check if onAddCustomField prop is available
+
+    try {
+      // Call the parent function to add the custom field to the database
+      await onAddCustomField({
+        name: newCustomField.name,
+        field_type: newCustomField.field_type,
+        entity_type: 'lead', // This modal is specifically for lead custom fields
+        options: newCustomField.field_type === 'select' ? newCustomField.options : undefined,
+        sort_order: 0, // Default sort order, might need adjustment in parent component
+        team_id: lead.team_id, // Add team_id from the current lead
+        created_at: new Date().toISOString() // Add current timestamp
+      });
+
+      // Add the newly created field to the current editForm state immediately
+      const fieldKey = newCustomField.name.toLowerCase().replace(/\s+/g, '_');
+      setEditForm(prevForm => ({
+        ...prevForm,
+        custom_fields: {
+          ...prevForm.custom_fields,
+          [fieldKey]: newCustomField.field_type === 'checkbox' ? false : '' // Initialize with default value
+        }
+      }));
+
+      // Reset the new custom field form and close the modal
+      setNewCustomField({ name: '', field_type: 'text', options: [] });
+      setShowAddCustomFieldModal(false);
+
+    } catch (error) {
+      console.error('Error adding custom field from Lead Detail:', error);
+      // Optionally show a toast notification for the error
+    }
+  };
+
+  // Add useEffect to monitor editForm changes
+  useEffect(() => {
+    console.log('editForm changed:', editForm);
+  }, [editForm]);
+
+  // Add useEffect to monitor custom fields changes
+  useEffect(() => {
+    if (customFields) {
+      console.log('Available custom fields:', customFields);
+    }
+  }, [customFields]);
+
   return (
-    <div className="w-3/5 bg-white border-l border-gray-200 flex flex-col h-full shadow-lg transition-all duration-300 ease-in-out" style={{ minWidth: '600px' }}>
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">{lead.name}</h2>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => navigateTo('prev')}
-              disabled={!hasPrevious}
-              className={cn(
-                "p-1 rounded hover:bg-gray-100",
-                !hasPrevious && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => navigateTo('next')}
-              disabled={!hasNext}
-              className={cn(
-                "p-1 rounded hover:bg-gray-100",
-                !hasNext && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button onClick={onClose} className="p-1 rounded hover:bg-gray-100">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+    <div 
+      className={`fixed inset-y-0 right-0 z-40 w-full md:w-1/2 bg-white shadow-lg flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+    >
+      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-xl font-bold text-gray-900">{lead.name}</h2>
+          <Badge className={cn(
+            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white",
+            lead.status === 'potential' ? 'bg-gray-500' :
+            lead.status === 'contacted' ? 'bg-blue-500' :
+            lead.status === 'qualified' ? 'bg-green-500' :
+            lead.status === 'closed' ? 'bg-red-500' : 'bg-gray-500'
+          )}>
+            {lead.status === 'potential' ? 'Potential' :
+             lead.status === 'contacted' ? 'Contacted' :
+             lead.status === 'qualified' ? 'Qualified' :
+             lead.status === 'closed' ? 'Closed' : lead.status}
+          </Badge>
         </div>
-
-        <div className="flex items-center space-x-2 mb-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className={cn(
-                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white cursor-pointer",
-                statusColors[lead.status]
-              )}>
-                {statusLabels[lead.status]}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2">
-              <div className="space-y-1">
-                <h4 className="text-sm font-medium mb-2">Status ändern</h4>
-                {Object.entries(statusLabels).map(([status, label]) => (
-                  <button
-                    key={status}
-                    className={cn(
-                      "w-full text-left px-2 py-1.5 text-sm rounded flex items-center",
-                      lead.status === status ? "bg-gray-100" : "hover:bg-gray-50"
-                    )}
-                    onClick={() => {
-                      onUpdateLead(lead.id, { status: status as any });
-                    }}
-                  >
-                    <span className={cn(
-                      "w-2 h-2 rounded-full mr-2",
-                      statusColors[status as keyof typeof statusColors]
-                    )} />
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-
         <div className="flex items-center space-x-2">
-          <button 
-            className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-            onClick={() => {
-              setActiveTab('notes');
-              setSelectedActivityTemplate(null);
-            }}
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            <span>Note</span>
+          <Button variant="ghost" size="sm" onClick={handleToggleEdit}>
+            <Edit2 className="w-4 h-4" />
+          </Button>
+          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100">
+            <X className="w-5 h-5" />
           </button>
-          <button className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">
+        </div>
+      </div>
+
+      {!isEditing && (
+        <div className="px-6 py-3 border-b border-gray-200 flex items-center space-x-2 flex-shrink-0">
+          <Button size="sm" className="flex items-center space-x-1">
+            <StickyNote className="w-4 h-4" />
+            <span>Note</span>
+          </Button>
+          <Button size="sm" variant="outline" className="flex items-center space-x-1">
             <Mail className="w-4 h-4" />
             <span>Email</span>
-          </button>
-          <button className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">
+          </Button>
+          <Button size="sm" variant="outline" className="flex items-center space-x-1">
             <Phone className="w-4 h-4" />
             <span>Call</span>
-          </button>
-          
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="flex items-center space-x-2 px-3 py-1.5 border border-gray-300 rounded text-sm hover:bg-gray-50">
-                <Plus className="w-4 h-4 mr-2" />
-                <span>Mehr</span>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2">
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">Aktivität hinzufügen</h4>
-                {activityTemplates?.map(template => (
-                  <button
-                    key={template.id}
-                    className="w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded"
-                    onClick={() => {
-                      setSelectedActivityTemplate(template.id);
-                      setActiveTab('custom-activity');
-                      const initialData: Record<string, any> = {};
-                      template.fields.forEach(field => {
-                        initialData[field.name] = '';
-                      });
-                      setActivityFormData(initialData);
-                      console.log('Selected template ID:', template.id);
-                      console.log('Activity Templates:', activityTemplates);
-                    }}
-                  >
-                    {template.name}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          </Button>
         </div>
-      </div>
+      )}
 
       <div className="flex-1 overflow-y-auto flex">
-        <div className="w-2/5 border-r border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-medium text-gray-900">ABOUT</h4>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Lead bearbeiten</DialogTitle>
-                    <DialogDescription>
-                      Bearbeiten Sie die Details des Leads hier. Klicken Sie auf Speichern, wenn Sie fertig sind.
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-3 max-h-[60vh] overflow-y-auto py-4">
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Name</label>
-                      <input
-                        value={editForm.name}
-                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Email</label>
-                      <input
-                        value={editForm.email || ''}
-                        onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Phone</label>
-                      <input
-                        value={editForm.phone || ''}
-                        onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Website</label>
-                      <input
-                        value={editForm.website || ''}
-                        onChange={(e) => setEditForm({...editForm, website: e.target.value})}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Address</label>
-                      <textarea
-                        value={editForm.address || ''}
-                        onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="border-t border-gray-200 pt-3 mt-3">
-                      <h4 className="text-xs font-medium text-gray-500 mb-3">BENUTZERDEFINIERTE FELDER</h4>
-                      <div className="space-y-3">
-                        {customFields?.filter(cf => cf.entity_type === 'lead').map(field => {
-                          const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                          const fieldValue = editForm.custom_fields?.[fieldKey] || '';
-                          
-                          return (
-                            <div key={field.id}>
-                              <label className="block text-xs text-gray-500 mb-1 capitalize">{field.name}</label>
-                              {field.field_type === 'text' && (
-                                <input
-                                  type="text"
-                                  value={fieldValue}
-                                  onChange={(e) => {
-                                    const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
-                                    setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                                  }}
-                                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                                />
-                              )}
-                              {field.field_type === 'number' && (
-                                <input
-                                  type="number"
-                                  value={fieldValue}
-                                  onChange={(e) => {
-                                    const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
-                                    setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                                  }}
-                                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                                />
-                              )}
-                              {field.field_type === 'date' && (
-                                <input
-                                  type="date"
-                                  value={fieldValue}
-                                  onChange={(e) => {
-                                    const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
-                                    setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                                  }}
-                                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                                />
-                              )}
-                              {field.field_type === 'select' && (
-                                <select
-                                  value={fieldValue}
-                                  onChange={(e) => {
-                                    const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
-                                    setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                                  }}
-                                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                                >
-                                  <option value="">-- Select --</option>
-                                  {field.options?.map((option, idx) => (
-                                    <option key={idx} value={option}>{option}</option>
-                                  ))}
-                                </select>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setEditForm(lead)}>Abbrechen</Button>
-                    <Button onClick={handleSave}>Speichern</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="space-y-3">
-              {lead.email && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                  <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">{lead.email}</a>
-                </div>
-              )}
-              {lead.phone && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                  <a href={`tel:${lead.phone}`} className="text-blue-600 hover:underline">{lead.phone}</a>
-                </div>
-              )}
-              {lead.website && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Globe className="w-4 h-4 mr-2 text-gray-400" />
-                  {formatUrlAsLink(lead.website)}
-                </div>
-              )}
-              {lead.address && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                  <span>{lead.address}</span>
-                </div>
-              )}
-              
-              {customFields?.filter(cf => cf.entity_type === 'lead').map(field => {
-                const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                const fieldValue = lead.custom_fields?.[fieldKey];
-                
-                if (!fieldValue) return null;
-                
-                return (
-                  <div key={field.id} className="flex items-center text-sm text-gray-600">
-                    <span className="font-medium mr-2">{field.name}:</span>
-                    <span>{fieldValue}</span>
-                  </div>
-                );
-              })}
-              
-              <div className="pt-3">
-                <Button
-                  onClick={onConvertToDeal}
-                  className={cn(
-                    "w-full flex items-center justify-center",
-                    lead.status === 'qualified' 
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  )}
+        {isEditing ? (
+          <div className="p-6 space-y-6 w-full">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Lead bearbeiten</h4>
+            {/* Using a grid for better layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Standardfelder */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Name</label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Telefon</label>
+                <Input
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <Select
+                  value={editForm.status}
+                  onValueChange={(value: 'potential' | 'contacted' | 'qualified' | 'closed') => setEditForm({ ...editForm, status: value })}
                 >
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  Convert to Deal
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Status auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="potential">Potential</SelectItem>
+                    <SelectItem value="contacted">Contacted</SelectItem>
+                    <SelectItem value="qualified">Qualified</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Benutzerdefinierte Felder */}
+              {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
+                const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
+                // Render only if the field is in the editForm state (newly added fields will be)
+                // or if it had a value in the original lead data
+                if (editForm.custom_fields && editForm.custom_fields.hasOwnProperty(fieldKey)) {
+                   return (
+                     <div key={field.id} className="space-y-2">
+                       <label className="text-sm font-medium">{field.name}</label>
+                       {field.field_type === 'text' && (
+                         <Input
+                           value={(editForm.custom_fields[fieldKey] as string) || ''}
+                           onChange={(e) => {
+                             const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                             setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                           }}
+                           className="mt-1"
+                         />
+                       )}
+                       {field.field_type === 'number' && (
+                         <Input
+                           type="number"
+                           value={(editForm.custom_fields[fieldKey] as string) || ''}
+                           onChange={(e) => {
+                             const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                             setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                           }}
+                           className="mt-1"
+                         />
+                       )}
+                       {field.field_type === 'select' && (
+                         <Select
+                           value={(editForm.custom_fields[fieldKey] as string) || ''}
+                           onValueChange={(value) => {
+                             const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: value };
+                             setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                           }}
+                         >
+                           <SelectTrigger className="mt-1">
+                             <SelectValue placeholder={`${field.name} auswählen`} />
+                           </SelectTrigger>
+                           <SelectContent>
+                             {field.options.map((option, index) => (
+                               <SelectItem key={index} value={option}>{option}</SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                       )}
+                       {field.field_type === 'checkbox' && (
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Checkbox
+                              id={fieldKey}
+                              checked={!!editForm.custom_fields[fieldKey]}
+                              onCheckedChange={(checked) => {
+                                const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: checked };
+                                setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                              }}
+                            />
+                            <label htmlFor={fieldKey} className="text-sm text-gray-700">{field.name}</label>
+                          </div>
+                       )}
+                       {field.field_type === 'date' && (
+                          <Input
+                            type="date"
+                            value={(editForm.custom_fields[fieldKey] as string) || ''}
+                            onChange={(e) => {
+                              const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                              setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                            }}
+                            className="mt-1"
+                          />
+                       )}
+                     </div>
+                   );
+                }
+                return null; // Don't render if the field isn't in editForm (shouldn't happen with new init logic)
+              })}
+
+              {/* Button to add new custom field */}
+              <div className="col-span-1 md:col-span-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddCustomFieldModal(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Neues benutzerdefiniertes Feld hinzufügen
                 </Button>
               </div>
+
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button variant="outline" onClick={handleCancel}>Abbrechen</Button>
+              <Button onClick={handleSave}>Speichern</Button>
             </div>
           </div>
-        </div>
-        
-        <div className="w-3/5 p-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-4">AKTIVITÄTEN & NOTIZEN</h4>
-          
-          <div className="mb-4">
-            <Textarea
-              placeholder="Notiz hinzufügen..."
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              className="w-full mb-2"
-              rows={3}
-            />
-            <Button 
-              onClick={handleAddNote} 
-              disabled={!newNote.trim()}
-              className="w-full"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              Notiz speichern
-            </Button>
-          </div>
-          
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Alle</TabsTrigger>
-              <TabsTrigger value="notes">Notizen</TabsTrigger>
-              <TabsTrigger value="activities">Aktivitäten</TabsTrigger>
-              {selectedActivityTemplate && (
-                <TabsTrigger value="custom-activity">
-                  {activityTemplates?.find(t => t.id === selectedActivityTemplate)?.name || 'Custom Activity'}
-                </TabsTrigger>
-              )}
-            </TabsList>
-            
-            <TabsContent value="all" className="space-y-4">
-              {activityTemplates ? (
-                lead.activities?.map(activity => {
-                  console.log('Rendering activity:', activity);
-                  const template = activity.type === 'custom' && activity.template_id ? 
-                    activityTemplates?.find(t => t.id === activity.template_id) : null;
-                  
-                  const activityTitle = activity.type === 'note' ? 'Notiz' : 
-                                        activity.type === 'custom' ? template?.name || 'Custom Activity' : 
-                                        activity.type;
-
-                  return (
-                    <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs text-gray-500">
-                          {new Date(activity.created_at).toLocaleString()}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">
-                            {activityTitle}
-                          </Badge>
-                          <button
-                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+        ) : (
+          <>
+            <div className="w-1/3 border-r border-gray-200 p-6 space-y-6 flex-shrink-0 sticky top-0 h-full overflow-y-auto">
+              <Accordion type="single" collapsible defaultValue="about-section">
+                <AccordionItem value="about-section">
+                  <AccordionTrigger className="text-sm font-medium text-gray-900 py-2 flex justify-between items-center w-full">
+                    ABOUT
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-2">
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Mail className="w-4 h-4 mr-2" />
+                        <a href={`mailto:${lead.email}`} className="hover:underline">{lead.email}</a>
                       </div>
-                      {activity.type === 'custom' ? (
-                        template ? (
-                          <div className="text-sm">
-                            <p className="font-semibold">{activityTitle}</p>
-                            {Object.entries(activity.template_data || {}).map(([key, value]) => (
-                              <p key={key}><span className="font-medium">{key}:</span> {String(value)}</p>
-                            ))}
-                          </div>
-                        ) : (
-                           <div className="text-sm text-gray-500">Details für unbekannte benutzerdefinierte Aktivität (ID: {activity.template_id || 'N/A'})</div>
-                        )
-                      ) : (
-                        <p className="text-sm">{activity.content}</p>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Lädt Aktivitäten...</p>
-                </div>
-              )}
-
-              {activityTemplates && (!lead.activities || lead.activities.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Keine Aktivitäten vorhanden</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="notes" className="space-y-4">
-              {lead.activities?.filter(a => a.type === 'note').map(activity => (
-                <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs text-gray-500">
-                      {new Date(activity.created_at).toLocaleString()}
-                    </span>
-                    <button
-                      onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <p className="text-sm">{activity.content}</p>
-                </div>
-              ))}
-              
-              {(!lead.activities || lead.activities.filter(a => a.type === 'note').length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Keine Notizen vorhanden</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="activities" className="space-y-4">
-              {activityTemplates ? (
-                lead.activities?.filter(a => a.type !== 'note').map(activity => {
-                  console.log('Rendering activity (filtered):', activity);
-                  const template = activity.type === 'custom' && activity.template_id ? 
-                    activityTemplates?.find(t => t.id === activity.template_id) : null;
-                  
-                  const activityTitle = activity.type === 'custom' ? template?.name || 'Custom Activity' : activity.type;
-
-                  return (
-                    <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
-                      <div className="flex justify-between items-start mb-2">
-                        <span className="text-xs text-gray-500">
-                          {new Date(activity.created_at).toLocaleString()}
-                        </span>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">
-                            {activityTitle}
-                          </Badge>
-                          <button
-                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Phone className="w-4 h-4 mr-2" />
+                        <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
                       </div>
-                      {activity.type === 'custom' ? (
-                        template ? (
-                          <div className="text-sm">
-                            <p className="font-semibold">{activityTitle}</p>
-                            {Object.entries(activity.template_data || {}).map(([key, value]) => (
-                              <p key={key}><span className="font-medium">{key}:</span> {String(value)}</p>
-                            ))}
-                          </div>
-                        ) : (
-                           <div className="text-sm text-gray-500">Details für unbekannte benutzerdefinierte Aktivität (ID: {activity.template_id || 'N/A'})</div>
-                        )
-                      ) : (
-                        <p className="text-sm">{activity.content}</p>
+                      {lead.website && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <Globe className="w-4 h-4 mr-2" />
+                          <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {lead.website}
+                          </a>
+                        </div>
                       )}
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Lädt Aktivitäten...</p>
-                </div>
-              )}
+                      {lead.address && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          <span>{lead.address}</span>
+                        </div>
+                      )}
+                      {lead.description && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <StickyNote className="w-4 h-4 mr-2" />
+                          <p>{lead.description}</p>
+                        </div>
+                      )}
+                      
+                      {lead.custom_fields?.review_count && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <span className="font-medium mr-2">Review Count:</span>
+                          <span>{lead.custom_fields.review_count as string}</span>
+                        </div>
+                      )}
+                      {lead.custom_fields?.gmb_url && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <span className="font-medium mr-2">GMB URL:</span>
+                          <a href={lead.custom_fields.gmb_url as string} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {lead.custom_fields.gmb_url as string}
+                          </a>
+                        </div>
+                      )}
 
-              {activityTemplates && (!lead.activities || lead.activities.filter(a => a.type !== 'note').length === 0) && (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Keine Aktivitäten vorhanden</p>
+                      {/* Benutzerdefinierte Felder innerhalb von ABOUT */}
+                      {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
+                        const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
+                        const fieldValue = lead.custom_fields?.[fieldKey];
+                        
+                        if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null; // Don't display if value is empty
+
+                        return (
+                          <div key={field.id} className="flex items-center text-sm text-gray-600">
+                            {/* Display icon based on field type? Or a generic one? Let's use a generic one for now */}
+                            {/* <FileText className="w-4 h-4 mr-2" /> */}
+                            <span className="font-medium mr-2">{field.name}:</span>
+                            <span>
+                              {field.field_type === 'checkbox' ? (fieldValue ? 'Yes' : 'No') : 
+                               field.field_type === 'select' ? String(fieldValue).split(',').map((item, index) => (
+                                 <Badge key={index} variant="secondary" className="mr-1 mb-1">{item.trim()}</Badge>
+                               )) : 
+                               field.field_type === 'date' ? new Date(fieldValue as string).toLocaleDateString() : 
+                               field.field_type === 'number' ? fieldValue as string : 
+                               String(fieldValue) // Default to string for text and others
+                              }
+                            </span>
+                          </div>
+                        );
+                      })}
+
+                      {/* Convert to Deal Button */}
+                      <Button onClick={() => onConvertToDeal(lead)} className="mt-4 w-full">
+                        <ArrowRight className="w-4 h-4 mr-2" />
+                        Convert to Deal
+                      </Button>
+
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+
+            <div className="flex-1 p-6 space-y-6">
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Add Activity</h4>
+                <div className="flex space-x-2">
+                  <Textarea
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    placeholder="Add a note, log a call, etc..."
+                    className="flex-1 text-sm resize-none"
+                    rows={3}
+                  />
+                  <Button onClick={handleAddNote} disabled={!newNote.trim()} size="sm">
+                    <Send className="w-4 h-4" />
+                  </Button>
                 </div>
-              )}
-            </TabsContent>
-            
-            {selectedActivityTemplate && (
-              <TabsContent value="custom-activity" className="space-y-4">
-                <h4 className="text-md font-medium mb-4">
-                  Details für {activityTemplates?.find(t => t.id === selectedActivityTemplate)?.name || 'Custom Activity'}
-                </h4>
-                
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Activities</h4>
                 <div className="space-y-4">
-                  {activityTemplates?.find(t => t.id === selectedActivityTemplate)?.fields.map((field, index) => (
-                    <div key={index}>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {field.name}{field.required && <span className="text-red-500">*</span>}
-                      </label>
-                      {field.type === 'text' && (
-                        <Input
-                          type="text"
-                          value={activityFormData[field.name] || ''}
-                          onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.value})}
-                          required={field.required}
-                        />
-                      )}
-                      {field.type === 'number' && (
-                        <Input
-                          type="number"
-                          value={activityFormData[field.name] || ''}
-                          onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.value})}
-                          required={field.required}
-                        />
-                      )}
-                      {field.type === 'date' && (
-                        <Input
-                          type="date"
-                          value={activityFormData[field.name] || ''}
-                          onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.value})}
-                          required={field.required}
-                        />
-                      )}
-                      {field.type === 'select' && field.options && (
-                        <Select
-                          value={activityFormData[field.name] || ''}
-                          onValueChange={(value) => setActivityFormData({...activityFormData, [field.name]: value})}
-                          required={field.required}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={`Select ${field.name}`} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option, optionIndex) => (
-                              <SelectItem key={optionIndex} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                      {field.type === 'checkbox' && (
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={!!activityFormData[field.name]}
-                            onChange={(e) => setActivityFormData({...activityFormData, [field.name]: e.target.checked})}
-                            required={field.required}
-                            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                          <label className="ml-2 block text-sm text-gray-900">
-                            {field.name}
-                          </label>
+                  {lead.activities && lead.activities.length > 0 ? (
+                    lead.activities.map((activity) => (
+                      <div key={activity.id} className="border rounded-md p-3 bg-gray-50">
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                          <span>{activity.type}</span>
+                          <span>{new Date(activity.created_at).toLocaleString()}</span>
                         </div>
-                      )}
+                        <p className="text-sm text-gray-800">{activity.content}</p>
+                        <div className="flex justify-end mt-2">
+                          <Button variant="ghost" size="sm" onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}>
+                            <Trash2 className="w-3 h-3 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-500">No activities yet.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Modal to add new custom field */}
+      <Dialog open={showAddCustomFieldModal} onOpenChange={setShowAddCustomFieldModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Neues benutzerdefiniertes Feld</DialogTitle>
+            <DialogDescription>
+              Erstellen Sie ein neues benutzerdefiniertes Feld für diesen Lead.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="newFieldName">Feldname</Label>
+              <Input
+                id="newFieldName"
+                value={newCustomField.name}
+                onChange={(e) => setNewCustomField({...newCustomField, name: e.target.value})}
+                placeholder="z.B. Budget"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="newFieldType">Feldtyp</Label>
+              <Select
+                value={newCustomField.field_type}
+                onValueChange={(value: 'text' | 'number' | 'date' | 'select' | 'checkbox') => 
+                  setNewCustomField({...newCustomField, field_type: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Typ auswählen" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="number">Zahl</SelectItem>
+                  <SelectItem value="date">Datum</SelectItem>
+                  <SelectItem value="select">Auswahl</SelectItem>
+                  <SelectItem value="checkbox">Checkbox</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {newCustomField.field_type === 'select' && (
+              <div className="space-y-2">
+                <Label>Optionen</Label>
+                <div className="space-y-2">
+                  {newCustomField.options.map((option, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={option}
+                        onChange={(e) => {
+                          const newOptions = [...newCustomField.options];
+                          newOptions[index] = e.target.value;
+                          setNewCustomField({...newCustomField, options: newOptions});
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          const newOptions = newCustomField.options.filter((_, i) => i !== index);
+                          setNewCustomField({...newCustomField, options: newOptions});
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setNewCustomField({
+                      ...newCustomField,
+                      options: [...newCustomField.options, '']
+                    })}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Option hinzufügen
+                  </Button>
                 </div>
-                
-                <Button 
-                  onClick={handleAddCustomActivity}
-                  className="w-full"
-                  disabled={!activityTemplates?.find(t => t.id === selectedActivityTemplate)?.fields.every(field => !field.required || activityFormData[field.name])}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Aktivität speichern
-                </Button>
-              </TabsContent>
+              </div>
             )}
-          </Tabs>
-        </div>
-      </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowAddCustomFieldModal(false);
+              setNewCustomField({ name: '', field_type: 'text', options: [] });
+            }}>
+              Abbrechen
+            </Button>
+            <Button onClick={handleCreateCustomField} disabled={!newCustomField.name || (newCustomField.field_type === 'select' && newCustomField.options.length === 0)}>
+              Feld erstellen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };

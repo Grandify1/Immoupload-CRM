@@ -43,11 +43,11 @@ interface OpportunitiesViewProps {
   view: 'table' | 'kanban';
   onViewChange: (view: 'table' | 'kanban') => void;
   onDealSelect: (deal: Deal) => void;
-  onDealUpdate: (dealId: string, updates: Partial<Deal>) => void;
+  onDealUpdate: (dealId: string, updates: Partial<Deal>) => Promise<void>;
   onRefresh: () => void;
   onCreateDeal?: (deal: Omit<Deal, 'id' | 'team_id' | 'created_at' | 'updated_at'>) => Promise<Deal | null>;
   onImportDeals?: (leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => Promise<void>;
-  onAddCustomField?: (name: string, type: string) => Promise<void>;
+  onAddCustomField?: (field: Omit<CustomField, 'id' | 'team_id' | 'created_at'>) => Promise<void>;
   customFields?: CustomField[];
 }
 
@@ -1242,7 +1242,19 @@ export const OpportunitiesView = ({
             isOpen={showImportDialog}
             onClose={() => setShowImportDialog(false)}
             onImport={onImportDeals}
-            onAddCustomField={onAddCustomField}
+            onAddCustomField={async (name, type) => { // Adapterfunktion als async markiert
+              // Erstelle ein CustomField Objekt basierend auf den von CSVImport gelieferten Daten
+              const newField = {
+                name: name,
+                field_type: type as any, // Typ anpassen
+                entity_type: 'deal', // Standardmäßig 'deal' für Opportunities
+                options: type === 'select' ? [] : undefined, // Optionen nur für Select-Typ
+                sort_order: 0, // Standard-Sortierreihenfolge
+              } as Omit<CustomField, 'id' | 'team_id' | 'created_at'>;
+              
+              // Rufe die ursprüngliche onAddCustomField Prop auf
+              return await onAddCustomField(newField); // Ergebnis zurückgeben
+            }}
           />
        )}
 

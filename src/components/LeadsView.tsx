@@ -1,30 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Lead, CustomField } from '@/types/database';
+import { Lead, CustomField, ActivityTemplate, Activity } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Plus, Eye, LayoutGrid, List, Filter, Columns, Download, X, ArrowUpDown, Phone, Mail, Upload } from 'lucide-react';
+import { Search, Plus, Eye, LayoutGrid, List, Filter, Columns, Download, X, ArrowUpDown, DollarSign, Upload, AlertCircle, Check, Phone, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CSVImport from './CSVImport';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { LeadDetail } from './LeadDetail';
 
 interface LeadsViewProps {
   leads: Lead[];
   view: 'table' | 'kanban';
   onViewChange: (view: 'table' | 'kanban') => void;
   filters: Record<string, any>;
-  onLeadSelect: (lead: Lead) => void;
+  onLeadSelect: (lead: Lead | null) => void;
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
   onRefresh: () => void;
   onCreateLead?: (lead: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>) => Promise<Lead | null>;
   onImportLeads?: (leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => Promise<void>;
   onAddCustomField?: (field: Omit<CustomField, 'id' | 'team_id' | 'created_at'>) => Promise<void>;
   customFields?: CustomField[];
+  activityTemplates?: ActivityTemplate[];
 }
 
 const statusColors = {
@@ -52,17 +58,39 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   onCreateLead,
   onImportLeads,
   onAddCustomField,
-  customFields
+  customFields,
+  activityTemplates = []
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewLeadForm, setShowNewLeadForm] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
-  const [newLead, setNewLead] = useState({
+  const [showCustomFieldForm, setShowCustomFieldForm] = useState(false);
+  const [newLead, setNewLead] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    status: 'potential' | 'contacted' | 'qualified' | 'closed';
+    custom_fields: Record<string, any>;
+  }>({
     name: '',
     email: '',
     phone: '',
-    status: 'potential' as const,
+    status: 'potential',
     custom_fields: {}
+  });
+  
+  const [newCustomField, setNewCustomField] = useState<{
+    name: string;
+    field_type: 'text' | 'number' | 'date' | 'select' | 'checkbox';
+    entity_type: 'lead' | 'deal';
+    options: string[];
+    sort_order: number;
+  }>({
+    name: '',
+    field_type: 'text',
+    entity_type: 'lead',
+    options: [],
+    sort_order: 0
   });
   
   // Smart Views und Filter-Status
@@ -86,6 +114,9 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const [filterOperator, setFilterOperator] = useState<string>('contains');
   const [filterValue, setFilterValue] = useState<string>('');
   const [selectedStatusFilters, setSelectedStatusFilters] = useState<string[]>([]);
+
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const { toast } = useToast();
 
   // Anwendung der Filter auf die Leads
   const filteredLeads = leads.filter(lead => {
@@ -777,140 +808,321 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     );
   };
 
+  const addActivity = async (entityType: 'lead' | 'deal', entityId: string, activity: Omit<Activity, 'id' | 'team_id' | 'created_at'>) => {
+    // Implementierung der addActivity-Funktion
+    // Diese Funktion sollte die Aktivität zur Datenbank hinzufügen
+    // und den lokalen State aktualisieren
+  };
+
+  const convertLeadToDeal = async (lead: Lead) => {
+    // Implementierung der convertLeadToDeal-Funktion
+    // Diese Funktion sollte den Lead in einen Deal konvertieren
+  };
+
+  const deleteActivity = async (activityId: string, entityType: string, entityId: string) => {
+    // Implementierung der deleteActivity-Funktion
+    // Diese Funktion sollte die Aktivität aus der Datenbank löschen
+    // und den lokalen State aktualisieren
+  };
+
   return (
-    <div className="flex-1 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Leads</h1>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-            <Button
-              variant={view === 'table' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onViewChange('table')}
-            >
-              <List className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={view === 'kanban' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onViewChange('kanban')}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </Button>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button onClick={() => setShowNewLeadForm(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Lead
-            </Button>
-            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Leads</h1>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+              <Button
+                variant={view === 'table' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewChange('table')}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={view === 'kanban' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onViewChange('kanban')}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button onClick={() => setShowNewLeadForm(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                New Lead
+              </Button>
+              <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search leads..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search leads..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* New Lead Form */}
-      {showNewLeadForm && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Create New Lead</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                placeholder="Name"
-                value={newLead.name}
-                onChange={(e) => setNewLead({...newLead, name: e.target.value})}
-              />
-              <Input
-                placeholder="Email"
-                type="email"
-                value={newLead.email}
-                onChange={(e) => setNewLead({...newLead, email: e.target.value})}
-              />
-              <Input
-                placeholder="Phone"
-                value={newLead.phone}
-                onChange={(e) => setNewLead({...newLead, phone: e.target.value})}
-              />
-              
-              {/* Benutzerdefinierte Felder */}
-              {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
-                const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                return (
-                  <div key={field.id} className="col-span-2">
-                    <label className="block text-xs text-gray-500 mb-1 capitalize">{field.name}</label>
-                    {field.field_type === 'text' && (
-                      <Input
-                        value={(newLead.custom_fields[fieldKey] as string) || ''}
-                        onChange={(e) => {
-                          const updatedCustomFields = { ...newLead.custom_fields, [fieldKey]: e.target.value };
-                          setNewLead({ ...newLead, custom_fields: updatedCustomFields });
-                        }}
-                        placeholder={field.name}
-                      />
-                    )}
-                    {field.field_type === 'number' && (
-                      <Input
-                        type="number"
-                        value={(newLead.custom_fields[fieldKey] as string) || ''}
-                        onChange={(e) => {
-                          const updatedCustomFields = { ...newLead.custom_fields, [fieldKey]: e.target.value };
-                          setNewLead({ ...newLead, custom_fields: updatedCustomFields });
-                        }}
-                        placeholder={field.name}
-                      />
-                    )}
-                    {field.field_type === 'select' && (
-                      <select
-                        value={(newLead.custom_fields[fieldKey] as string) || ''}
-                        onChange={(e) => {
-                          const updatedCustomFields = { ...newLead.custom_fields, [fieldKey]: e.target.value };
-                          setNewLead({ ...newLead, custom_fields: updatedCustomFields });
-                        }}
-                        className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                      >
-                        <option value="">Bitte wählen...</option>
-                        {field.options.map((option, index) => (
-                          <option key={index} value={option}>{option}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                );
-              })}
-              
-              <div className="col-span-2 flex space-x-2 mt-4">
-                <Button onClick={handleCreateLead} disabled={!newLead.name}>
-                  Create Lead
-                </Button>
-                <Button variant="outline" onClick={() => setShowNewLeadForm(false)}>
-                  Cancel
-                </Button>
+        {/* New Lead Form Modal */}
+        <Dialog open={showNewLeadForm} onOpenChange={setShowNewLeadForm}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Neuen Lead erstellen</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={newLead.name}
+                    onChange={(e) => setNewLead({...newLead, name: e.target.value})}
+                    placeholder="Name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={newLead.email}
+                    onChange={(e) => setNewLead({...newLead, email: e.target.value})}
+                    placeholder="Email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefon</Label>
+                  <Input
+                    id="phone"
+                    value={newLead.phone}
+                    onChange={(e) => setNewLead({...newLead, phone: e.target.value})}
+                    placeholder="Telefon"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={newLead.status}
+                    onValueChange={(value: 'potential' | 'contacted' | 'qualified' | 'closed') => 
+                      setNewLead({...newLead, status: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Status auswählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="potential">Potential</SelectItem>
+                      <SelectItem value="contacted">Contacted</SelectItem>
+                      <SelectItem value="qualified">Qualified</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Custom Fields Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium">Benutzerdefinierte Felder</h4>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCustomFieldForm(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Feld hinzufügen
+                  </Button>
+                </div>
+                
+                {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
+                  const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
+                  return (
+                    <div key={field.id} className="space-y-2">
+                      <Label htmlFor={fieldKey}>{field.name}</Label>
+                      {field.field_type === 'text' && (
+                        <Input
+                          id={fieldKey}
+                          value={(newLead.custom_fields[fieldKey] as string) || ''}
+                          onChange={(e) => {
+                            const updatedCustomFields = { ...newLead.custom_fields, [fieldKey]: e.target.value };
+                            setNewLead({ ...newLead, custom_fields: updatedCustomFields });
+                          }}
+                          placeholder={field.name}
+                        />
+                      )}
+                      {field.field_type === 'number' && (
+                        <Input
+                          id={fieldKey}
+                          type="number"
+                          value={(newLead.custom_fields[fieldKey] as string) || ''}
+                          onChange={(e) => {
+                            const updatedCustomFields = { ...newLead.custom_fields, [fieldKey]: e.target.value };
+                            setNewLead({ ...newLead, custom_fields: updatedCustomFields });
+                          }}
+                          placeholder={field.name}
+                        />
+                      )}
+                      {field.field_type === 'select' && (
+                        <Select
+                          value={(newLead.custom_fields[fieldKey] as string) || ''}
+                          onValueChange={(value) => {
+                            const updatedCustomFields = { ...newLead.custom_fields, [fieldKey]: value };
+                            setNewLead({ ...newLead, custom_fields: updatedCustomFields });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={`${field.name} auswählen`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option, index) => (
+                              <SelectItem key={index} value={option}>{option}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowNewLeadForm(false)}>
+                Abbrechen
+              </Button>
+              <Button onClick={handleCreateLead} disabled={!newLead.name}>
+                Lead erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Content */}
-      {view === 'table' ? <TableView /> : <KanbanView />}
+        {/* Custom Field Form Modal */}
+        <Dialog open={showCustomFieldForm} onOpenChange={setShowCustomFieldForm}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Neues benutzerdefiniertes Feld</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="fieldName">Feldname</Label>
+                <Input
+                  id="fieldName"
+                  value={newCustomField.name}
+                  onChange={(e) => setNewCustomField({...newCustomField, name: e.target.value})}
+                  placeholder="z.B. Budget"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fieldType">Feldtyp</Label>
+                <Select
+                  value={newCustomField.field_type}
+                  onValueChange={(value: 'text' | 'number' | 'date' | 'select' | 'checkbox') => 
+                    setNewCustomField({...newCustomField, field_type: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Typ auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Text</SelectItem>
+                    <SelectItem value="number">Zahl</SelectItem>
+                    <SelectItem value="date">Datum</SelectItem>
+                    <SelectItem value="select">Auswahl</SelectItem>
+                    <SelectItem value="checkbox">Checkbox</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {newCustomField.field_type === 'select' && (
+                <div className="space-y-2">
+                  <Label>Optionen</Label>
+                  <div className="space-y-2">
+                    {newCustomField.options.map((option, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          value={option}
+                          onChange={(e) => {
+                            const newOptions = [...newCustomField.options];
+                            newOptions[index] = e.target.value;
+                            setNewCustomField({...newCustomField, options: newOptions});
+                          }}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const newOptions = newCustomField.options.filter((_, i) => i !== index);
+                            setNewCustomField({...newCustomField, options: newOptions});
+                          }}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewCustomField({
+                        ...newCustomField,
+                        options: [...newCustomField.options, '']
+                      })}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Option hinzufügen
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setShowCustomFieldForm(false);
+                setNewCustomField({
+                  name: '',
+                  field_type: 'text',
+                  entity_type: 'lead',
+                  options: [],
+                  sort_order: 0
+                });
+              }}>
+                Abbrechen
+              </Button>
+              <Button onClick={async () => {
+                if (onAddCustomField) {
+                  await onAddCustomField({
+                    name: newCustomField.name,
+                    field_type: newCustomField.field_type,
+                    entity_type: newCustomField.entity_type,
+                    options: newCustomField.options,
+                    sort_order: newCustomField.sort_order
+                  });
+                  setShowCustomFieldForm(false);
+                  setNewCustomField({
+                    name: '',
+                    field_type: 'text',
+                    entity_type: 'lead',
+                    options: [],
+                    sort_order: 0
+                  });
+                }
+              }} disabled={!newCustomField.name || (newCustomField.field_type === 'select' && newCustomField.options.length === 0)}>
+                Feld erstellen
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Content */}
+        {view === 'table' ? <TableView /> : <KanbanView />}
+      </div>
 
       {/* CSV Import Dialog */}
       {showImportDialog && onImportLeads && onAddCustomField && (
@@ -918,9 +1130,40 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           isOpen={showImportDialog}
           onClose={() => setShowImportDialog(false)}
           onImport={onImportLeads}
-          onAddCustomField={onAddCustomField}
+          onAddCustomField={async (name, type) => {
+            // Erstelle ein CustomField Objekt basierend auf den von CSVImport gelieferten Daten
+            const newField = {
+              name: name,
+              field_type: type as any, // Typ anpassen
+              entity_type: 'lead', // Standardmäßig 'lead' für Leads
+              options: type === 'select' ? [] : undefined, // Optionen nur für Select-Typ
+              sort_order: 0, // Standard-Sortierreihenfolge
+            } as Omit<CustomField, 'id' | 'team_id' | 'created_at'>;
+            
+            // Rufe die ursprüngliche onAddCustomField Prop auf
+            return await onAddCustomField(newField);
+          }}
         />
       )}
+
+      {/* LeadDetail als Overlay */}
+      <Dialog open={!!selectedLead} onOpenChange={(open) => {!open && setSelectedLead(null)}}>
+        {selectedLead && (
+          <LeadDetail
+            lead={selectedLead}
+            onClose={() => setSelectedLead(null)}
+            onAddActivity={(activity) => addActivity('lead', selectedLead.id, activity)}
+            onUpdateLead={onLeadUpdate}
+            onConvertToDeal={() => convertLeadToDeal(selectedLead)}
+            allLeads={leads}
+            onLeadSelect={setSelectedLead}
+            customFields={customFields}
+            activityTemplates={activityTemplates}
+            onDeleteActivity={deleteActivity}
+            isOpen={!!selectedLead}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };

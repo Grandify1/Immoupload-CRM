@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Upload, X, AlertCircle, Check } from 'lucide-react';
-import { Lead } from '@/types/database';
+import { Upload, X, AlertCircle, Check, Plus } from 'lucide-react';
+import { Lead, CustomField } from '@/types/database';
 
 interface CSVImportProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => Promise<void>;
   onAddCustomField: (name: string, type: string) => Promise<void>;
+  customFields?: CustomField[];
 }
 
 type MappingType = {
@@ -22,7 +23,7 @@ type MappingType = {
   customFieldType: 'text' | 'number' | 'date' | 'select';
 };
 
-const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField }) => {
+const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields }) => {
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappings, setMappings] = useState<MappingType[]>([]);
@@ -33,7 +34,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const availableFields = [
+  const standardFields = [
     { name: 'name', label: 'Name' },
     { name: 'email', label: 'Email' },
     { name: 'phone', label: 'Phone' },
@@ -42,6 +43,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     { name: 'description', label: 'Description' },
     { name: 'status', label: 'Status' },
     { name: 'owner_id', label: 'Owner' },
+  ];
+
+  const allAvailableFields = [
+    ...standardFields,
+    ...(customFields || []).filter(field => field.entity_type === 'lead').map(field => ({
+        name: field.name.toLowerCase().replace(/\s+/g, '_'),
+        label: field.name,
+    }))
   ];
 
   const resetState = () => {
@@ -67,24 +76,44 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const lines = text.split('\n');
+        const lines = text.split(/\r?\n/);
+        if (lines.length === 0) {
+          setError('CSV-Datei ist leer.');
+          setStep('upload');
+          return;
+        }
+
         const headers = lines[0].split(',').map(h => h.trim());
+
+        if (headers.some(header => header === '')) {
+          setError('CSV-Datei enthält leere Spaltenüberschriften.');
+          setStep('upload');
+          return;
+        }
         
-        // Parse data rows
         const data: string[][] = [];
         for (let i = 1; i < lines.length; i++) {
           if (lines[i].trim() === '') continue;
           const values = lines[i].split(',').map(v => v.trim());
+          
+          if (values.length !== headers.length) {
+             console.warn(`Skipping row ${i + 1} due to incorrect number of columns.`);
+             continue;
+          }
           data.push(values);
+        }
+
+        if (data.length === 0) {
+            setError('CSV-Datei enthält keine Datenzeilen.');
+            setStep('upload');
+            return;
         }
         
         setHeaders(headers);
         setCSVData(data);
         
-        // Initialize mappings
         const initialMappings: MappingType[] = headers.map(header => {
-          // Try to auto-match headers with fields
-          const matchedField = availableFields.find(field => 
+          const matchedField = allAvailableFields.find(field => 
             field.label.toLowerCase() === header.toLowerCase() || 
             field.name.toLowerCase() === header.toLowerCase()
           );
@@ -99,10 +128,18 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         
         setMappings(initialMappings);
         setStep('map');
+        setError(null);
+
       } catch (error) {
         console.error('Error parsing CSV:', error);
-        setError('Failed to parse CSV file. Please check the format.');
+        setError('Fehler beim Parsen der CSV-Datei. Bitte überprüfen Sie das Format.');
+        setStep('upload');
       }
+    };
+    
+    reader.onerror = () => {
+        setError('Fehler beim Lesen der Datei.');
+        setStep('upload');
     };
     
     reader.readAsText(file);
@@ -111,7 +148,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   const handleMappingChange = (index: number, fieldName: string | null) => {
     const newMappings = [...mappings];
     newMappings[index].fieldName = fieldName;
-    newMappings[index].createCustomField = false; // Reset custom field flag when mapping changes
+    newMappings[index].createCustomField = false;
     setMappings(newMappings);
   };
 
@@ -119,7 +156,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     const newMappings = [...mappings];
     newMappings[index].createCustomField = checked;
     if (checked && !newMappings[index].fieldName) {
-      // If toggling on and no field name set, use the header as field name
       newMappings[index].fieldName = newMappings[index].csvHeader.toLowerCase().replace(/\s+/g, '_');
     }
     setMappings(newMappings);
@@ -132,7 +168,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   };
 
   const handleContinueToPreview = () => {
-    // Validate that required fields are mapped
     const hasNameMapping = mappings.some(m => m.fieldName === 'name');
     
     if (!hasNameMapping) {
@@ -149,7 +184,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       setStep('importing');
       setImportProgress(0);
       
-      // First create any custom fields
       const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
       
       for (const mapping of customFieldMappings) {
@@ -158,7 +192,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         }
       }
       
-      // Then prepare the leads data
       const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = csvData.map(row => {
         const lead: any = {
           custom_fields: {}
@@ -168,28 +201,27 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           if (mapping.fieldName && index < row.length) {
             const value = row[index];
             
-            if (mapping.createCustomField) {
-              // Add to custom fields
+            const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
+
+            if (targetField && standardFields.some(sf => sf.name === targetField.name)) {
+               if (targetField.name === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
+                 lead[targetField.name] = 'potential';
+               } else {
+                 lead[targetField.name] = value;
+               }
+            } else if (mapping.createCustomField) {
               lead.custom_fields[mapping.fieldName] = value;
-            } else {
-              // Add to standard fields
-              if (mapping.fieldName === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
-                // Default to 'potential' if invalid status
-                lead[mapping.fieldName] = 'potential';
-              } else {
-                lead[mapping.fieldName] = value;
-              }
+            } else if (targetField) {
+              lead.custom_fields[targetField.name] = value;
             }
           }
         });
         
-        // Ensure required fields have default values
         if (!lead.status) lead.status = 'potential';
         
         return lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>;
       });
       
-      // Import the leads
       await onImport(leads);
       
       setImportProgress(100);
@@ -261,14 +293,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                       <td className="px-4 py-3">
                         <Select
                           value={mapping.fieldName || ''}
-                          onValueChange={(value) => handleMappingChange(index, value || null)}
+                          onValueChange={(value) => handleMappingChange(index, value === '__skip__' ? null : value)}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a field" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Do not import</SelectItem>
-                            {availableFields.map(field => (
+                            <SelectItem value="__skip__">Do not import</SelectItem>
+                            {allAvailableFields.map(field => (
                               <SelectItem key={field.name} value={field.name}>
                                 {field.label}
                               </SelectItem>
@@ -276,36 +308,60 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center">
-                          <Checkbox
-                            id={`custom-field-${index}`}
-                            checked={mapping.createCustomField}
-                            onCheckedChange={(checked) => 
-                              handleCustomFieldToggle(index, checked === true)
-                            }
-                            disabled={!!mapping.fieldName && !mapping.createCustomField}
-                          />
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          {!mapping.createCustomField ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCustomFieldToggle(index, true)}
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Als Custom Field
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleCustomFieldToggle(index, false)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {mapping.createCustomField && (
+                            <Input
+                              value={mapping.fieldName || ''}
+                              onChange={(e) => {
+                                const newMappings = [...mappings];
+                                newMappings[index].fieldName = e.target.value;
+                                setMappings(newMappings);
+                              }}
+                              placeholder="Feldname"
+                              className="w-40"
+                            />
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <Select
-                          value={mapping.customFieldType}
-                          onValueChange={(value) => 
-                            handleCustomFieldTypeChange(index, value as 'text' | 'number' | 'date' | 'select')
-                          }
-                          disabled={!mapping.createCustomField}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Text</SelectItem>
-                            <SelectItem value="number">Number</SelectItem>
-                            <SelectItem value="date">Date</SelectItem>
-                            <SelectItem value="select">Dropdown</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {mapping.createCustomField && (
+                          <Select
+                            value={mapping.customFieldType}
+                            onValueChange={(value) => 
+                              handleCustomFieldTypeChange(index, value as 'text' | 'number' | 'date' | 'select')
+                            }
+                            disabled={!mapping.createCustomField}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">Text</SelectItem>
+                              <SelectItem value="number">Zahl</SelectItem>
+                              <SelectItem value="date">Datum</SelectItem>
+                              <SelectItem value="select">Auswahl</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -338,7 +394,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                         <th key={index} className="px-3 py-2 font-medium text-gray-600">
                           {mapping.createCustomField 
                             ? `${mapping.fieldName} (Custom)` 
-                            : availableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}
+                            : allAvailableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}
                         </th>
                       ))}
                   </tr>
