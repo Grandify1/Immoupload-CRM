@@ -84,6 +84,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const [activeTab, setActiveTab] = useState('all');
   const [selectedActivityTemplate, setSelectedActivityTemplate] = useState<string | null>(null);
   const [activityFormData, setActivityFormData] = useState<Record<string, any>>({});
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   useEffect(() => {
     setEditForm(lead);
@@ -104,6 +105,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const handleSave = () => {
     onUpdateLead(lead.id, editForm);
     setIsEditing(false);
+    setIsDialogOpen(false);
   };
 
   const handleAddNote = () => {
@@ -287,7 +289,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-medium text-gray-900">ABOUT</h4>
-              <Dialog>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <button className="text-gray-400 hover:text-gray-600">
                     <Edit2 className="w-4 h-4" />
