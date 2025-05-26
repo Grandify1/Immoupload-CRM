@@ -27,13 +27,15 @@ const CRMLayout = () => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [activityTemplates, setActivityTemplates] = useState<ActivityTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Einmaliges Laden der Daten beim Initialisieren der Komponente und bei Änderung des ausgewählten Leads/Teams
+  // Einmaliges Laden der Daten beim Initialisieren der Komponente
   useEffect(() => {
-    if (team) {
+    if (team && !isInitialized) {
       fetchData();
+      setIsInitialized(true);
     }
-  }, [team]); // Abhängigkeit zu selectedLead entfernt
+  }, [team, isInitialized]);
 
   const fetchData = async () => {
     if (!team) return;
@@ -713,9 +715,12 @@ const CRMLayout = () => {
   const updateLead = async (leadId: string, updates: Partial<Lead>) => {
     if (!team) return;
 
+    // 'activities' darf nicht in die Datenbank geschrieben werden
+    const { activities, ...updatesWithoutActivities } = updates;
+
     const { data, error } = await supabase
       .from('leads')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...updatesWithoutActivities, updated_at: new Date().toISOString() })
       .eq('id', leadId)
       .eq('team_id', team.id)
       .select()
@@ -733,11 +738,11 @@ const CRMLayout = () => {
 
     const updatedLead = data as Lead;
     setLeads(prev => prev.map(lead => 
-      lead.id === leadId ? updatedLead : lead
+      lead.id === leadId ? { ...updatedLead, activities: lead.activities } : lead
     ));
 
     if (selectedLead && selectedLead.id === leadId) {
-      setSelectedLead(updatedLead);
+      setSelectedLead({ ...updatedLead, activities: selectedLead.activities });
     }
 
     toast({
