@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   X, 
@@ -12,10 +11,12 @@ import {
   Edit2,
   Plus,
   Send,
-  DollarSign
+  DollarSign,
+  Trash2
 } from 'lucide-react';
 import { Deal, Activity } from '@/types/database';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface DealDetailProps {
   deal: Deal;
@@ -24,6 +25,7 @@ interface DealDetailProps {
   onUpdateDeal: (dealId: string, updates: Partial<Deal>) => void;
   allDeals: Deal[];
   onDealSelect: (deal: Deal) => void;
+  onDeleteActivity: (activityId: string, entityType: string, entityId: string) => void;
 }
 
 const statusColors = {
@@ -50,7 +52,8 @@ export const DealDetail: React.FC<DealDetailProps> = ({
   onAddActivity,
   onUpdateDeal,
   allDeals,
-  onDealSelect
+  onDealSelect,
+  onDeleteActivity
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState(deal);
@@ -256,6 +259,35 @@ export const DealDetail: React.FC<DealDetailProps> = ({
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Activities */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-gray-900">Activities</h4>
+          </div>
+
+          {deal.activities?.map(activity => (
+            <div key={activity.id} className="p-3 bg-gray-50 rounded-md mb-2">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs text-gray-500">
+                  {new Date(activity.created_at).toLocaleString()}
+                </span>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline">
+                    {activity.type === 'note' ? 'Notiz' : activity.type}
+                  </Badge>
+                  <button
+                    onClick={() => onDeleteActivity(activity.id, 'deal', deal.id)}
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm">{activity.content}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -15,7 +15,8 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 import { Lead, Activity, CustomField, ActivityTemplate } from '@/types/database';
 import { cn } from '@/lib/utils';
@@ -47,6 +48,7 @@ interface LeadDetailProps {
   onLeadSelect: (lead: Lead) => void;
   customFields?: CustomField[];
   activityTemplates?: ActivityTemplate[];
+  onDeleteActivity: (activityId: string, entityType: string, entityId: string) => void;
 }
 
 const statusColors = {
@@ -72,7 +74,8 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   allLeads,
   onLeadSelect,
   customFields,
-  activityTemplates
+  activityTemplates,
+  onDeleteActivity
 }) => {
   const { profile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
@@ -521,9 +524,17 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         <span className="text-xs text-gray-500">
                           {new Date(activity.created_at).toLocaleString()}
                         </span>
-                        <Badge variant="outline">
-                          {activityTitle}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline">
+                            {activityTitle}
+                          </Badge>
+                          <button
+                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       {activity.type === 'custom' ? (
                         template ? (
@@ -562,6 +573,12 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                     <span className="text-xs text-gray-500">
                       {new Date(activity.created_at).toLocaleString()}
                     </span>
+                    <button
+                      onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                   <p className="text-sm">{activity.content}</p>
                 </div>
@@ -589,9 +606,17 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         <span className="text-xs text-gray-500">
                           {new Date(activity.created_at).toLocaleString()}
                         </span>
-                        <Badge variant="outline">
-                          {activityTitle}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline">
+                            {activityTitle}
+                          </Badge>
+                          <button
+                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                       {activity.type === 'custom' ? (
                         template ? (

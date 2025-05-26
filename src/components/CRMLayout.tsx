@@ -255,6 +255,65 @@ const CRMLayout = () => {
     }
   };
 
+  const deleteActivity = async (activityId: string, entityType: 'lead' | 'deal', entityId: string) => {
+    if (!team) return;
+    
+    try {
+      const { error } = await supabase
+        .from('activities')
+        .delete()
+        .eq('id', activityId)
+        .eq('team_id', team.id);
+
+      if (error) {
+        console.error('Error deleting activity:', error);
+        toast({
+          title: "Fehler",
+          description: "Aktivität konnte nicht gelöscht werden",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Aktualisiere die lokalen Daten
+      if (entityType === 'lead') {
+        const leadIndex = leads.findIndex(l => l.id === entityId);
+        if (leadIndex !== -1) {
+          const updatedLead = { ...leads[leadIndex] };
+          updatedLead.activities = updatedLead.activities?.filter(a => a.id !== activityId) || [];
+          setLeads(prev => prev.map(l => l.id === entityId ? updatedLead : l));
+          
+          if (selectedLead && selectedLead.id === entityId) {
+            setSelectedLead(updatedLead);
+          }
+        }
+      } else if (entityType === 'deal') {
+        const dealIndex = deals.findIndex(d => d.id === entityId);
+        if (dealIndex !== -1) {
+          const updatedDeal = { ...deals[dealIndex] };
+          updatedDeal.activities = updatedDeal.activities?.filter(a => a.id !== activityId) || [];
+          setDeals(prev => prev.map(d => d.id === entityId ? updatedDeal : d));
+          
+          if (selectedDeal && selectedDeal.id === entityId) {
+            setSelectedDeal(updatedDeal);
+          }
+        }
+      }
+      
+      toast({
+        title: "Erfolg",
+        description: "Aktivität wurde erfolgreich gelöscht",
+      });
+    } catch (error) {
+      console.error('Error in deleteActivity:', error);
+      toast({
+        title: "Fehler",
+        description: "Ein unerwarteter Fehler ist aufgetreten",
+        variant: "destructive",
+      });
+    }
+  };
+
   const createLead = async (newLead: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>) => {
     if (!team) return;
 
@@ -910,6 +969,7 @@ const CRMLayout = () => {
             onLeadSelect={setSelectedLead}
             customFields={customFields}
             activityTemplates={activityTemplates}
+            onDeleteActivity={deleteActivity}
           />
         )}
 
@@ -921,6 +981,7 @@ const CRMLayout = () => {
             onUpdateDeal={updateDeal}
             allDeals={deals}
             onDealSelect={setSelectedDeal}
+            onDeleteActivity={deleteActivity}
           />
         )}
       </div>
