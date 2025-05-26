@@ -796,9 +796,14 @@ const CRMLayout = () => {
       // 2. Aktualisiere den Lead-Status
 
       // Berechne den Initialwert des Deals basierend auf Lead-Daten
-      // Dies könnte in einer realen Anwendung auf benutzerdefinierten Feldern oder anderen Faktoren basieren
       const initialValue = lead.custom_fields?.estimated_value ? 
         parseFloat(lead.custom_fields.estimated_value as string) : 0;
+
+      // Hole die aktuelle Benutzer-ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Kein Benutzer gefunden');
+      }
 
       // Erstelle den Deal mit Daten aus dem Lead
       const { data: dealData, error: dealError } = await supabase
@@ -809,7 +814,7 @@ const CRMLayout = () => {
           status: 'lead', // Anfänglicher Status für neue Deals
           value: initialValue,
           lead_id: lead.id,
-          owner_id: lead.owner_id || team.id, // Fallback auf Team-ID, wenn kein Besitzer
+          owner_id: user.id, // Verwende die ID des aktuellen Benutzers
           custom_fields: {
             ...lead.custom_fields,
             converted_from_lead: true,
@@ -850,7 +855,7 @@ const CRMLayout = () => {
       await addActivity('lead', lead.id, {
         type: 'note',
         content: `Lead wurde in Deal konvertiert: ${dealData.id}`,
-        author_id: '00000000-0000-0000-0000-000000000000',
+        author_id: user.id, // Verwende die ID des aktuellen Benutzers
         entity_type: 'lead',
         entity_id: lead.id,
         template_data: {}
