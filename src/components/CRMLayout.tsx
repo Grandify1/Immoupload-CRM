@@ -33,7 +33,7 @@ const CRMLayout = () => {
     if (team) {
       fetchData();
     }
-  }, [team, selectedLead]); // Abhängigkeit zu selectedLead hinzugefügt
+  }, [team]); // Abhängigkeit zu selectedLead entfernt
 
   const fetchData = async () => {
     if (!team) return;
