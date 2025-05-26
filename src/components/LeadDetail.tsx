@@ -138,6 +138,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     
     setSelectedActivityTemplate(null);
     setActivityFormData({});
+    setActiveTab('all');
   };
   
   const formatUrlAsLink = (url: string) => {

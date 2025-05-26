@@ -217,6 +217,8 @@ const CRMLayout = () => {
           // Sicherstellen, dass activities ein Array ist
           const currentActivities = Array.isArray(updatedLead.activities) ? updatedLead.activities : [];
           updatedLead.activities = [...currentActivities, data as Activity];
+          // Sortiere Aktivitäten nach Erstellungsdatum (neueste zuerst) nach dem Hinzufügen
+          updatedLead.activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           setLeads(prev => prev.map(l => l.id === entityId ? updatedLead : l));
           
           if (selectedLead && selectedLead.id === entityId) {
@@ -230,6 +232,8 @@ const CRMLayout = () => {
           // Sicherstellen, dass activities ein Array ist
           const currentActivities = Array.isArray(updatedDeal.activities) ? updatedDeal.activities : [];
           updatedDeal.activities = [...currentActivities, data as Activity];
+          // Sortiere Aktivitäten nach Erstellungsdatum (neueste zuerst) nach dem Hinzufügen
+          updatedDeal.activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           setDeals(prev => prev.map(d => d.id === entityId ? updatedDeal : d));
           
           if (selectedDeal && selectedDeal.id === entityId) {
