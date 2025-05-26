@@ -40,41 +40,73 @@ const CRMLayout = () => {
     
     setLoading(true);
     try {
+      // Gleichzeitiges Abrufen von Leads und Aktivitäten
+      const [leadsDataResult, activitiesDataResult] = await Promise.all([
+        supabase.from('leads').select('*').eq('team_id', team.id).order('updated_at', { ascending: false }),
+        supabase.from('activities').select('*').eq('team_id', team.id).order('created_at', { ascending: false })
+      ]);
+
+      // Fehlerbehandlung für Leads
+      if (leadsDataResult.error) {
+        console.error(`Error fetching leads: ${leadsDataResult.error.message}`, leadsDataResult.error);
+        toast({
+          title: "Error",
+          description: "Failed to load leads",
+          variant: "destructive",
+        });
+        // Fortfahren mit leeren Leads, um andere Daten zu laden
+        leadsDataResult.data = [];
+      }
+
+       // Fehlerbehandlung für Aktivitäten
+      if (activitiesDataResult.error) {
+        console.error(`Error fetching activities: ${activitiesDataResult.error.message}`, activitiesDataResult.error);
+        toast({
+          title: "Error",
+          description: "Failed to load activities",
+          variant: "destructive",
+        });
+        // Fortfahren mit leeren Aktivitäten
+        activitiesDataResult.data = [];
+      }
+
+      const leads = (leadsDataResult.data || []) as Lead[];
+      const activities = (activitiesDataResult.data || []) as Activity[];
+
+      // Aktivitäten den Leads zuordnen
+      const leadsWithActivities = leads.map(lead => {
+        const relatedActivities = activities.filter(activity => 
+          activity.entity_type === 'lead' && activity.entity_id === lead.id
+        );
+        // Sortiere Aktivitäten nach Erstellungsdatum (neueste zuerst)
+        relatedActivities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return {
+          ...lead,
+          activities: relatedActivities // Activities Feld zum Lead hinzufügen
+        };
+      });
+
+      // Zustände aktualisieren
+      setLeads(leadsWithActivities);
+
+      // Weitere Fetches, die nicht direkt mit Leads/Aktivitäten verknüpft sind
       await Promise.all([
-        fetchLeads(),
         fetchDeals(),
         fetchSavedFilters(),
         fetchCustomFields(),
         fetchActivityTemplates()
       ]);
+
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('An unexpected error occurred in fetchData:', error);
       toast({
         title: "Error",
-        description: "Failed to load data",
+        description: "An unexpected error occurred while loading data",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchLeads = async () => {
-    if (!team) return;
-    
-    const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('team_id', team.id)
-      .order('updated_at', { ascending: false });
-
-    if (error) {
-      console.error(`Error fetching leads: ${error.message}`, error);
-      return;
-    }
-
-    // Cast the data to proper Lead type
-    setLeads((data || []) as Lead[]);
   };
 
   const fetchDeals = async () => {
@@ -814,7 +846,7 @@ const CRMLayout = () => {
             filters={currentFilters}
             onLeadSelect={setSelectedLead}
             onLeadUpdate={updateLead}
-            onRefresh={fetchLeads}
+            onRefresh={fetchData}
             onCreateLead={createLead}
             onImportLeads={importLeads}
             onAddCustomField={addCustomField}
