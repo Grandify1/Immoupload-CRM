@@ -105,6 +105,21 @@ export type Database = {
           },
         ]
       }
+      allowed_deal_statuses: {
+        Row: {
+          id: number
+          status: string
+        }
+        Insert: {
+          id?: never
+          status: string
+        }
+        Update: {
+          id?: never
+          status?: string
+        }
+        Relationships: []
+      }
       custom_fields: {
         Row: {
           created_at: string

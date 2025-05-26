@@ -19,7 +19,7 @@ export interface Deal {
   id: string;
   team_id: string;
   name: string;
-  status: 'lead' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost';
+  status: string;
   value: number;
   expected_close_date?: string;
   lead_id?: string;

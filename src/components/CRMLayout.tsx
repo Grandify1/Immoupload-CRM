@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Sidebar } from './Sidebar';
 import { LeadsView } from './LeadsView';
 import { OpportunitiesView } from './OpportunitiesView';
@@ -18,7 +18,8 @@ const CRMLayout = () => {
   const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings'>('leads');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
-  const [view, setView] = useState<'table' | 'kanban'>('table');
+  const [leadsView, setLeadsView] = useState<'table' | 'kanban'>('table');
+  const [opportunitiesView, setOpportunitiesView] = useState<'table' | 'kanban'>('kanban');
   const [currentFilters, setCurrentFilters] = useState<Record<string, any>>({});
   
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -26,20 +27,31 @@ const CRMLayout = () => {
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [activityTemplates, setActivityTemplates] = useState<ActivityTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
 
   // Einmaliges Laden der Daten beim Initialisieren der Komponente
   useEffect(() => {
-    if (team && !isInitialized) {
+    if (team) {
+      console.log('CRMLayout: Initial fetchData call');
       fetchData();
-      setIsInitialized(true);
     }
-  }, [team, isInitialized]);
+  }, [team]);
 
   const fetchData = async () => {
-    if (!team) return;
+    if (!team) {
+      console.log('fetchData: No team available, returning.');
+      return;
+    }
+
+    // Fetch-Prevention: Verhindert parallele Fetches
+    if (isFetching) {
+      console.log('fetchData: Already fetching, skipping duplicate call');
+      return;
+    }
     
+    console.log('fetchData: Starting data fetch...');
+    setIsFetching(true);
     setLoading(true);
     try {
       // Gleichzeitiges Abrufen von Leads und Aktivitäten
@@ -107,13 +119,20 @@ const CRMLayout = () => {
         variant: "destructive",
       });
     } finally {
+      console.log('fetchData: Finished data fetch.');
       setLoading(false);
+      setIsFetching(false);
     }
   };
 
   const fetchDeals = async () => {
-    if (!team) return;
+    if (!team) {
+      console.log('fetchDeals: No team available, returning.');
+      return;
+    }
     
+    console.log('fetchDeals: Starting deals fetch...');
+    setLoading(true);
     const { data, error } = await supabase
       .from('deals')
       .select('*')
@@ -130,7 +149,10 @@ const CRMLayout = () => {
   };
 
   const fetchSavedFilters = async () => {
-    if (!team) return;
+    if (!team) {
+      console.log('fetchSavedFilters: No team available, returning.');
+      return;
+    }
     
     const { data, error } = await supabase
       .from('saved_filters')
@@ -811,7 +833,7 @@ const CRMLayout = () => {
         .insert({
           team_id: team.id,
           name: lead.name,
-          status: 'lead', // Anfänglicher Status für neue Deals
+          status: 'meeting_booked', // Setze den initialen Status auf 'Meeting Booked'
           value: initialValue,
           lead_id: lead.id,
           owner_id: user.id, // Verwende die ID des aktuellen Benutzers
@@ -829,6 +851,31 @@ const CRMLayout = () => {
       if (dealError) {
         console.error('Error creating deal:', dealError);
         throw dealError;
+      }
+
+      // Kopiere Aktivitäten vom Lead zum Deal
+      if (lead.activities && lead.activities.length > 0) {
+        const activitiesToCopy = lead.activities.map(activity => ({
+          team_id: team.id,
+          entity_type: 'deal' as 'lead' | 'deal', // Setze entity_type auf 'deal'
+          entity_id: dealData.id, // Setze entity_id auf die ID des neuen Deals
+          type: activity.type,
+          title: activity.title,
+          content: activity.content,
+          template_id: activity.template_id,
+          template_data: activity.template_data,
+          author_id: activity.author_id,
+          created_at: activity.created_at // Behalte den ursprünglichen Erstellungszeitpunkt bei
+        }));
+
+        const { error: activitiesError } = await supabase
+          .from('activities')
+          .insert(activitiesToCopy);
+
+        if (activitiesError) {
+          console.error('Error copying activities to deal:', activitiesError);
+          // Wir werfen keinen Fehler, da die Konvertierung des Deals trotzdem erfolgreich war
+        }
       }
 
       // Aktualisiere den Lead-Status auf 'qualified' und füge einen Verweis auf den Deal hinzu
@@ -861,8 +908,8 @@ const CRMLayout = () => {
         template_data: {}
       });
 
-      // Aktualisiere den lokalen Zustand
-      const newDeal = dealData as Deal;
+      // Aktualisiere den lokalen Zustand für Deals und füge die kopierten Aktivitäten hinzu
+      const newDeal = { ...dealData, activities: lead.activities || [] } as Deal;
       setDeals(prev => [newDeal, ...prev]);
       
       // Aktualisiere den Lead im lokalen Zustand
@@ -900,6 +947,42 @@ const CRMLayout = () => {
     }
   };
 
+  const importDeals = async (dealsToImport: Omit<Deal, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => {
+    if (!team) return;
+    try {
+      const dealsWithTeamId = dealsToImport.map(deal => ({
+        ...deal,
+        team_id: team.id
+      }));
+      const { data, error } = await supabase
+        .from('deals')
+        .insert(dealsWithTeamId)
+        .select();
+      if (error) {
+        console.error('Error importing deals:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to import deals',
+          variant: 'destructive',
+        });
+        return;
+      }
+      const importedDeals = data as Deal[];
+      setDeals(prev => [...importedDeals, ...prev]);
+      toast({
+        title: 'Success',
+        description: `${importedDeals.length} deals imported successfully`,
+      });
+    } catch (error) {
+      console.error('Error in importDeals:', error);
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred during import',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -914,8 +997,8 @@ const CRMLayout = () => {
         return (
           <LeadsView
             leads={leads}
-            view={view}
-            onViewChange={setView}
+            view={leadsView}
+            onViewChange={setLeadsView}
             filters={currentFilters}
             onLeadSelect={setSelectedLead}
             onLeadUpdate={updateLead}
@@ -930,12 +1013,14 @@ const CRMLayout = () => {
         return (
           <OpportunitiesView
             deals={deals}
-            view={view}
-            onViewChange={setView}
-            filters={currentFilters}
+            view={opportunitiesView}
+            onViewChange={setOpportunitiesView}
             onDealSelect={setSelectedDeal}
             onDealUpdate={updateDeal}
             onRefresh={fetchDeals}
+            onImportDeals={importDeals}
+            onAddCustomField={addCustomField}
+            customFields={customFields}
           />
         );
       case 'reports':

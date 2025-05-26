@@ -9,6 +9,9 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Save, MoveVertical, Edit, Check } from 'lucide-react';
 import { CustomField, ActivityTemplate } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import SalesPipelineSettings from './settings/SalesPipelineSettings';
 
 interface SettingsViewProps {
   customFields: CustomField[];
@@ -37,6 +40,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [leadCustomFields, setLeadCustomFields] = useState<CustomField[]>([]);
   const [dealCustomFields, setDealCustomFields] = useState<CustomField[]>([]);
   const [templates, setTemplates] = useState<ActivityTemplate[]>([]);
+  const { toast } = useToast();
   
   // Neue Feld-/Template-Formulare
   const [newFieldForm, setNewFieldForm] = useState({
@@ -226,6 +230,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <TabsList className="mb-4">
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="activity-templates">Activity Templates</TabsTrigger>
+          <TabsTrigger value="sales-pipeline">Sales Pipeline</TabsTrigger>
           <TabsTrigger value="general">General Settings</TabsTrigger>
         </TabsList>
         
@@ -635,6 +640,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        {/* Sales Pipeline Tab */}
+        <TabsContent value="sales-pipeline">
+          <SalesPipelineSettings />
         </TabsContent>
         
         {/* General Settings Tab */}
