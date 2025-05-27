@@ -622,9 +622,20 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       if (jobError) {
         console.error('❌ CRITICAL: Failed to create import job:', jobError);
-        setError(`Import-Job Fehler: ${jobError.message}`);
-        setStep('preview');
-        return;
+        console.error('Job error details:', jobError.details);
+        console.error('Job error hint:', jobError.hint);
+        console.error('Job error code:', jobError.code);
+        
+        // If table doesn't exist, proceed with import but warn user
+        if (jobError.code === 'PGRST204' || jobError.code === '42P01') {
+          console.warn('⚠️ Import jobs table not found, proceeding without tracking...');
+          setError('Warnung: Import-Tracking nicht verfügbar, aber Import wird fortgesetzt...');
+          // Continue with import but skip job tracking
+        } else {
+          setError(`Import-Job Fehler: ${jobError.message}`);
+          setStep('preview');
+          return;
+        }
       }
 
       if (!importJob) {
@@ -678,29 +689,33 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       setImportProgress(90);
 
-      // Update import job status
-      console.log('=== UPDATING IMPORT JOB STATUS ===');
-      const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
-      const updateData = {
-        processed_records: processedCount,
-        failed_records: failedCount,
-        status: finalStatus,
-        error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
-        updated_at: new Date().toISOString()
-      };
+      // Update import job status (only if job was created successfully)
+      if (importJob?.id) {
+        console.log('=== UPDATING IMPORT JOB STATUS ===');
+        const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
+        const updateData = {
+          processed_records: processedCount,
+          failed_records: failedCount,
+          status: finalStatus,
+          error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
+          updated_at: new Date().toISOString()
+        };
 
-      console.log('Updating import job with:', updateData);
+        console.log('Updating import job with:', updateData);
 
-      const { error: updateError } = await supabase
-        .from('import_jobs')
-        .update(updateData)
-        .eq('id', importJob.id);
+        const { error: updateError } = await supabase
+          .from('import_jobs')
+          .update(updateData)
+          .eq('id', importJob.id);
 
-      if (updateError) {
-        console.error('❌ Failed to update import job status:', updateError);
-        // Don't fail the import, just log the error
+        if (updateError) {
+          console.error('❌ Failed to update import job status:', updateError);
+          // Don't fail the import, just log the error
+        } else {
+          console.log('✅ Import job status updated successfully');
+        }
       } else {
-        console.log('✅ Import job status updated successfully');
+        console.log('⚠️ Skipping import job status update - no job ID available');
       }
 
       setImportProgress(100);
