@@ -1,0 +1,198 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:38 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:39 All customFields received: Array(20)
+CSVImport.tsx:40 customFields is array? true
+CSVImport.tsx:41 customFields length: 20
+CSVImport.tsx:44 Lead custom fields: Array(20)
+CSVImport.tsx:45 First custom field example: Object
+CSVImport.tsx:49 Custom Field 0: Object
+CSVImport.tsx:49 Custom Field 1: Object
+CSVImport.tsx:49 Custom Field 2: Object
+CSVImport.tsx:49 Custom Field 3: Object
+CSVImport.tsx:49 Custom Field 4: Object
+CSVImport.tsx:49 Custom Field 5: Object
+CSVImport.tsx:49 Custom Field 6: Object
+CSVImport.tsx:49 Custom Field 7: Object
+CSVImport.tsx:49 Custom Field 8: Object
+CSVImport.tsx:49 Custom Field 9: Object
+CSVImport.tsx:49 Custom Field 10: Object
+CSVImport.tsx:49 Custom Field 11: Object
+CSVImport.tsx:49 Custom Field 12: Object
+CSVImport.tsx:49 Custom Field 13: Object
+CSVImport.tsx:49 Custom Field 14: Object
+CSVImport.tsx:49 Custom Field 15: Object
+CSVImport.tsx:49 Custom Field 16: Object
+CSVImport.tsx:49 Custom Field 17: Object
+CSVImport.tsx:49 Custom Field 18: Object
+CSVImport.tsx:49 Custom Field 19: Object
+CSVImport.tsx:81 === End Custom Fields Debug ===
+CSVImport.tsx:179 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:199 CSV quote character detected: "
+CSVImport.tsx:296 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:297 Headers detected: Array(22)
+CSVImport.tsx:322 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:378 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:378 Auto-mapped "name" to "name"
+CSVImport.tsx:378 Auto-mapped "description" to "description"
+CSVImport.tsx:378 Auto-mapped "is_spending_on_ads" to "is_spending_on_ads"
+CSVImport.tsx:378 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:378 Auto-mapped "rating" to "rating"
+CSVImport.tsx:378 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:378 Auto-mapped "website" to "website"
+CSVImport.tsx:378 Auto-mapped "phone" to "phone"
+CSVImport.tsx:378 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:378 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:378 Auto-mapped "owner_profile_link" to "owner_profile_link"
+CSVImport.tsx:378 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:378 Auto-mapped "main_category" to "main_category"
+CSVImport.tsx:378 Auto-mapped "categories" to "categories"
+CSVImport.tsx:378 Auto-mapped "workday_timing" to "workday_timing"
+CSVImport.tsx:378 Auto-mapped "is_temporarily_closed" to "is_temporarily_closed"
+CSVImport.tsx:378 Auto-mapped "closed_on" to "closed_on"
+CSVImport.tsx:378 Auto-mapped "address" to "address"
+CSVImport.tsx:378 Auto-mapped "review_keywords" to "review_keywords"
+CSVImport.tsx:408 No auto-mapping found for "link"
+CSVImport.tsx:378 Auto-mapped "query" to "query"
+CSVImport.tsx:481 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:493 CSV data rows: 9
+CSVImport.tsx:494 Mappings: Array(22)
+CSVImport.tsx:497 === GETTING USER INFO ===
+CSVImport.tsx:513 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:536 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:540 Custom fields to create: Array(0)
+CSVImport.tsx:555 === PROCESSING CSV DATA ===
+CSVImport.tsx:599 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:606 Sample lead: Object
+CSVImport.tsx:610 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:627 Import job data: Object
+CSVImport.tsx:650 ✅ Import job created with ID: df83f449-497b-449b-8073-d39f6bbd6304
+CSVImport.tsx:660 === STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===
+CSVImport.tsx:661 Duplicate Detection Config: Object
+CSVImport.tsx:662 Detection Field: none
+CSVImport.tsx:663 Detection Action: update
+CSVImport.tsx:677 === PROCESSING BATCH 1/1 (9 leads) ===
+CSVImport.tsx:682 
+📋 Processing lead: "Bergen Real Estate (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Bergen Real Estate (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Bergen Real Estate (Pemilik)": Objectcode: "23505"details: "Key (name)=(Bergen Real Estate (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(Bergen Real Estate (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "BSK Immobilien GmbH (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "BSK Immobilien GmbH (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "BSK Immobilien GmbH (Pemilik)": Objectcode: "23505"details: "Key (name)=(BSK Immobilien GmbH (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(BSK Immobilien GmbH (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "Mein Makler Berlin-Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Mein Makler Berlin-Spandau (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Mein Makler Berlin-Spandau (Pemilik)": Objectcode: "23505"details: "Key (name)=(Mein Makler Berlin-Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(Mein Makler Berlin-Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)": Objectcode: "23505"details: "Key (name)=(Hesse Immobilien - Immobilienmakler Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(Hesse Immobilien - Immobilienmakler Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Melde Immobilien - Immobilienmakler Spandau (Pemilik)": Objectcode: "23505"details: "Key (name)=(Melde Immobilien - Immobilienmakler Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(Melde Immobilien - Immobilienmakler Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)": Objectcode: "23505"details: "Key (name)=(OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "Top-Immobilien GmbH (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Top-Immobilien GmbH (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Top-Immobilien GmbH (Pemilik)": Objectcode: "23505"details: "Key (name)=(Top-Immobilien GmbH (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(Top-Immobilien GmbH (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)": Objectcode: "23505"details: "Key (name)=(Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Objectcode: "23505"details: "Key (name)=(Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)) already exists."hint: nullmessage: "duplicate key value violates unique constraint \"leads_name_unique\""[[Prototype]]: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:682 
+📋 Processing lead: "Neumann Immobilien (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Object
+CSVImport.tsx:832 📝 INSERTING NEW LEAD: "Neumann Immobilien (Pemilik)" from CSV (no duplicates found)
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id%2Cname:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:841 ❌ Error inserting lead "Neumann Immobilien (Pemilik)": Object
+handleImport @ CSVImport.tsx:841
+CSVImport.tsx:842 Full error details: Object
+handleImport @ CSVImport.tsx:842
+CSVImport.tsx:886 === UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===
+CSVImport.tsx:887 Final status: completed_with_errors
+CSVImport.tsx:888 Processed records: 0
+CSVImport.tsx:889 Failed records: 9
+CSVImport.tsx:912 ✅ Import job status updated successfully in Supabase
+CSVImport.tsx:923 === IMPORT COMPLETE ===
+CSVImport.tsx:924 Final result: ❌ Import fehlgeschlagen: 9 Leads konnten nicht verarbeitet werden, 0 Duplikate übersprungen.
