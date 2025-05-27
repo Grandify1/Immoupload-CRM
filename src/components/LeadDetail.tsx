@@ -87,6 +87,11 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
   // State for the new custom field modal
   const [showAddCustomFieldModal, setShowAddCustomFieldModal] = useState(false);
+
+  // State for custom activity modal
+  const [showCustomActivityModal, setShowCustomActivityModal] = useState(false);
+  const [selectedActivityTemplate, setSelectedActivityTemplate] = useState<ActivityTemplate | null>(null);
+  const [activityResponses, setActivityResponses] = useState<Record<string, string>>({});
   const [newCustomField, setNewCustomField] = useState<{
     name: string;
     field_type: 'text' | 'number' | 'date' | 'select' | 'checkbox';
@@ -184,6 +189,55 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     }
   };
 
+  const handleOpenActivityModal = () => {
+    setShowCustomActivityModal(true);
+  };
+
+  const handleSelectActivityTemplate = (template: ActivityTemplate) => {
+    setSelectedActivityTemplate(template);
+    setActivityResponses({});
+  };
+
+  const handleActivityResponseChange = (questionId: string, value: string) => {
+    setActivityResponses(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  const handleSubmitCustomActivity = () => {
+    if (!selectedActivityTemplate || !profile) return;
+
+    const templateData = {
+      template_id: selectedActivityTemplate.id,
+      template_name: selectedActivityTemplate.name,
+      questions: selectedActivityTemplate.questions || [],
+      responses: activityResponses
+    };
+
+    // Create content for the activity
+    const content = `${selectedActivityTemplate.name}\n\n${Object.entries(activityResponses)
+      .map(([questionId, answer]) => {
+        const question = (selectedActivityTemplate.questions || []).find(q => q.id === questionId);
+        return `${question?.text || 'Question'}: ${answer}`;
+      })
+      .join('\n')}`;
+
+    onAddActivity({
+      entity_type: 'lead',
+      entity_id: lead.id,
+      type: 'custom_activity',
+      content: content,
+      author_id: profile.id,
+      template_data: templateData
+    });
+
+    // Reset state
+    setSelectedActivityTemplate(null);
+    setActivityResponses({});
+    setShowCustomActivityModal(false);
+  };
+
   return (
     <div 
       className={`fixed inset-y-0 right-0 z-40 w-[800px] bg-white shadow-lg flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
@@ -229,7 +283,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               <Phone className="w-4 h-4 mr-1" />
               Call
             </Button>
-            <Button size="sm" variant="outline" className="border-gray-300">
+            <Button size="sm" variant="outline" className="border-gray-300" onClick={handleOpenActivityModal}>
               Activity
             </Button>
           </div>
@@ -548,18 +602,43 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
                               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                <StickyNote className="w-4 h-4 text-gray-600" />
+                                {activity.type === 'custom_activity' ? (
+                                  <Briefcase className="w-4 h-4 text-gray-600" />
+                                ) : (
+                                  <StickyNote className="w-4 h-4 text-gray-600" />
+                                )}
                               </div>
                               <div>
-                                <div className="text-sm font-medium text-gray-900 capitalize">
-                                  {activity.type}
+                                <div className="text-sm font-medium text-gray-900">
+                                  {activity.type === 'custom_activity' && activity.template_data?.template_name 
+                                    ? activity.template_data.template_name 
+                                    : activity.type.charAt(0).toUpperCase() + activity.type.slice(1).replace('_', ' ')
+                                  }
                                 </div>
                                 <div className="text-xs text-gray-500">
                                   {new Date(activity.created_at).toLocaleString()}
                                 </div>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-800 ml-10">{activity.content}</p>
+                            <div className="ml-10">
+                              {activity.type === 'custom_activity' && activity.template_data?.responses ? (
+                                <div className="space-y-2">
+                                  {Object.entries(activity.template_data.responses).map(([questionId, answer]) => {
+                                    const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
+                                    return (
+                                      <div key={questionId} className="text-sm">
+                                        <span className="font-medium text-gray-700">
+                                          {question?.text || 'Question'}:
+                                        </span>
+                                        <span className="text-gray-800 ml-2">{String(answer)}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-800">{activity.content}</p>
+                              )}
+                            </div>
                           </div>
                           <Button 
                             variant="ghost" 
@@ -674,6 +753,172 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             <Button onClick={handleCreateCustomField} disabled={!newCustomField.name || (newCustomField.field_type === 'select' && newCustomField.options.length === 0)}>
               Create Field
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Activity Modal */}
+      <Dialog open={showCustomActivityModal} onOpenChange={setShowCustomActivityModal}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Custom Activity</DialogTitle>
+            <DialogDescription>
+              Select an activity template and fill in the details.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!selectedActivityTemplate ? (
+            // Template Selection
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Select Activity Template</h3>
+              <div className="grid gap-3">
+                {activityTemplates && activityTemplates.length > 0 ? (
+                  activityTemplates.map((template) => (
+                    <Card 
+                      key={template.id} 
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => handleSelectActivityTemplate(template)}
+                    >
+                      <CardContent className="p-4">
+                        <h4 className="font-medium text-gray-900">{template.name}</h4>
+                        {template.description && (
+                          <p className="text-sm text-gray-600 mt-1">{template.description}</p>
+                        )}
+                        <div className="text-xs text-gray-500 mt-2">
+                          {template.questions?.length || 0} questions
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Briefcase className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No activity templates available.</p>
+                    <p className="text-sm">Create templates in the Settings section.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Template Form
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">{selectedActivityTemplate.name}</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setSelectedActivityTemplate(null)}
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180" />
+                  Back
+                </Button>
+              </div>
+              
+              {selectedActivityTemplate.description && (
+                <p className="text-gray-600">{selectedActivityTemplate.description}</p>
+              )}
+
+              <div className="space-y-4">
+                {selectedActivityTemplate.questions && selectedActivityTemplate.questions.map((question) => (
+                  <div key={question.id} className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      {question.text}
+                      {question.required && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    
+                    {question.type === 'text' && (
+                      <Input
+                        value={activityResponses[question.id] || ''}
+                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
+                        placeholder={question.placeholder || 'Enter your answer...'}
+                      />
+                    )}
+                    
+                    {question.type === 'textarea' && (
+                      <Textarea
+                        value={activityResponses[question.id] || ''}
+                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
+                        placeholder={question.placeholder || 'Enter your answer...'}
+                        rows={3}
+                      />
+                    )}
+                    
+                    {question.type === 'select' && (
+                      <Select
+                        value={activityResponses[question.id] || ''}
+                        onValueChange={(value) => handleActivityResponseChange(question.id, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={question.placeholder || 'Select an option...'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {question.options?.map((option, index) => (
+                            <SelectItem key={index} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    
+                    {question.type === 'number' && (
+                      <Input
+                        type="number"
+                        value={activityResponses[question.id] || ''}
+                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
+                        placeholder={question.placeholder || 'Enter a number...'}
+                      />
+                    )}
+                    
+                    {question.type === 'date' && (
+                      <Input
+                        type="date"
+                        value={activityResponses[question.id] || ''}
+                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
+                      />
+                    )}
+                    
+                    {question.type === 'checkbox' && (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={question.id}
+                          checked={activityResponses[question.id] === 'true'}
+                          onCheckedChange={(checked) => 
+                            handleActivityResponseChange(question.id, checked ? 'true' : 'false')
+                          }
+                        />
+                        <Label htmlFor={question.id} className="text-sm">
+                          {question.placeholder || 'Check if applicable'}
+                        </Label>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowCustomActivityModal(false);
+              setSelectedActivityTemplate(null);
+              setActivityResponses({});
+            }}>
+              Cancel
+            </Button>
+            {selectedActivityTemplate && (
+              <Button 
+                onClick={handleSubmitCustomActivity}
+                disabled={
+                  !selectedActivityTemplate.questions ||
+                  selectedActivityTemplate.questions.some(q => 
+                    q.required && !activityResponses[q.id]
+                  )
+                }
+              >
+                Submit Activity
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
