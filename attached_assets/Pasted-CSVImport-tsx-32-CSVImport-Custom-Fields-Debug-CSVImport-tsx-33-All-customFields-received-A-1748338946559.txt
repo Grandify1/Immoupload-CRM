@@ -1,0 +1,115 @@
+CSVImport.tsx:32 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:33 All customFields received: Array(20)
+CSVImport.tsx:34 customFields is array? true
+CSVImport.tsx:35 customFields length: 20
+CSVImport.tsx:38 Lead custom fields: Array(20)
+CSVImport.tsx:39 First custom field example: Object
+CSVImport.tsx:43 Custom Field 0: Object
+CSVImport.tsx:43 Custom Field 1: Object
+CSVImport.tsx:43 Custom Field 2: Object
+CSVImport.tsx:43 Custom Field 3: Object
+CSVImport.tsx:43 Custom Field 4: Object
+CSVImport.tsx:43 Custom Field 5: Object
+CSVImport.tsx:43 Custom Field 6: Object
+CSVImport.tsx:43 Custom Field 7: Object
+CSVImport.tsx:43 Custom Field 8: Object
+CSVImport.tsx:43 Custom Field 9: Object
+CSVImport.tsx:43 Custom Field 10: Object
+CSVImport.tsx:43 Custom Field 11: Object
+CSVImport.tsx:43 Custom Field 12: Object
+CSVImport.tsx:43 Custom Field 13: Object
+CSVImport.tsx:43 Custom Field 14: Object
+CSVImport.tsx:43 Custom Field 15: Object
+CSVImport.tsx:43 Custom Field 16: Object
+CSVImport.tsx:43 Custom Field 17: Object
+CSVImport.tsx:43 Custom Field 18: Object
+CSVImport.tsx:43 Custom Field 19: Object
+CSVImport.tsx:75 === End Custom Fields Debug ===
+@radix-ui_react-dialog.js?v=723853c6:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ @radix-ui_react-dialog.js?v=723853c6:336
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=723853c6:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=723853c6:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=723853c6:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=723853c6:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=723853c6:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=723853c6:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=723853c6:19447
+commitRootImpl @ chunk-FJ2A54M7.js?v=723853c6:19416
+commitRoot @ chunk-FJ2A54M7.js?v=723853c6:19277
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=723853c6:18895
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=723853c6:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=723853c6:18627
+Show 13 more frames
+Show less
+CSVImport.tsx:165 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:185 CSV quote character detected: "
+CSVImport.tsx:282 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:283 Headers detected: Array(22)
+CSVImport.tsx:308 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:356 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:356 Auto-mapped "name" to "name"
+CSVImport.tsx:356 Auto-mapped "description" to "description"
+CSVImport.tsx:376 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:356 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:356 Auto-mapped "rating" to "rating"
+CSVImport.tsx:356 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:356 Auto-mapped "website" to "website"
+CSVImport.tsx:356 Auto-mapped "phone" to "phone"
+CSVImport.tsx:356 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:356 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:356 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:356 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:376 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:376 Exact match found for "categories" -> "categories"
+CSVImport.tsx:376 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:376 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:376 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:356 Auto-mapped "address" to "address"
+CSVImport.tsx:376 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:356 Auto-mapped "link" to "website"
+CSVImport.tsx:376 Exact match found for "query" -> "query"
+CSVImport.tsx:454 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:466 CSV data rows: 9
+CSVImport.tsx:467 Mappings: Array(22)
+CSVImport.tsx:470 === GETTING USER INFO ===
+CSVImport.tsx:486 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:509 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:513 Custom fields to create: Array(0)
+CSVImport.tsx:528 === PROCESSING CSV DATA ===
+CSVImport.tsx:571 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:578 Sample lead: Object
+CSVImport.tsx:582 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:599 Import job data: Object
+CSVImport.tsx:622 ✅ Import job created with ID: 0960e93d-9a3b-4a8f-8da9-c6726a59dfca
+CSVImport.tsx:632 === STARTING LEAD IMPORT ===
+CSVImport.tsx:645 === INSERTING BATCH 1/1 (9 leads) TO SUPABASE ===
+@supabase_supabase-js.js?v=723853c6:3900 
+        
+        
+       POST https://eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22&select=id 400 (Bad Request)
+(anonymous) @ @supabase_supabase-js.js?v=723853c6:3900
+(anonymous) @ @supabase_supabase-js.js?v=723853c6:3921
+fulfilled @ @supabase_supabase-js.js?v=723853c6:3873
+Promise.then (async)
+step @ @supabase_supabase-js.js?v=723853c6:3886
+(anonymous) @ @supabase_supabase-js.js?v=723853c6:3888
+__awaiter6 @ @supabase_supabase-js.js?v=723853c6:3870
+(anonymous) @ @supabase_supabase-js.js?v=723853c6:3911
+then @ @supabase_supabase-js.js?v=723853c6:89
+Show 8 more frames
+Show less
+CSVImport.tsx:653 ❌ Supabase error inserting batch 1: {code: '23502', details: 'Failing row contains (adcf80d2-f6a0-4737-b1ea-4527….757869+00, 2025-05-27 09:41:46.757869+00, null).', hint: null, message: 'null value in column "team_id" of relation "leads" violates not-null constraint'}code: "23502"details: "Failing row contains (adcf80d2-f6a0-4737-b1ea-4527d30d67a6, null, Bergen Real Estate (Pemilik), potential, null, +49 30 84319777, https://www.google.com/maps/place/Bergen+Real+Estate/data=!4m7!3..., Meinekestrasse 8, 10719 Berlin, Jerman, Wir verkaufen Ihre Immobilie. Bergen Real Estate - Ihr Immobilie..., null, {\"query\": \"immobilienmakler berlin spandau\", \"rating\": \"5\", \"rev..., 2025-05-27 09:41:46.757869+00, 2025-05-27 09:41:46.757869+00, null)."hint: nullmessage: "null value in column \"team_id\" of relation \"leads\" violates not-null constraint"[[Prototype]]: Object
+handleImport @ CSVImport.tsx:653
+CSVImport.tsx:654 Error details: Failing row contains (adcf80d2-f6a0-4737-b1ea-4527d30d67a6, null, Bergen Real Estate (Pemilik), potential, null, +49 30 84319777, https://www.google.com/maps/place/Bergen+Real+Estate/data=!4m7!3..., Meinekestrasse 8, 10719 Berlin, Jerman, Wir verkaufen Ihre Immobilie. Bergen Real Estate - Ihr Immobilie..., null, {"query": "immobilienmakler berlin spandau", "rating": "5", "rev..., 2025-05-27 09:41:46.757869+00, 2025-05-27 09:41:46.757869+00, null).
+handleImport @ CSVImport.tsx:654
+CSVImport.tsx:655 Error hint: null
+handleImport @ CSVImport.tsx:655
+CSVImport.tsx:656 Error code: 23502
+handleImport @ CSVImport.tsx:656
+CSVImport.tsx:694 === UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===
+CSVImport.tsx:695 Final status: completed_with_errors
+CSVImport.tsx:696 Processed records: 0
+CSVImport.tsx:697 Failed records: 9
+CSVImport.tsx:713 ✅ Import job status updated successfully in Supabase
+CSVImport.tsx:734 === IMPORT COMPLETE ===
+CSVImport.tsx:735 Final result: ❌ Import fehlgeschlagen: 9 Leads konnten nicht importiert werden.
