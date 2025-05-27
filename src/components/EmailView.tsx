@@ -231,6 +231,7 @@ export function EmailView() {
   const deleteEmailViaIMAP = async (emailId: string, permanent: boolean = false) => {
     try {
       setLoading(true);
+      console.log(`Starting email deletion: ${emailId}, permanent: ${permanent}`);
       
       const { data, error } = await supabase.functions.invoke('delete-email', {
         body: {
@@ -247,8 +248,37 @@ export function EmailView() {
 
       console.log('Email deletion result:', data);
       
+      // Check if the deletion was actually successful
+      if (!data || !data.success) {
+        throw new Error(data?.error || 'Email-Löschung fehlgeschlagen');
+      }
+
+      // Show different messages based on IMAP success
+      if (data.imapSuccess) {
+        if (permanent) {
+          toast.success(data.message || 'Email wurde dauerhaft gelöscht', {
+            description: data.deletedUids ? `IMAP UIDs: ${data.deletedUids.join(', ')}` : undefined
+          });
+        } else {
+          toast.success(data.message || 'Email wurde erfolgreich in den Papierkorb verschoben', {
+            description: data.deletedUids ? `IMAP UIDs: ${data.deletedUids.join(', ')}` : undefined
+          });
+        }
+      } else {
+        // IMAP failed but database was updated
+        if (permanent) {
+          toast.warning('Email aus Datenbank gelöscht, aber IMAP-Löschung fehlgeschlagen', {
+            description: data.imapError || 'Unbekannter IMAP-Fehler'
+          });
+        } else {
+          toast.warning('Email in Datenbank als gelöscht markiert, aber IMAP-Verschiebung fehlgeschlagen', {
+            description: data.imapError || 'Unbekannter IMAP-Fehler'
+          });
+        }
+      }
+      
+      // Update local state based on deletion type
       if (permanent) {
-        toast.success('Email dauerhaft vom Server und aus der Datenbank gelöscht');
         // Remove from local state completely
         setEmails(prev => {
           const newEmails = prev.filter(email => email.id !== emailId);
@@ -256,7 +286,6 @@ export function EmailView() {
           return newEmails;
         });
       } else {
-        toast.success('Email in den Papierkorb verschoben');
         // Update local state to mark as deleted
         setEmails(prev => {
           const newEmails = prev.map(email => 
@@ -274,15 +303,33 @@ export function EmailView() {
         setSelectedEmail(null);
       }
 
-      // Force a re-render by triggering loadEmails after a short delay
+      // Force refresh to ensure data consistency
       setTimeout(() => {
         console.log('Refreshing email list after deletion...');
         loadEmails(true);
-      }, 500);
+      }, 1000); // Increased delay to ensure server updates are processed
 
     } catch (error) {
       console.error('Error deleting email via IMAP:', error);
-      toast.error(`Fehler beim Löschen der Email: ${error.message}`);
+      
+      // Show specific error messages
+      if (error.message.includes('not found')) {
+        toast.error('Email nicht gefunden', {
+          description: 'Die Email existiert möglicherweise nicht mehr auf dem Server'
+        });
+      } else if (error.message.includes('IMAP')) {
+        toast.error('IMAP-Server Fehler', {
+          description: error.message
+        });
+      } else if (error.message.includes('authentication') || error.message.includes('login')) {
+        toast.error('Authentifizierung fehlgeschlagen', {
+          description: 'Überprüfen Sie die Email-Konto Einstellungen'
+        });
+      } else {
+        toast.error('Fehler beim Löschen der Email', {
+          description: error.message
+        });
+      }
     } finally {
       setLoading(false);
     }
