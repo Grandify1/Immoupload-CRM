@@ -1,0 +1,821 @@
+chunk-FJ2A54M7.js?v=63be8747:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:100 === Building Lead Custom Fields ===
+CSVImport.tsx:110 Field "owner_name" - is lead field: true
+CSVImport.tsx:110 Field "gmb url" - is lead field: true
+CSVImport.tsx:110 Field "Immo Tool" - is lead field: true
+CSVImport.tsx:110 Field "Test" - is lead field: true
+CSVImport.tsx:110 Field "place_id" - is lead field: true
+CSVImport.tsx:110 Field "is_spending_on_ads" - is lead field: true
+CSVImport.tsx:110 Field "rating" - is lead field: true
+CSVImport.tsx:110 Field "competitors" - is lead field: true
+CSVImport.tsx:110 Field "can_claim" - is lead field: true
+CSVImport.tsx:110 Field "owner_profile_link" - is lead field: true
+CSVImport.tsx:110 Field "featured_image" - is lead field: true
+CSVImport.tsx:110 Field "main_category" - is lead field: true
+CSVImport.tsx:110 Field "categories" - is lead field: true
+CSVImport.tsx:110 Field "workday_timing" - is lead field: true
+CSVImport.tsx:110 Field "is_temporarily_closed" - is lead field: true
+CSVImport.tsx:110 Field "closed_on" - is lead field: true
+CSVImport.tsx:110 Field "review_keywords" - is lead field: true
+CSVImport.tsx:110 Field "query" - is lead field: true
+CSVImport.tsx:110 Field "reviews" - is lead field: true
+CSVImport.tsx:110 Field "Review count" - is lead field: true
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:121 Processed custom field: Object
+CSVImport.tsx:125 Final lead custom fields: Array(20)
+CSVImport.tsx:126 === End Building Lead Custom Fields ===
+CSVImport.tsx:131 === Building All Available Fields ===
+CSVImport.tsx:132 Standard fields: Array(8)
+CSVImport.tsx:133 Lead custom fields to add: Array(20)
+CSVImport.tsx:140 Combined available fields: Array(28)
+CSVImport.tsx:141 === End Building All Available Fields ===
+CSVImport.tsx:31 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:32 All customFields received: Array(20)
+CSVImport.tsx:33 customFields is array? true
+CSVImport.tsx:34 customFields length: 20
+CSVImport.tsx:37 Lead custom fields: Array(20)
+CSVImport.tsx:38 First custom field example: Object
+CSVImport.tsx:42 Custom Field 0: Object
+CSVImport.tsx:42 Custom Field 1: Object
+CSVImport.tsx:42 Custom Field 2: Object
+CSVImport.tsx:42 Custom Field 3: Object
+CSVImport.tsx:42 Custom Field 4: Object
+CSVImport.tsx:42 Custom Field 5: Object
+CSVImport.tsx:42 Custom Field 6: Object
+CSVImport.tsx:42 Custom Field 7: Object
+CSVImport.tsx:42 Custom Field 8: Object
+CSVImport.tsx:42 Custom Field 9: Object
+CSVImport.tsx:42 Custom Field 10: Object
+CSVImport.tsx:42 Custom Field 11: Object
+CSVImport.tsx:42 Custom Field 12: Object
+CSVImport.tsx:42 Custom Field 13: Object
+CSVImport.tsx:42 Custom Field 14: Object
+CSVImport.tsx:42 Custom Field 15: Object
+CSVImport.tsx:42 Custom Field 16: Object
+CSVImport.tsx:42 Custom Field 17: Object
+CSVImport.tsx:42 Custom Field 18: Object
+CSVImport.tsx:42 Custom Field 19: Object
+CSVImport.tsx:74 === End Custom Fields Debug ===
+@radix-ui_react-dialog.js?v=6a1a5ac6:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ @radix-ui_react-dialog.js?v=6a1a5ac6:336
+Show 1 more frame
+Show less
+CSVImport.tsx:185 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:205 CSV quote character detected: "
+CSVImport.tsx:302 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:303 Headers detected: Array(22)
+CSVImport.tsx:328 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:376 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:376 Auto-mapped "name" to "name"
+CSVImport.tsx:376 Auto-mapped "description" to "description"
+CSVImport.tsx:396 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:376 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:376 Auto-mapped "rating" to "rating"
+CSVImport.tsx:376 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:376 Auto-mapped "website" to "website"
+CSVImport.tsx:376 Auto-mapped "phone" to "phone"
+CSVImport.tsx:376 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:376 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:376 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:376 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:396 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:396 Exact match found for "categories" -> "categories"
+CSVImport.tsx:396 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:396 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:396 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:376 Auto-mapped "address" to "address"
+CSVImport.tsx:396 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:376 Auto-mapped "link" to "website"
+CSVImport.tsx:396 Exact match found for "query" -> "query"
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:840 Available fields for dropdown: Array(28)
+CSVImport.tsx:843 Adding dropdown option: name
+CSVImport.tsx:843 Adding dropdown option: email
+CSVImport.tsx:843 Adding dropdown option: phone
+CSVImport.tsx:843 Adding dropdown option: website
+CSVImport.tsx:843 Adding dropdown option: address
+CSVImport.tsx:843 Adding dropdown option: description
+CSVImport.tsx:843 Adding dropdown option: status
+CSVImport.tsx:843 Adding dropdown option: owner_id
+CSVImport.tsx:843 Adding dropdown option: owner_name
+CSVImport.tsx:843 Adding dropdown option: gmb_url
+CSVImport.tsx:843 Adding dropdown option: immo_tool
+CSVImport.tsx:843 Adding dropdown option: test
+CSVImport.tsx:843 Adding dropdown option: place_id
+CSVImport.tsx:843 Adding dropdown option: is_spending_on_ads
+CSVImport.tsx:843 Adding dropdown option: rating
+CSVImport.tsx:843 Adding dropdown option: competitors
+CSVImport.tsx:843 Adding dropdown option: can_claim
+CSVImport.tsx:843 Adding dropdown option: owner_profile_link
+CSVImport.tsx:843 Adding dropdown option: featured_image
+CSVImport.tsx:843 Adding dropdown option: main_category
+CSVImport.tsx:843 Adding dropdown option: categories
+CSVImport.tsx:843 Adding dropdown option: workday_timing
+CSVImport.tsx:843 Adding dropdown option: is_temporarily_closed
+CSVImport.tsx:843 Adding dropdown option: closed_on
+CSVImport.tsx:843 Adding dropdown option: review_keywords
+CSVImport.tsx:843 Adding dropdown option: query
+CSVImport.tsx:843 Adding dropdown option: reviews
+CSVImport.tsx:843 Adding dropdown option: review_count
+CSVImport.tsx:474 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:486 CSV data rows: 9
+CSVImport.tsx:487 Mappings: Array(22)
+CSVImport.tsx:490 Custom fields to create: Array(0)
+CSVImport.tsx:505 === PROCESSING CSV DATA ===
+CSVImport.tsx:547 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:554 Sample lead: Object
+CSVImport.tsx:558 === GETTING USER INFO ===
+CSVImport.tsx:574 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:597 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:601 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:618 Import job data: Object
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?columns=%22file_name%22%2C%22total_records%22%2C%22processed_records%22%2C%22failed_records%22%2C%22status%22%2C%22error_details%22%2C%22team_id%22%2C%22created_by%22%2C%22undo_status%22&select=*:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+CSVImport.tsx:627 ❌ Failed to create import job: Object
+handleImport @ CSVImport.tsx:627
+CSVImport.tsx:628 Job error code: PGRST204
+handleImport @ CSVImport.tsx:628
+CSVImport.tsx:632 ⚠️ Import jobs table not found, proceeding without tracking...
+handleImport @ CSVImport.tsx:632
+CSVImport.tsx:651 === STARTING LEAD IMPORT ===
+CSVImport.tsx:667 === INSERTING BATCH 1/1 (9 leads) TO SUPABASE ===
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+CSVImport.tsx:675 ❌ Supabase error inserting batch 1: Object
+handleImport @ CSVImport.tsx:675
+CSVImport.tsx:738 ⚠️ Import job tracking skipped - table not available
+CSVImport.tsx:753 === IMPORT COMPLETE ===
+CSVImport.tsx:754 Final result: ❌ Import fehlgeschlagen: 9 Leads konnten nicht importiert werden.
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 0
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?select=id%2Cfile_name%2Ctotal_records%2Cprocessed_records%2Cfailed_records%2Cstatus%2Cerror_details%2Cteam_id%2Ccreated_by%2Cundo_status%2Cundo_date%2Cundo_details%2Ccreated_at%2Cupdated_at&team_id=eq.e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0&order=created_at.desc&limit=20:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+SettingsView.tsx:76 Error fetching import jobs: Objectcode: "42703"details: nullhint: nullmessage: "column import_jobs.total_records does not exist"[[Prototype]]: Object
+fetchImportJobs @ SettingsView.tsx:76
+SettingsView.tsx:77 Error details: null
+fetchImportJobs @ SettingsView.tsx:77
+SettingsView.tsx:78 Error hint: null
+fetchImportJobs @ SettingsView.tsx:78
+SettingsView.tsx:79 Error code: 42703
+fetchImportJobs @ SettingsView.tsx:79
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:401 Manual refresh triggered
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 0
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?select=id%2Cfile_name%2Ctotal_records%2Cprocessed_records%2Cfailed_records%2Cstatus%2Cerror_details%2Cteam_id%2Ccreated_by%2Cundo_status%2Cundo_date%2Cundo_details%2Ccreated_at%2Cupdated_at&team_id=eq.e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0&order=created_at.desc&limit=20:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+SettingsView.tsx:76 Error fetching import jobs: Object
+fetchImportJobs @ SettingsView.tsx:76
+SettingsView.tsx:77 Error details: null
+fetchImportJobs @ SettingsView.tsx:77
+SettingsView.tsx:78 Error hint: null
+fetchImportJobs @ SettingsView.tsx:78
+SettingsView.tsx:79 Error code: 42703
+fetchImportJobs @ SettingsView.tsx:79
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
