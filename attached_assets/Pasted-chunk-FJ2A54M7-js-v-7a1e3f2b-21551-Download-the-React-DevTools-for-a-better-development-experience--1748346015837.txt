@@ -1,0 +1,86 @@
+chunk-FJ2A54M7.js?v=7a1e3f2b:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:38 CRMLayout: Initial fetchData call
+CRMLayout.tsx:55 fetchData: Starting data fetch...
+CRMLayout.tsx:136 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:124 fetchData: Finished data fetch.
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:180 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:200 CSV quote character detected: "
+CSVImport.tsx:297 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:298 Headers detected: Array(22)
+CSVImport.tsx:323 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:379 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:379 Auto-mapped "name" to "name"
+CSVImport.tsx:379 Auto-mapped "description" to "description"
+CSVImport.tsx:379 Auto-mapped "is_spending_on_ads" to "is_spending_on_ads"
+CSVImport.tsx:379 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:379 Auto-mapped "rating" to "rating"
+CSVImport.tsx:379 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:379 Auto-mapped "website" to "website"
+CSVImport.tsx:379 Auto-mapped "phone" to "phone"
+CSVImport.tsx:379 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:379 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:379 Auto-mapped "owner_profile_link" to "owner_profile_link"
+CSVImport.tsx:379 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:379 Auto-mapped "main_category" to "main_category"
+CSVImport.tsx:379 Auto-mapped "categories" to "categories"
+CSVImport.tsx:379 Auto-mapped "workday_timing" to "workday_timing"
+CSVImport.tsx:379 Auto-mapped "is_temporarily_closed" to "is_temporarily_closed"
+CSVImport.tsx:379 Auto-mapped "closed_on" to "closed_on"
+CSVImport.tsx:379 Auto-mapped "address" to "address"
+CSVImport.tsx:379 Auto-mapped "review_keywords" to "review_keywords"
+CSVImport.tsx:409 No auto-mapping found for "link"
+CSVImport.tsx:379 Auto-mapped "query" to "query"
+CSVImport.tsx:482 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:492 CSV data rows: 9
+CSVImport.tsx:493 Mappings: Array(22)
+CSVImport.tsx:496 === GETTING USER INFO ===
+CSVImport.tsx:512 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:532 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:535 Custom fields to create: Array(0)
+CSVImport.tsx:550 === PROCESSING CSV DATA ===
+CSVImport.tsx:591 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:597 Sample lead: Object
+CSVImport.tsx:600 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:617 Import job data: Object
+CSVImport.tsx:640 ✅ Import job created with ID: b3225614-c636-4126-bfe9-c5864f5aeb9d
+CSVImport.tsx:648 === STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===
+CSVImport.tsx:649 Duplicate Detection Config: Object
+CSVImport.tsx:650 Sending data to Edge Function...
+CSVImport.tsx:670 ✅ Edge Function response: Object
+CSVImport.tsx:685 🔄 Triggering automatic refresh of leads data...
+CRMLayout.tsx:55 fetchData: Starting data fetch...
+CRMLayout.tsx:136 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:124 fetchData: Finished data fetch.
