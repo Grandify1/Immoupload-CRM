@@ -120,19 +120,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   };
 
   return (
-    <div className="flex-1 p-6 h-full overflow-y-auto">
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold flex items-center">
-          <Settings className="w-6 h-6 mr-2" />
-          Settings
-        </h1>
+    <div className="flex-1 overflow-hidden">
+      <div className="p-6 h-full overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-        <Tabs defaultValue="custom-fields" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
-            <TabsTrigger value="activity-templates">Activity Templates</TabsTrigger>
-            <TabsTrigger value="general">General</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="custom-fields" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+              <TabsTrigger value="activity-templates">Activity Templates</TabsTrigger>
+              <TabsTrigger value="general">General</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="custom-fields" className="space-y-6">
             <Card>
@@ -241,113 +239,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Add Custom Field Dialog */}
-        <Dialog open={showNewFieldDialog} onOpenChange={setShowNewFieldDialog}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add Custom Field</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="field-name">Field Name</Label>
-                <Input
-                  id="field-name"
-                  value={newField.name}
-                  onChange={(e) => setNewField({ ...newField, name: e.target.value })}
-                  placeholder="e.g. Budget"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="field-type">Field Type</Label>
-                <Select
-                  value={newField.field_type}
-                  onValueChange={(value: any) => setNewField({ ...newField, field_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select field type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">Text</SelectItem>
-                    <SelectItem value="number">Number</SelectItem>
-                    <SelectItem value="date">Date</SelectItem>
-                    <SelectItem value="select">Select</SelectItem>
-                    <SelectItem value="checkbox">Checkbox</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="entity-type">Apply To</Label>
-                <Select
-                  value={newField.entity_type}
-                  onValueChange={(value: any) => setNewField({ ...newField, entity_type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select entity type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lead">Leads</SelectItem>
-                    <SelectItem value="deal">Deals</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewFieldDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddCustomField} disabled={!newField.name}>
-                Add Field
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Add Activity Template Dialog */}
-        <Dialog open={showNewTemplateDialog} onOpenChange={setShowNewTemplateDialog}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add Activity Template</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="template-name">Template Name</Label>
-                <Input
-                  id="template-name"
-                  value={newTemplate.name}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, name: e.target.value })}
-                  placeholder="e.g. Follow-up Call"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="template-description">Description</Label>
-                <Input
-                  id="template-description"
-                  value={newTemplate.description}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, description: e.target.value })}
-                  placeholder="Brief description of this activity"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="template-duration">Default Duration (minutes)</Label>
-                <Input
-                  id="template-duration"
-                  type="number"
-                  value={newTemplate.default_duration}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, default_duration: parseInt(e.target.value) || 30 })}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNewTemplateDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddActivityTemplate} disabled={!newTemplate.name}>
-                Add Template
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        </div>
       </div>
     </div>
   );

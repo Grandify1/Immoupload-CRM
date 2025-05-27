@@ -1053,10 +1053,8 @@ const CRMLayout = () => {
         onFilterSelect={(filters) => setCurrentFilters(filters)}
       />
 
-      <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
-          {renderContent()}
-        </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {renderContent()}</div>
 
         <Dialog open={!!selectedDeal} onOpenChange={(open) => {!open && setSelectedDeal(null)}}>
           {selectedDeal && (
