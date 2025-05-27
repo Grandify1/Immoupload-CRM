@@ -36,14 +36,31 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
       if (countError) {
         console.error('Error accessing import_jobs table:', countError);
+        setIsLoading(false);
+        return;
       } else {
         console.log('Total import jobs in database:', count);
       }
 
-      // Now fetch jobs for our team
+      // Now fetch jobs for our team with explicit column selection
       const { data, error } = await supabase
         .from('import_jobs')
-        .select('*')
+        .select(`
+          id,
+          file_name,
+          total_records,
+          processed_records,
+          failed_records,
+          status,
+          error_details,
+          team_id,
+          created_by,
+          undo_status,
+          undo_date,
+          undo_details,
+          created_at,
+          updated_at
+        `)
         .eq('team_id', teamId)
         .order('created_at', { ascending: false })
         .limit(20);

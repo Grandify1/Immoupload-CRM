@@ -170,12 +170,12 @@ export type Database = {
           file_name: string
           id: string
           processed_records: number
-          status: string
+          status: 'pending' | 'processing' | 'completed' | 'completed_with_errors' | 'failed'
           team_id: string
           total_records: number
           undo_date: string | null
           undo_details: Json | null
-          undo_status: string
+          undo_status: 'active' | 'undone'
           updated_at: string
         }
         Insert: {
@@ -186,12 +186,12 @@ export type Database = {
           file_name: string
           id?: string
           processed_records?: number
-          status?: string
+          status?: 'pending' | 'processing' | 'completed' | 'completed_with_errors' | 'failed'
           team_id: string
           total_records: number
           undo_date?: string | null
           undo_details?: Json | null
-          undo_status?: string
+          undo_status?: 'active' | 'undone'
           updated_at?: string
         }
         Update: {
@@ -202,12 +202,12 @@ export type Database = {
           file_name?: string
           id?: string
           processed_records?: number
-          status?: string
+          status?: 'pending' | 'processing' | 'completed' | 'completed_with_errors' | 'failed'
           team_id?: string
           total_records?: number
           undo_date?: string | null
           undo_details?: Json | null
-          undo_status?: string
+          undo_status?: 'active' | 'undone'
           updated_at?: string
         }
         Relationships: [
