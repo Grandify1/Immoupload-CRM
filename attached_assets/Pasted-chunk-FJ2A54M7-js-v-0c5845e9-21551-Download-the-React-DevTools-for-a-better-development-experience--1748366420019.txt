@@ -1,0 +1,37 @@
+chunk-FJ2A54M7.js?v=0c5845e9:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:39 CRMLayout: Initial fetchData call
+CRMLayout.tsx:56 fetchData: Starting data fetch...
+CRMLayout.tsx:137 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:125 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+2EmailView.tsx:104 Skipping email load - too recent
+16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/:1 Access to fetch at 'https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/delete-email' from origin 'https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: It does not have HTTP ok status.
+eycydigvwfqapjxssvqc.supabase.co/functions/v1/delete-email:1 
+        
+        
+       Failed to load resource: net::ERR_FAILED
+EmailView.tsx:232 IMAP deletion error: FunctionsFetchError: Failed to send a request to the Edge Function
+    at @supabase_supabase-js.js?v=0c5845e9:1388:17
+deleteEmailViaIMAP @ EmailView.tsx:232
+EmailView.tsx:256 Error deleting email via IMAP: Error: Failed to send a request to the Edge Function
+    at deleteEmailViaIMAP (EmailView.tsx:233:15)
+    at async moveEmailToFolder (EmailView.tsx:156:9)
+deleteEmailViaIMAP @ EmailView.tsx:256
+16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/:1 Access to fetch at 'https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/delete-email' from origin 'https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: It does not have HTTP ok status.
+eycydigvwfqapjxssvqc.supabase.co/functions/v1/delete-email:1 
+        
+        
+       Failed to load resource: net::ERR_FAILED
+EmailView.tsx:232 IMAP deletion error: FunctionsFetchError: Failed to send a request to the Edge Function
+    at @supabase_supabase-js.js?v=0c5845e9:1388:17
+deleteEmailViaIMAP @ EmailView.tsx:232
+EmailView.tsx:256 Error deleting email via IMAP: Error: Failed to send a request to the Edge Function
+    at deleteEmailViaIMAP (EmailView.tsx:233:15)
+    at async moveEmailToFolder (EmailView.tsx:156:9)
+deleteEmailViaIMAP @ EmailView.tsx:256
