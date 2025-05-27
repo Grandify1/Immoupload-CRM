@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Send, Inbox, Settings, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Mail, Send, Inbox, Settings, Plus, Trash2, RefreshCw, Archive, AlertTriangle, Edit, FolderOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -35,16 +36,23 @@ interface Email {
   received_at: string;
   is_read: boolean;
   lead_id?: string;
+  folder?: string;
+  is_deleted?: boolean;
+  is_archived?: boolean;
 }
+
+type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'deleted' | 'archived';
 
 export const EmailView: React.FC = () => {
   const { user } = useAuth();
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<EmailFolder>('inbox');
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
 
   const [accountForm, setAccountForm] = useState({
     name: '',
@@ -64,12 +72,16 @@ export const EmailView: React.FC = () => {
     account_id: ''
   });
 
-  useEffect(() => {
-    loadEmailAccounts();
-    loadEmails();
-  }, []);
+  const folders = [
+    { id: 'inbox' as EmailFolder, name: 'Posteingang', icon: Inbox },
+    { id: 'sent' as EmailFolder, name: 'Gesendet', icon: Send },
+    { id: 'drafts' as EmailFolder, name: 'Entwürfe', icon: Edit },
+    { id: 'junk' as EmailFolder, name: 'Junk', icon: AlertTriangle },
+    { id: 'archived' as EmailFolder, name: 'Archiviert', icon: Archive },
+    { id: 'deleted' as EmailFolder, name: 'Gelöscht', icon: Trash2 }
+  ];
 
-  const loadEmailAccounts = async () => {
+  const loadEmailAccounts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('email_accounts')
@@ -82,21 +94,133 @@ export const EmailView: React.FC = () => {
       console.error('Error loading email accounts:', error);
       toast.error('Fehler beim Laden der Email-Konten');
     }
-  };
+  }, []);
 
-  const loadEmails = async () => {
+  const loadEmails = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastLoadTime < 2000) {
+      console.log('Skipping email load - too recent');
+      return;
+    }
+    
     try {
+      setLastLoadTime(now);
       const { data, error } = await supabase
         .from('emails')
         .select('*')
         .order('received_at', { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (error) throw error;
       setEmails(data || []);
     } catch (error) {
       console.error('Error loading emails:', error);
       toast.error('Fehler beim Laden der Emails');
+    }
+  }, [lastLoadTime]);
+
+  useEffect(() => {
+    if (user) {
+      loadEmailAccounts();
+      loadEmails();
+    }
+  }, [user, loadEmailAccounts, loadEmails]);
+
+  const getFilteredEmails = () => {
+    return emails.filter(email => {
+      switch (selectedFolder) {
+        case 'inbox':
+          return !email.folder || email.folder === 'inbox';
+        case 'sent':
+          return email.folder === 'sent';
+        case 'drafts':
+          return email.folder === 'drafts';
+        case 'junk':
+          return email.folder === 'junk';
+        case 'archived':
+          return email.is_archived === true;
+        case 'deleted':
+          return email.is_deleted === true;
+        default:
+          return !email.folder || email.folder === 'inbox';
+      }
+    });
+  };
+
+  const moveEmailToFolder = async (emailId: string, folder: EmailFolder) => {
+    try {
+      const updateData: any = { folder };
+      
+      if (folder === 'deleted') {
+        updateData.is_deleted = true;
+      } else if (folder === 'archived') {
+        updateData.is_archived = true;
+      } else {
+        updateData.is_deleted = false;
+        updateData.is_archived = false;
+      }
+
+      const { error } = await supabase
+        .from('emails')
+        .update(updateData)
+        .eq('id', emailId);
+
+      if (error) throw error;
+
+      toast.success(`Email nach ${folders.find(f => f.id === folder)?.name} verschoben`);
+      loadEmails();
+      
+      if (selectedEmail?.id === emailId) {
+        setSelectedEmail(null);
+      }
+    } catch (error) {
+      console.error('Error moving email:', error);
+      toast.error('Fehler beim Verschieben der Email');
+    }
+  };
+
+  const deleteEmailPermanently = async (emailId: string) => {
+    try {
+      const { error } = await supabase
+        .from('emails')
+        .delete()
+        .eq('id', emailId);
+
+      if (error) throw error;
+
+      toast.success('Email dauerhaft gelöscht');
+      loadEmails();
+      
+      if (selectedEmail?.id === emailId) {
+        setSelectedEmail(null);
+      }
+    } catch (error) {
+      console.error('Error deleting email:', error);
+      toast.error('Fehler beim Löschen der Email');
+    }
+  };
+
+  const markAsRead = async (emailId: string) => {
+    try {
+      const { error } = await supabase
+        .from('emails')
+        .update({ is_read: true })
+        .eq('id', emailId);
+
+      if (error) throw error;
+      
+      setEmails(prev => prev.map(email => 
+        email.id === emailId ? { ...email, is_read: true } : email
+      ));
+    } catch (error) {
+      console.error('Error marking email as read:', error);
+    }
+  };
+
+  const handleEmailSelect = (email: Email) => {
+    setSelectedEmail(email);
+    if (!email.is_read) {
+      markAsRead(email.id);
     }
   };
 
@@ -109,7 +233,7 @@ export const EmailView: React.FC = () => {
         .from('email_accounts')
         .insert([{
           ...accountForm,
-          team_id: user?.id, // Vereinfacht für User-basiert
+          team_id: user?.id,
           is_active: true
         }]);
 
@@ -161,7 +285,6 @@ export const EmailView: React.FC = () => {
     } catch (error) {
       console.error('Error sending email:', error);
 
-      // Show specific error messages
       if (error.message.includes('SMTP')) {
         toast.error(`SMTP-Fehler: ${error.message}`, {
           description: 'Überprüfen Sie Ihre SMTP-Einstellungen'
@@ -207,7 +330,7 @@ export const EmailView: React.FC = () => {
       if (error) throw error;
 
       toast.success('Emails werden synchronisiert');
-      loadEmails();
+      setTimeout(() => loadEmails(), 1000);
     } catch (error) {
       console.error('Error syncing emails:', error);
       toast.error('Fehler beim Synchronisieren der Emails');
@@ -215,6 +338,9 @@ export const EmailView: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const filteredEmails = getFilteredEmails();
+  const unreadCount = emails.filter(e => !e.is_read && (!e.folder || e.folder === 'inbox')).length;
 
   return (
     <div className="p-6 space-y-6">
@@ -237,11 +363,11 @@ export const EmailView: React.FC = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="inbox" className="w-full">
+      <Tabs defaultValue="emails" className="w-full">
         <TabsList>
-          <TabsTrigger value="inbox">
-            <Inbox className="w-4 h-4 mr-2" />
-            Posteingang
+          <TabsTrigger value="emails">
+            <Mail className="w-4 h-4 mr-2" />
+            Emails
           </TabsTrigger>
           <TabsTrigger value="accounts">
             <Settings className="w-4 h-4 mr-2" />
@@ -249,30 +375,93 @@ export const EmailView: React.FC = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="inbox">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <TabsContent value="emails">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Ordner-Sidebar */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ordner</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="space-y-1">
+                    {folders.map((folder) => {
+                      const folderEmails = emails.filter(email => {
+                        switch (folder.id) {
+                          case 'inbox':
+                            return !email.folder || email.folder === 'inbox';
+                          case 'sent':
+                            return email.folder === 'sent';
+                          case 'drafts':
+                            return email.folder === 'drafts';
+                          case 'junk':
+                            return email.folder === 'junk';
+                          case 'archived':
+                            return email.is_archived === true;
+                          case 'deleted':
+                            return email.is_deleted === true;
+                          default:
+                            return false;
+                        }
+                      });
+                      
+                      const folderUnreadCount = folderEmails.filter(e => !e.is_read).length;
+                      
+                      return (
+                        <div
+                          key={folder.id}
+                          className={`flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50 ${
+                            selectedFolder === folder.id ? 'bg-muted' : ''
+                          }`}
+                          onClick={() => setSelectedFolder(folder.id)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <folder.icon className="w-4 h-4" />
+                            <span className="text-sm font-medium">{folder.name}</span>
+                          </div>
+                          <div className="flex gap-1">
+                            {folderUnreadCount > 0 && (
+                              <Badge variant="default" className="text-xs">
+                                {folderUnreadCount}
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-xs">
+                              {folderEmails.length}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Email-Liste */}
             <div className="lg:col-span-1">
               <Card className="h-[calc(100vh-200px)] flex flex-col">
                 <CardHeader className="flex-shrink-0">
-                  <CardTitle>Posteingang</CardTitle>
+                  <CardTitle>
+                    {folders.find(f => f.id === selectedFolder)?.name}
+                  </CardTitle>
                   <CardDescription>
-                    {emails.filter(e => !e.is_read).length} ungelesene Nachrichten
+                    {filteredEmails.filter(e => !e.is_read).length} ungelesene von {filteredEmails.length} Nachrichten
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 flex-1 overflow-hidden">
-                  {emails.length === 0 ? (
+                  {filteredEmails.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground">
-                      Keine Emails vorhanden
+                      Keine Emails in diesem Ordner
                     </div>
                   ) : (
                     <div className="divide-y h-full overflow-y-auto">
-                      {emails.map((email) => (
+                      {filteredEmails.map((email) => (
                         <div
                           key={email.id}
                           className={`p-4 cursor-pointer hover:bg-muted/50 ${
                             selectedEmail?.id === email.id ? 'bg-muted' : ''
                           } ${!email.is_read ? 'font-semibold' : ''}`}
-                          onClick={() => setSelectedEmail(email)}
+                          onClick={() => handleEmailSelect(email)}
                         >
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm font-medium truncate">
@@ -298,6 +487,7 @@ export const EmailView: React.FC = () => {
               </Card>
             </div>
 
+            {/* Email-Inhalt */}
             <div className="lg:col-span-2">
               {selectedEmail ? (
                 <Card>
@@ -309,16 +499,46 @@ export const EmailView: React.FC = () => {
                           Von: {selectedEmail.sender} • {new Date(selectedEmail.received_at).toLocaleString('de-DE')}
                         </CardDescription>
                       </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => setComposeForm(prev => ({
-                          ...prev,
-                          to: selectedEmail.sender,
-                          subject: `Re: ${selectedEmail.subject}`
-                        }))}
-                      >
-                        Antworten
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setComposeForm(prev => ({
+                            ...prev,
+                            to: selectedEmail.sender,
+                            subject: `Re: ${selectedEmail.subject}`
+                          }))}
+                        >
+                          Antworten
+                        </Button>
+                        {selectedFolder !== 'archived' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => moveEmailToFolder(selectedEmail.id, 'archived')}
+                          >
+                            <Archive className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {selectedFolder !== 'deleted' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => moveEmailToFolder(selectedEmail.id, 'deleted')}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteEmailPermanently(selectedEmail.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Dauerhaft löschen
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
