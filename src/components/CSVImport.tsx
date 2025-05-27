@@ -799,16 +799,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               } else if (duplicateConfig.duplicateAction === 'create_new') {
                 console.log(`📝 Creating new lead despite duplicate (${detectionField}: ${detectionValue})`);
 
-                // For create_new, modify the name to make it unique
-                const modifiedLead = {
-                  ...lead,
-                  name: `${lead.name} (Copy ${Date.now()})`
-                };
-
+                // For create_new, keep the original data but let Supabase generate a new UUID
+                // This way the name stays clean and professional
                 const { data: insertedLead, error: insertError } = await supabase
                   .from('leads')
-                  .insert([modifiedLead])
-                  .select('id')
+                  .insert([lead])
+                  .select('id, name')
                   .single();
 
                 if (insertError) {
@@ -816,13 +812,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
                   // If still fails due to constraint, skip it
                   if (insertError.code === '23505') {
-                    console.log(`🔍 Still duplicate after modification, skipping: ${lead.name}`);
+                    console.log(`🔍 Still duplicate constraint violation, skipping: ${lead.name}`);
                     duplicateRecords++;
                   } else {
                     failedRecords++;
                   }
                 } else {
-                  console.log(`✅ Successfully inserted duplicate lead with modified name: ${modifiedLead.name}`);
+                  console.log(`✅ Successfully inserted duplicate lead with clean name: ${insertedLead.name} (ID: ${insertedLead.id})`);
                   processedRecords++;
                 }
               }
