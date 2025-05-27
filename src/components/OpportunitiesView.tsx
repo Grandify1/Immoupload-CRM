@@ -715,8 +715,34 @@ export const OpportunitiesView = ({
 
   // Aktualisiere die Multi-Select-Komponente
   const handleMultiSelectChange = (value: string) => {
-    setSelectedMultiSelectValues([value]);
+    ```text
+ setSelectedMultiSelectValues([value]);
   };
+
+  const renderTableView = () => (
+    <TableView
+      deals={filteredDeals}
+      visibleColumns={visibleColumns}
+      onDealSelect={onDealSelect}
+      formatCurrency={formatCurrency}
+      formatDate={formatDate}
+      onDealUpdate={onDealUpdate}
+      statusLabels={statusLabels}
+      statusColors={statusColors}
+      allowedStatuses={allowedStatuses}
+    />
+  );
+
+  const renderKanbanView = () => (
+    <KanbanView
+      deals={filteredDeals}
+      onDealSelect={onDealSelect}
+      onDealUpdate={onDealUpdate}
+      statusLabels={statusLabels}
+      statusColors={statusColors}
+      allowedStatuses={allowedStatuses}
+    />
+  );
 
   return (
     <div className="flex-1 p-6 overflow-hidden relative">
@@ -1053,7 +1079,7 @@ export const OpportunitiesView = ({
         </div>
 
       {/* Views Container */}
-      <div className="flex-1 overflow-x-auto">
+      <div className="flex-1 overflow-y-auto">
         {view === 'table' ? (
           <TableView
             deals={filteredDeals}
@@ -1251,7 +1277,7 @@ export const OpportunitiesView = ({
                 options: type === 'select' ? [] : undefined, // Optionen nur für Select-Typ
                 sort_order: 0, // Standard-Sortierreihenfolge
               } as Omit<CustomField, 'id' | 'team_id' | 'created_at'>;
-              
+
               // Rufe die ursprüngliche onAddCustomField Prop auf
               return await onAddCustomField(newField); // Ergebnis zurückgeben
             }}

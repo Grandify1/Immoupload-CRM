@@ -78,7 +78,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     status: 'potential',
     custom_fields: {}
   });
-  
+
   const [newCustomField, setNewCustomField] = useState<{
     name: string;
     field_type: 'text' | 'number' | 'date' | 'select' | 'checkbox';
@@ -92,12 +92,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     options: [],
     sort_order: 0
   });
-  
+
   // Smart Views und Filter-Status
   const [showColumnSelector, setShowColumnSelector] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Array<{field: string, operator: string, value: string}>>([]);
-  
+
   // Smart Views
   const [smartViews, setSmartViews] = useState<Array<{name: string, filters: Array<{field: string, operator: string, value: string}>}>>(() => {
     const savedViews = localStorage.getItem('smartViews');
@@ -108,7 +108,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   });
   const [showSaveViewDialog, setShowSaveViewDialog] = useState(false);
   const [newViewName, setNewViewName] = useState('');
-  
+
   // Erweiterte Filter-Funktionalität
   const [filterField, setFilterField] = useState<string>('name');
   const [filterOperator, setFilterOperator] = useState<string>('contains');
@@ -123,13 +123,13 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     // Suche nach Suchbegriff
     const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     if (!matchesSearch) return false;
-    
+
     // Prüfe, ob alle aktiven Filter erfüllt sind
     return activeFilters.every(filter => {
       const { field, operator, value } = filter;
-      
+
       // Website-Filter
       if (field === 'website') {
         if (operator === 'is_empty') {
@@ -139,7 +139,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           return lead.website && lead.website.trim() !== '';
         }
       }
-      
+
       // Email-Filter
       if (field === 'email') {
         if (operator === 'is_empty') {
@@ -149,21 +149,21 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           return lead.email && lead.email.trim() !== '';
         }
       }
-      
+
       // Status-Filter
       if (field === 'status' && operator === 'is_any_of') {
         const statusValues = value.split(',');
         return statusValues.includes(lead.status);
       }
-      
+
       // Standardfilter für andere Felder
       const fieldValue = (lead as any)[field];
       if (fieldValue === undefined) return false;
-      
+
       if (operator === 'contains') {
         return String(fieldValue).toLowerCase().includes(value.toLowerCase());
       }
-      
+
       return true;
     });
   });
@@ -183,10 +183,10 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         status: newLead.status,
         custom_fields: {}
       };
-      
+
       // Lead über die Elternkomponente erstellen
       await onCreateLead(newLeadData);
-      
+
       // Formular zurücksetzen
       setNewLead({ name: '', email: '', phone: '', status: 'potential', custom_fields: {} });
       setShowNewLeadForm(false);
@@ -221,7 +221,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   // Funktion zum Umschalten der Spaltensichtbarkeit
   const toggleColumnVisibility = (columnKey: string) => {
     const columnExists = visibleColumns.some(col => col.key === columnKey);
-    
+
     let newVisibleColumns;
     if (columnExists) {
       // Spalte entfernen, wenn sie bereits sichtbar ist
@@ -235,10 +235,10 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         return;
       }
     }
-    
+
     // Aktualisiere den State
     setVisibleColumns(newVisibleColumns);
-    
+
     // Speichere die Einstellung im localStorage
     localStorage.setItem('visibleColumns', JSON.stringify(newVisibleColumns));
   };
@@ -248,26 +248,26 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     if (filterField) {
       let operator = filterOperator;
       let value = filterValue;
-      
+
       // Für Status-Filter
       if (filterField === 'status' && filterOperator === 'is_any_of') {
         value = selectedStatusFilters.join(',');
       }
-      
+
       if ((filterField === 'website' || filterField === 'email') && 
           (filterOperator === 'is_empty' || filterOperator === 'is_not_empty')) {
         value = '';
       }
-      
+
       setActiveFilters(prev => [...prev, { field: filterField, operator, value }]);
       setShowFilterMenu(false);
-      
+
       // Zurücksetzen der Filter-Eingabefelder
       setFilterValue('');
       setSelectedStatusFilters([]);
     }
   };
-  
+
   // Funktion zum Speichern einer Smart View
   const saveSmartView = () => {
     if (newViewName.trim() && activeFilters.length > 0) {
@@ -275,23 +275,23 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         name: newViewName.trim(),
         filters: [...activeFilters]
       };
-      
+
       const updatedViews = [...smartViews, newSmartView];
       setSmartViews(updatedViews);
       localStorage.setItem('smartViews', JSON.stringify(updatedViews));
-      
+
       setNewViewName('');
       setShowSaveViewDialog(false);
     }
   };
-  
+
   // Funktion zum Laden einer Smart View
   const loadSmartView = (viewIndex: number) => {
     if (viewIndex >= 0 && viewIndex < smartViews.length) {
       setActiveFilters(smartViews[viewIndex].filters);
     }
   };
-  
+
   // Funktion zum Löschen einer Smart View
   const deleteSmartView = (viewIndex: number) => {
     const updatedViews = smartViews.filter((_, index) => index !== viewIndex);
@@ -334,7 +334,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             <Columns className="w-4 h-4 mr-2" />
             Columns
           </Button>
-            
+
           {/* Smart Views Dropdown */}
           {smartViews.length > 0 && (
             <Popover>
@@ -403,7 +403,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           >
             Clear all
           </button>
-          
+
           {/* Save as Smart View Button */}
           <Button 
             variant="outline" 
@@ -460,7 +460,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 ))}
               </select>
             </div>
-            
+
             <div className="mb-3">
               <label className="block text-sm mb-1 font-medium">Operator</label>
               <select 
@@ -483,7 +483,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 )}
               </select>
             </div>
-            
+
             {/* Wertfeld nur anzeigen, wenn der Operator es erfordert */}
             {(filterOperator === 'contains' || 
               (filterField !== 'website' && filterField !== 'email' && 
@@ -499,7 +499,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 />
               </div>
             )}
-            
+
             {/* Status-Mehrfachauswahl */}
             {filterField === 'status' && filterOperator === 'is_any_of' && (
               <div className="mb-3">
@@ -526,7 +526,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 </div>
               </div>
             )}
-            
+
             <div className="flex justify-end space-x-2 mt-4">
               <Button 
                 variant="outline"
@@ -545,7 +545,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Save Smart View Dialog */}
       {showSaveViewDialog && (
         <div className="absolute right-6 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10">
@@ -834,7 +834,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
               <Button
-                variant={view === 'table' ? 'default' : 'ghost'}
+                variant={view === 'table' ? 'default' : 'ghost'
                 size="sm"
                 onClick={() => onViewChange('table')}
               >
@@ -943,7 +943,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     Feld hinzufügen
                   </Button>
                 </div>
-                
+
                 {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
                   const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
                   return (
@@ -1139,7 +1139,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               options: type === 'select' ? [] : undefined, // Optionen nur für Select-Typ
               sort_order: 0, // Standard-Sortierreihenfolge
             } as Omit<CustomField, 'id' | 'team_id' | 'created_at'>;
-            
+
             // Rufe die ursprüngliche onAddCustomField Prop auf
             return await onAddCustomField(newField);
           }}

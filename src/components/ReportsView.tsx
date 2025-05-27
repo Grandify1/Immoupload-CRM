@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -54,7 +53,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ leads, deals }) => {
   ];
 
   return (
-    <div className="flex-1 p-6">
+    <div className="flex-1 p-6 overflow-y-auto">
       <h1 className="text-2xl font-bold mb-6">Reports & Analytics</h1>
 
       {/* Key Metrics */}

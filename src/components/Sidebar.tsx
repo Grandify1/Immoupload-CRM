@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <div className="w-64 bg-gray-800 border-r border-gray-700 h-full text-white">
+    <div className="w-64 bg-gray-800 border-r border-gray-700 h-full text-white overflow-y-auto">
       <div className="p-4">
         <h2 className="text-lg font-semibold text-white mb-6">CRM Dashboard</h2>
         
