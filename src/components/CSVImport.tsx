@@ -693,7 +693,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         toast.dismiss(loadingToastId);
         toast.success('Import gestartet!', {
           description: `${csvData.length} Leads werden im Hintergrund importiert. Sie können den Fortschritt in der Status-Bar verfolgen.`,
-          duration: 5000,
+          duration: 3000,
         });
 
         // Trigger refresh of leads data after a short delay
@@ -709,7 +709,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         toast.dismiss(loadingToastId);
         toast.error('Import fehlgeschlagen', {
           description: `Edge Function Fehler: ${error.message}`,
-          duration: 8000,
+          duration: 4000,
         });
         return;
       }
@@ -719,7 +719,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       toast.dismiss(loadingToastId);
       toast.error('Import fehlgeschlagen', {
         description: `Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`,
-        duration: 8000,
+        duration: 4000,
       });
     }
   };
