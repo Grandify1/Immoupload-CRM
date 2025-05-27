@@ -1,15 +1,20 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { AuthLayout } from '@/components/AuthLayout';
 import { TeamSetup } from '@/components/TeamSetup';
 import CRMLayout from '@/components/CRMLayout';
 import { Loader2 } from 'lucide-react';
+import { LeadsView } from '@/components/LeadsView';
+import { OpportunitiesView } from '@/components/OpportunitiesView';
+import { EmailView } from '@/components/EmailView';
+import { ReportsView } from '@/components/ReportsView';
+import { SettingsView } from '@/components/SettingsView';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { profile, team, loading: profileLoading, refetch } = useProfile();
+  const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings' | 'email'>('leads');
 
   if (authLoading || profileLoading) {
     return (
@@ -27,7 +32,15 @@ const Index = () => {
     return <TeamSetup onTeamCreated={refetch} />;
   }
 
-  return <CRMLayout />;
+  return (
+    <CRMLayout activeSection={activeSection} setActiveSection={setActiveSection}>
+      {activeSection === 'leads' && <LeadsView />}
+      {activeSection === 'opportunities' && <OpportunitiesView />}
+      {activeSection === 'email' && <EmailView />}
+      {activeSection === 'reports' && <ReportsView />}
+      {activeSection === 'settings' && <SettingsView />}
+    </CRMLayout>
+  );
 };
 
 export default Index;

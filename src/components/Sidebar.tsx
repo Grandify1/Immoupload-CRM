@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Users, Target, BarChart3, Settings, Filter } from 'lucide-react';
+import { Users, Target, BarChart3, Settings, Filter, Mail } from 'lucide-react';
 import { SavedFilter } from '@/types/database';
 
 interface SidebarProps {
-  activeSection: 'leads' | 'opportunities' | 'reports' | 'settings';
-  onSectionChange: (section: 'leads' | 'opportunities' | 'reports' | 'settings') => void;
+  activeSection: 'leads' | 'opportunities' | 'reports' | 'settings' | 'email';
+  onSectionChange: (section: 'leads' | 'opportunities' | 'reports' | 'settings' | 'email') => void;
   savedFilters: SavedFilter[];
   currentFilters: Record<string, any>;
   onFilterSelect: (filters: Record<string, any>) => void;
@@ -30,6 +30,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'opportunities' as const,
       label: 'Opportunities',
       icon: Target,
+      count: null
+    },
+    {
+      id: 'email' as const,
+      label: 'Email',
+      icon: Mail,
       count: null
     },
     {
