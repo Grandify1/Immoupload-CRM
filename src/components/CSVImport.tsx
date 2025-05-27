@@ -27,10 +27,29 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   
   // Debug logging
   React.useEffect(() => {
-    if (customFields) {
-      console.log('CSVImport received customFields:', customFields);
+    console.log('=== CSVImport Custom Fields Debug ===');
+    console.log('All customFields received:', customFields);
+    console.log('customFields is array?', Array.isArray(customFields));
+    console.log('customFields length:', customFields?.length);
+    
+    if (customFields && customFields.length > 0) {
       console.log('Lead custom fields:', customFields.filter(f => f.entity_type === 'lead'));
+      console.log('First custom field example:', customFields[0]);
+      
+      // Log each custom field detail
+      customFields.forEach((field, index) => {
+        console.log(`Custom Field ${index}:`, {
+          id: field.id,
+          name: field.name,
+          entity_type: field.entity_type,
+          field_type: field.field_type,
+          sort_order: field.sort_order
+        });
+      });
+    } else {
+      console.log('No custom fields available or empty array');
     }
+    console.log('=== End Custom Fields Debug ===');
   }, [customFields]);
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
@@ -53,17 +72,52 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     { name: 'owner_id', label: 'Owner' },
   ];
 
-  const allAvailableFields = [
-    ...standardFields,
-    ...((customFields || [])
-      .filter(field => field && field.entity_type === 'lead')
-      .map(field => ({
-        name: field.name.toLowerCase().replace(/\s+/g, '_'), // Use the standardized field key
-        label: `${field.name} (Custom)`,
-        isCustom: true,
-        originalName: field.name // Keep original name for reference
-      })) || [])
-  ];
+  // Custom Fields für Leads mit verbesserter Verarbeitung
+  const leadCustomFields = React.useMemo(() => {
+    console.log('=== Building Lead Custom Fields ===');
+    
+    if (!customFields || !Array.isArray(customFields)) {
+      console.log('No customFields available for processing');
+      return [];
+    }
+    
+    const leadFields = customFields
+      .filter(field => {
+        const isLead = field && field.entity_type === 'lead';
+        console.log(`Field "${field?.name}" - is lead field:`, isLead);
+        return isLead;
+      })
+      .map(field => {
+        const processedField = {
+          name: field.name.toLowerCase().replace(/\s+/g, '_'), // Standardized key
+          label: `${field.name} (Custom)`,
+          isCustom: true,
+          originalName: field.name,
+          fieldType: field.field_type
+        };
+        console.log('Processed custom field:', processedField);
+        return processedField;
+      });
+    
+    console.log('Final lead custom fields:', leadFields);
+    console.log('=== End Building Lead Custom Fields ===');
+    return leadFields;
+  }, [customFields]);
+
+  const allAvailableFields = React.useMemo(() => {
+    console.log('=== Building All Available Fields ===');
+    console.log('Standard fields:', standardFields);
+    console.log('Lead custom fields to add:', leadCustomFields);
+    
+    const combined = [
+      ...standardFields,
+      ...leadCustomFields
+    ];
+    
+    console.log('Combined available fields:', combined);
+    console.log('=== End Building All Available Fields ===');
+    return combined;
+  }, [leadCustomFields]);
 
   const resetState = () => {
     setFile(null);
@@ -315,12 +369,79 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('Sample lead:', leads[0]);
       
       try {
-        await onImport(leads);
+        // Create import job record first
+        const importJobData = {
+          file_name: file?.name || 'unknown.csv',
+          total_records: leads.length,
+          processed_records: 0,
+          failed_records: 0,
+          status: 'processing' as const,
+          error_details: null
+        };
+        
+        console.log('Creating import job:', importJobData);
+        
+        const { data: importJob, error: jobError } = await supabase
+          .from('import_jobs')
+          .insert(importJobData)
+          .select()
+          .single();
+          
+        if (jobError) {
+          console.error('Error creating import job:', jobError);
+          // Continue with import even if job creation fails
+        }
+        
+        console.log('Import job created:', importJob);
+        
+        // Process leads in batches to handle duplicates better
+        const batchSize = 50;
+        let processedCount = 0;
+        let failedCount = 0;
+        const failedLeads: any[] = [];
+        
+        for (let i = 0; i < leads.length; i += batchSize) {
+          const batch = leads.slice(i, i + batchSize);
+          
+          try {
+            await onImport(batch);
+            processedCount += batch.length;
+          } catch (batchError: any) {
+            console.error('Batch import error:', batchError);
+            failedCount += batch.length;
+            failedLeads.push(...batch.map(lead => ({ lead, error: batchError.message })));
+          }
+          
+          // Update progress
+          const progress = Math.round(((i + batch.length) / leads.length) * 90);
+          setImportProgress(progress);
+        }
+        
+        // Update import job status
+        if (importJob?.id) {
+          await supabase
+            .from('import_jobs')
+            .update({
+              processed_records: processedCount,
+              failed_records: failedCount,
+              status: failedCount > 0 ? 'completed_with_errors' : 'completed',
+              error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null
+            })
+            .eq('id', importJob.id);
+        }
+        
         setImportProgress(100);
-        setTimeout(() => {
-          resetState();
-          onClose();
-        }, 1000);
+        
+        if (failedCount > 0) {
+          setError(`Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen. Häufigste Ursache: Duplikate.`);
+          setStep('preview');
+        } else {
+          setTimeout(() => {
+            resetState();
+            onClose();
+          }, 1000);
+        }
+        
       } catch (importError: any) {
         console.error('Error importing leads:', importError);
         
@@ -400,18 +521,28 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                       <td className="px-4 py-3">
                         <Select
                           value={mapping.fieldName || ''}
-                          onValueChange={(value) => handleMappingChange(index, value === '__skip__' ? null : value)}
+                          onValueChange={(value) => {
+                            console.log('Field mapping changed:', { csvColumn: mapping.csvHeader, selectedField: value });
+                            handleMappingChange(index, value === '__skip__' ? null : value);
+                          }}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a field" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__skip__">Do not import</SelectItem>
-                            {allAvailableFields.map(field => (
-                              <SelectItem key={field.name} value={field.name}>
-                                {field.label}
-                              </SelectItem>
-                            ))}
+                            {(() => {
+                              console.log('Rendering dropdown options for:', mapping.csvHeader);
+                              console.log('Available fields for dropdown:', allAvailableFields);
+                              return allAvailableFields.map(field => {
+                                console.log('Adding dropdown option:', field);
+                                return (
+                                  <SelectItem key={field.name} value={field.name}>
+                                    {field.label}
+                                  </SelectItem>
+                                );
+                              });
+                            })()}
                           </SelectContent>
                         </Select>
                       </td>

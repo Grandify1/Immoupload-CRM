@@ -13,6 +13,104 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import SalesPipelineSettings from './settings/SalesPipelineSettings';
 
+// Import Jobs History Component
+const ImportJobsHistory: React.FC = () => {
+  const [importJobs, setImportJobs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchImportJobs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('import_jobs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (error) {
+          console.error('Error fetching import jobs:', error);
+        } else {
+          setImportJobs(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching import jobs:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchImportJobs();
+  }, []);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      case 'processing':
+        return <Badge className="bg-blue-100 text-blue-800">Processing</Badge>;
+      case 'completed_with_errors':
+        return <Badge className="bg-yellow-100 text-yellow-800">With Errors</Badge>;
+      case 'failed':
+        return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Import History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-gray-500">Loading import history...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Import History</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {importJobs.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No import jobs found.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {importJobs.map((job) => (
+              <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h4 className="font-medium">{job.file_name}</h4>
+                    {getStatusBadge(job.status)}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {job.processed_records} processed, {job.failed_records} failed
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(job.created_at).toLocaleString()}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-semibold">{job.total_records}</div>
+                  <div className="text-xs text-gray-500">total records</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 interface SettingsViewProps {
   customFields: CustomField[];
   activityTemplates: ActivityTemplate[];
@@ -650,40 +748,46 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         
         {/* Import Tab */}
         <TabsContent value="import">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Import Leads</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Import leads from CSV files. Make sure your CSV includes columns for name, email, phone, and status.
-                  </p>
-                  <Button className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Import Leads from CSV
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            {/* Import Actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Import Leads</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Import leads from CSV files. Make sure your CSV includes columns for name, email, phone, and status.
+                    </p>
+                    <Button className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Import Leads from CSV
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Import Opportunities</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Import opportunities/deals from CSV files. Include columns for title, value, stage, and associated lead.
+                    </p>
+                    <Button className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Import Opportunities from CSV
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Import Opportunities</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Import opportunities/deals from CSV files. Include columns for title, value, stage, and associated lead.
-                  </p>
-                  <Button className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Import Opportunities from CSV
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Import Jobs History */}
+            <ImportJobsHistory />
           </div>
           
           <Card className="mt-6">
