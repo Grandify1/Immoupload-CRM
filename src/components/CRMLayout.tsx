@@ -993,7 +993,6 @@ const CRMLayout = () => {
 
     switch (activeSection) {
       case 'leads':
-```text
         return (
           <LeadsView
             leads={leads}
