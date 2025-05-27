@@ -2,8 +2,8 @@
 -- Create import_jobs table for tracking CSV imports
 CREATE TABLE IF NOT EXISTS public.import_jobs (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    team_id UUID NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
-    created_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    team_id UUID NOT NULL,
+    created_by UUID NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     total_records INTEGER NOT NULL DEFAULT 0,
     processed_records INTEGER NOT NULL DEFAULT 0,
@@ -14,7 +14,29 @@ CREATE TABLE IF NOT EXISTS public.import_jobs (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create index for faster queries
+-- Add foreign key constraints after table is created
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'import_jobs_team_id_fkey'
+    ) THEN
+        ALTER TABLE public.import_jobs 
+        ADD CONSTRAINT import_jobs_team_id_fkey 
+        FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'import_jobs_created_by_fkey'
+    ) THEN
+        ALTER TABLE public.import_jobs 
+        ADD CONSTRAINT import_jobs_created_by_fkey 
+        FOREIGN KEY (created_by) REFERENCES public.profiles(id) ON DELETE CASCADE;
+    END IF;
+END $$;
+
+-- Create indexes for faster queries
 CREATE INDEX IF NOT EXISTS idx_import_jobs_team_id ON public.import_jobs(team_id);
 CREATE INDEX IF NOT EXISTS idx_import_jobs_created_at ON public.import_jobs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_import_jobs_status ON public.import_jobs(status);
