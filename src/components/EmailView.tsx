@@ -252,20 +252,20 @@ export const EmailView: React.FC = () => {
         <TabsContent value="inbox">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
+              <Card className="h-[calc(100vh-200px)] flex flex-col">
+                <CardHeader className="flex-shrink-0">
                   <CardTitle>Posteingang</CardTitle>
                   <CardDescription>
                     {emails.filter(e => !e.is_read).length} ungelesene Nachrichten
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 flex-1 overflow-hidden">
                   {emails.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground">
                       Keine Emails vorhanden
                     </div>
                   ) : (
-                    <div className="divide-y">
+                    <div className="divide-y h-full overflow-y-auto">
                       {emails.map((email) => (
                         <div
                           key={email.id}
