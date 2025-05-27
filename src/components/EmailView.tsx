@@ -151,12 +151,17 @@ export function EmailView() {
 
   const moveEmailToFolder = async (emailId: string, folder: EmailFolder) => {
     try {
-      const updateData: any = { folder };
+      const updateData: any = { 
+        folder,
+        updated_at: new Date().toISOString()
+      };
 
       if (folder === 'deleted') {
         updateData.is_deleted = true;
+        updateData.is_archived = false;
       } else if (folder === 'archived') {
         updateData.is_archived = true;
+        updateData.is_deleted = false;
       } else {
         updateData.is_deleted = false;
         updateData.is_archived = false;
@@ -165,19 +170,29 @@ export function EmailView() {
       const { error } = await supabase
         .from('emails')
         .update(updateData)
-        .eq('id', emailId);
+        .eq('id', emailId)
+        .eq('team_id', user?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast.success(`Email nach ${folders.find(f => f.id === folder)?.name} verschoben`);
-      loadEmails();
+      
+      // Update local state immediately
+      setEmails(prev => prev.map(email => 
+        email.id === emailId 
+          ? { ...email, ...updateData }
+          : email
+      ));
 
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
     } catch (error) {
       console.error('Error moving email:', error);
-      toast.error('Fehler beim Verschieben der Email');
+      toast.error(`Fehler beim Verschieben der Email: ${error.message}`);
     }
   };
 
@@ -186,19 +201,25 @@ export function EmailView() {
       const { error } = await supabase
         .from('emails')
         .delete()
-        .eq('id', emailId);
+        .eq('id', emailId)
+        .eq('team_id', user?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       toast.success('Email dauerhaft gelöscht');
-      loadEmails();
+      
+      // Update local state immediately
+      setEmails(prev => prev.filter(email => email.id !== emailId));
 
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
     } catch (error) {
       console.error('Error deleting email:', error);
-      toast.error('Fehler beim Löschen der Email');
+      toast.error(`Fehler beim dauerhaften Löschen der Email: ${error.message}`);
     }
   };
 
@@ -341,24 +362,7 @@ export function EmailView() {
     }
   };
 
-  const deleteEmail = async (emailId: string) => {
-    try {
-      const { error } = await supabase
-        .from('emails')
-        .delete()
-        .eq('id', emailId);
-
-      if (error) throw error;
-
-      toast.success('Email permanent gelöscht');
-      loadEmails();
-      setSelectedEmail(null);
-
-    } catch (error) {
-      console.error("Fehler beim permanenten löschen der Email:", error);
-      toast.error("Fehler beim permanenten löschen der Email");
-    }
-  }
+  
   
   const filteredEmails = getFilteredEmails();
   const unreadCount = emails.filter(e => !e.is_read && (!e.folder || e.folder === 'inbox')).length;
