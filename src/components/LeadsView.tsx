@@ -583,7 +583,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         </div>
       )}
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[calc(100vh-300px)] overflow-y-auto">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -746,7 +746,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     return (
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-6 max-h-[calc(100vh-300px)] overflow-y-auto">
           {columns.map((column) => (
             <div key={column.key} className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-medium mb-4 flex items-center justify-between">
@@ -759,7 +759,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 {(provided, snapshot) => (
                   <div 
                     className={cn(
-                      "space-y-3 min-h-[200px]", 
+                      "space-y-3 min-h-[200px] max-h-[calc(100vh-400px)] overflow-y-auto", 
                       snapshot.isDraggingOver ? "bg-blue-50" : ""
                     )}
                     ref={provided.innerRef}
@@ -826,8 +826,8 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="p-6">
+    <div className="flex-1 flex flex-col h-full">
+      <div className="p-6 flex-1 overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Leads</h1>
