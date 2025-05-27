@@ -1054,8 +1054,8 @@ const CRMLayout = () => {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {renderContent()}</div>
-
+        {renderContent()}
+        
         <Dialog open={!!selectedDeal} onOpenChange={(open) => {!open && setSelectedDeal(null)}}>
           {selectedDeal && (
             <DealDetail
@@ -1097,6 +1097,7 @@ const CRMLayout = () => {
           />
         )}
       </div>
+      
       <ImportStatusBar />
     </div>
   );
