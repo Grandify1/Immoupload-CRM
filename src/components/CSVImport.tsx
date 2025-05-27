@@ -943,7 +943,20 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        if (step === 'importing') {
+          const confirmClose = window.confirm(
+            'Der Import ist noch nicht abgeschlossen. Wenn Sie jetzt schließen, wird der Import abgebrochen. Möchten Sie wirklich schließen?'
+          );
+          if (confirmClose) {
+            onClose();
+          }
+        } else {
+          onClose();
+        }
+      }
+    }}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Import Leads from CSV</DialogTitle>
