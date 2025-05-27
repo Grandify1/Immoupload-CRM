@@ -98,15 +98,16 @@ export function EmailView() {
     }
   }, []);
 
-  const loadEmails = useCallback(async () => {
+  const loadEmails = useCallback(async (force: boolean = false) => {
     const now = Date.now();
-    if (now - lastLoadTime < 2000) {
+    if (!force && now - lastLoadTime < 2000) {
       console.log('Skipping email load - too recent');
       return;
     }
 
     try {
       setLastLoadTime(now);
+      console.log('Loading emails from database...');
       const { data, error } = await supabase
         .from('emails')
         .select('*')
@@ -114,6 +115,7 @@ export function EmailView() {
         .limit(100);
 
       if (error) throw error;
+      console.log(`Loaded ${data?.length || 0} emails from database`);
       setEmails(data || []);
     } catch (error) {
       console.error('Error loading emails:', error);
@@ -201,15 +203,25 @@ export function EmailView() {
       toast.success(`Email nach ${folders.find(f => f.id === folder)?.name} verschoben`);
       
       // Update local state immediately
-      setEmails(prev => prev.map(email => 
-        email.id === emailId 
-          ? { ...email, ...updateData }
-          : email
-      ));
+      setEmails(prev => {
+        const newEmails = prev.map(email => 
+          email.id === emailId 
+            ? { ...email, ...updateData }
+            : email
+        );
+        console.log(`Moved email ${emailId} to folder ${folder}. Updated email:`, newEmails.find(e => e.id === emailId));
+        return newEmails;
+      });
 
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
+
+      // Force refresh after folder move to ensure data consistency
+      setTimeout(() => {
+        console.log('Refreshing email list after folder move...');
+        loadEmails(true);
+      }, 500);
     } catch (error) {
       console.error('Error moving email:', error);
       toast.error(`Fehler beim Verschieben der Email: ${error.message}`);
@@ -237,21 +249,37 @@ export function EmailView() {
       
       if (permanent) {
         toast.success('Email dauerhaft vom Server und aus der Datenbank gelöscht');
-        // Remove from local state
-        setEmails(prev => prev.filter(email => email.id !== emailId));
+        // Remove from local state completely
+        setEmails(prev => {
+          const newEmails = prev.filter(email => email.id !== emailId);
+          console.log(`Permanently removed email ${emailId}. Remaining emails:`, newEmails.length);
+          return newEmails;
+        });
       } else {
-        toast.success('Email vom Server gelöscht und in den Papierkorb verschoben');
+        toast.success('Email in den Papierkorb verschoben');
         // Update local state to mark as deleted
-        setEmails(prev => prev.map(email => 
-          email.id === emailId 
-            ? { ...email, is_deleted: true, is_archived: false, folder: null }
-            : email
-        ));
+        setEmails(prev => {
+          const newEmails = prev.map(email => 
+            email.id === emailId 
+              ? { ...email, is_deleted: true, is_archived: false, folder: null, updated_at: new Date().toISOString() }
+              : email
+          );
+          console.log(`Marked email ${emailId} as deleted. Updated emails:`, newEmails.filter(e => e.id === emailId));
+          return newEmails;
+        });
       }
 
+      // Clear selected email if it was the one being deleted
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
+
+      // Force a re-render by triggering loadEmails after a short delay
+      setTimeout(() => {
+        console.log('Refreshing email list after deletion...');
+        loadEmails(true);
+      }, 500);
+
     } catch (error) {
       console.error('Error deleting email via IMAP:', error);
       toast.error(`Fehler beim Löschen der Email: ${error.message}`);
