@@ -1,0 +1,137 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:38 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:39 All customFields received: Array(20)
+CSVImport.tsx:40 customFields is array? true
+CSVImport.tsx:41 customFields length: 20
+CSVImport.tsx:44 Lead custom fields: Array(20)
+CSVImport.tsx:45 First custom field example: Object
+CSVImport.tsx:49 Custom Field 0: Object
+CSVImport.tsx:49 Custom Field 1: Object
+CSVImport.tsx:49 Custom Field 2: Object
+CSVImport.tsx:49 Custom Field 3: Object
+CSVImport.tsx:49 Custom Field 4: Object
+CSVImport.tsx:49 Custom Field 5: Object
+CSVImport.tsx:49 Custom Field 6: Object
+CSVImport.tsx:49 Custom Field 7: Object
+CSVImport.tsx:49 Custom Field 8: Object
+CSVImport.tsx:49 Custom Field 9: Object
+CSVImport.tsx:49 Custom Field 10: Object
+CSVImport.tsx:49 Custom Field 11: Object
+CSVImport.tsx:49 Custom Field 12: Object
+CSVImport.tsx:49 Custom Field 13: Object
+CSVImport.tsx:49 Custom Field 14: Object
+CSVImport.tsx:49 Custom Field 15: Object
+CSVImport.tsx:49 Custom Field 16: Object
+CSVImport.tsx:49 Custom Field 17: Object
+CSVImport.tsx:49 Custom Field 18: Object
+CSVImport.tsx:49 Custom Field 19: Object
+CSVImport.tsx:81 === End Custom Fields Debug ===
+CSVImport.tsx:179 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:199 CSV quote character detected: "
+CSVImport.tsx:296 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:297 Headers detected: Array(22)
+CSVImport.tsx:322 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:378 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:378 Auto-mapped "name" to "name"
+CSVImport.tsx:378 Auto-mapped "description" to "description"
+CSVImport.tsx:378 Auto-mapped "is_spending_on_ads" to "is_spending_on_ads"
+CSVImport.tsx:378 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:378 Auto-mapped "rating" to "rating"
+CSVImport.tsx:378 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:378 Auto-mapped "website" to "website"
+CSVImport.tsx:378 Auto-mapped "phone" to "phone"
+CSVImport.tsx:378 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:378 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:378 Auto-mapped "owner_profile_link" to "owner_profile_link"
+CSVImport.tsx:378 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:378 Auto-mapped "main_category" to "main_category"
+CSVImport.tsx:378 Auto-mapped "categories" to "categories"
+CSVImport.tsx:378 Auto-mapped "workday_timing" to "workday_timing"
+CSVImport.tsx:378 Auto-mapped "is_temporarily_closed" to "is_temporarily_closed"
+CSVImport.tsx:378 Auto-mapped "closed_on" to "closed_on"
+CSVImport.tsx:378 Auto-mapped "address" to "address"
+CSVImport.tsx:378 Auto-mapped "review_keywords" to "review_keywords"
+CSVImport.tsx:408 No auto-mapping found for "link"
+CSVImport.tsx:378 Auto-mapped "query" to "query"
+CSVImport.tsx:481 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:493 CSV data rows: 9
+CSVImport.tsx:494 Mappings: Array(22)0: createCustomField: falsecsvHeader: "place_id"customFieldType: "text"fieldName: "place_id"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()1: createCustomField: falsecsvHeader: "name"customFieldType: "text"fieldName: "name"[[Prototype]]: Object2: {csvHeader: 'description', fieldName: 'description', createCustomField: false, customFieldType: 'text'}3: {csvHeader: 'is_spending_on_ads', fieldName: 'is_spending_on_ads', createCustomField: false, customFieldType: 'text'}4: {csvHeader: 'reviews', fieldName: 'reviews', createCustomField: false, customFieldType: 'text'}5: {csvHeader: 'rating', fieldName: 'rating', createCustomField: false, customFieldType: 'text'}6: {csvHeader: 'competitors', fieldName: 'competitors', createCustomField: false, customFieldType: 'text'}7: {csvHeader: 'website', fieldName: 'website', createCustomField: false, customFieldType: 'text'}8: {csvHeader: 'phone', fieldName: 'phone', createCustomField: false, customFieldType: 'text'}9: {csvHeader: 'can_claim', fieldName: 'can_claim', createCustomField: false, customFieldType: 'text'}10: {csvHeader: 'owner_name', fieldName: 'name', createCustomField: false, customFieldType: 'text'}11: {csvHeader: 'owner_profile_link', fieldName: 'owner_profile_link', createCustomField: false, customFieldType: 'text'}12: {csvHeader: 'featured_image', fieldName: 'featured_image', createCustomField: false, customFieldType: 'text'}13: {csvHeader: 'main_category', fieldName: 'main_category', createCustomField: false, customFieldType: 'text'}14: {csvHeader: 'categories', fieldName: 'categories', createCustomField: false, customFieldType: 'text'}15: {csvHeader: 'workday_timing', fieldName: 'workday_timing', createCustomField: false, customFieldType: 'text'}16: {csvHeader: 'is_temporarily_closed', fieldName: 'is_temporarily_closed', createCustomField: false, customFieldType: 'text'}17: {csvHeader: 'closed_on', fieldName: 'closed_on', createCustomField: false, customFieldType: 'text'}18: {csvHeader: 'address', fieldName: 'address', createCustomField: false, customFieldType: 'text'}19: {csvHeader: 'review_keywords', fieldName: 'review_keywords', createCustomField: false, customFieldType: 'text'}20: {csvHeader: 'link', fieldName: null, createCustomField: false, customFieldType: 'text'}21: {csvHeader: 'query', fieldName: 'query', createCustomField: false, customFieldType: 'text'}length: 22[[Prototype]]: Array(0)
+CSVImport.tsx:497 === GETTING USER INFO ===
+CSVImport.tsx:513 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:536 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:540 Custom fields to create: Array(0)
+CSVImport.tsx:555 === PROCESSING CSV DATA ===
+CSVImport.tsx:599 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:606 Sample lead: Objectaddress: "Meinekestrasse 8, 10719 Berlin, Jerman"custom_fields: {place_id: 'ChIJCcn3gIqaUE0RZVWMOLQSFd8', is_spending_on_ads: '1', reviews: '94', rating: '5', competitors: 'Name: DAHLER Berlin - Immobilienmakler Link: https…914?authuser=0&hl=id&entry=ttu Reviews: 9 reviews', …}description: "Wir verkaufen Ihre Immobilie. Bergen Real Estate - Ihr Immobilienmakler Berlin mit weniger Provision als marktublich: Bei uns zahlen Kaufer und Verkaufer in der Regel nur je 1,9% Provision* (inkl. ges. MwSt.) des Kaufpreises. Provisionsfrei fur Verkaufer sind Grundstucke & Mehrfamilienhauser. Wir sind spezialisiert auf eine neue zielgruppengerichtete Vermarktung von Immobilien an lokale oder internationale Kunden, auch ohne die Nutzung klassischer Verkaufskanale. Mit unserer Strategie sind wir schnell, innovativ und vor allem effektiv.  *Maklerprovisionen sind frei verhandelbar und konnen im Einzelfall hiervon abweichen."name: "Bergen Real Estate (Pemilik)"phone: "+49 30 84319777"status: "potential"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"website: "https://www.bergen-realestate.com/"[[Prototype]]: Object
+CSVImport.tsx:610 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:627 Import job data: Object
+CSVImport.tsx:650 ✅ Import job created with ID: 85548f2a-d5d0-40bf-bea0-c242f19a9f29
+CSVImport.tsx:660 === STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===
+CSVImport.tsx:661 Duplicate Detection Config: Object
+CSVImport.tsx:662 Detection Field: none
+CSVImport.tsx:663 Detection Action: update
+CSVImport.tsx:677 === PROCESSING BATCH 1/1 (9 leads) ===
+CSVImport.tsx:682 
+📋 Processing lead: "Bergen Real Estate (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Bergen Real Estate (Pemilik)"phone: "+49 30 84319777"website: "https://www.bergen-realestate.com/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Bergen Real Estate (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Bergen Real Estate (Pemilik)" (ID: 672fb0c6-2dc2-4729-9613-1c65fa45dec6)
+CSVImport.tsx:682 
+📋 Processing lead: "BSK Immobilien GmbH (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "BSK Immobilien GmbH (Pemilik)"phone: "+49 30 86984760"website: "http://www.bsk-immobilien.de/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "BSK Immobilien GmbH (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "BSK Immobilien GmbH (Pemilik)" (ID: 5efee3d4-7cda-4603-b895-d428a2f6c971)
+CSVImport.tsx:682 
+📋 Processing lead: "Mein Makler Berlin-Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Mein Makler Berlin-Spandau (Pemilik)"phone: "+49 30 403640900"website: "https://www.mein-makler.com/immobilienmakler-in-berlin-spandau/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Mein Makler Berlin-Spandau (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Mein Makler Berlin-Spandau (Pemilik)" (ID: 14166213-431a-4505-a1d8-ddedce1210e1)
+CSVImport.tsx:682 
+📋 Processing lead: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)"phone: "+49 30 3360050"website: "http://www.immobilienmakler-spandau.de/?utm_source=gmb&utm_medium=referral"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" (ID: b3d222c4-fcfd-4fd6-bc47-eb4db575bf3c)
+CSVImport.tsx:682 
+📋 Processing lead: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)"phone: "+49 30 95626644"website: "https://www.melde-immobilien.de/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" (ID: 87916458-6637-45c0-a06e-ebf008f9640f)
+CSVImport.tsx:682 
+📋 Processing lead: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)"phone: "+49 30 365093050"website: "https://www.von-poll.com/de/immobilienmakler/berlin-spandau?utm_source=Google&utm_medium=GMB&y_source=1_MTY1NjExNDYtNzE1LWxvY2F0aW9uLndlYnNpdGU%3D"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" (ID: d3360843-ab2c-4656-9a94-b0d929ae9522)
+CSVImport.tsx:682 
+📋 Processing lead: "Top-Immobilien GmbH (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Top-Immobilien GmbH (Pemilik)"phone: "+49 30 28830999"website: "http://www.top-immobilien.de/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Top-Immobilien GmbH (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Top-Immobilien GmbH (Pemilik)" (ID: 3b46db97-29d2-4216-970b-93d88a44b8b4)
+CSVImport.tsx:682 
+📋 Processing lead: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)"phone: "+49 30 28471000"website: "https://www.engelvoelkersberlin.com/engelvoelkers-spandau-shop/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" (ID: 3b50f501-acae-4b44-b8ca-c922bb1fbc62)
+CSVImport.tsx:682 
+📋 Processing lead: "Neumann Immobilien (Pemilik)" from CSV
+CSVImport.tsx:683 Lead data: Objectemail: undefinedname: "Neumann Immobilien (Pemilik)"phone: "+49 1523 1066173"website: "http://www.neumann-immobilien-berlin.de/"[[Prototype]]: Object
+CSVImport.tsx:828 📝 INSERTING NEW LEAD: "Neumann Immobilien (Pemilik)" from CSV (no duplicates found)
+CSVImport.tsx:848 ✅ Successfully inserted new lead: "Neumann Immobilien (Pemilik)" (ID: c2c6f70f-8bb8-4148-9f12-0abac4ecf70a)
+CSVImport.tsx:882 === UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===
+CSVImport.tsx:883 Final status: completed
+CSVImport.tsx:884 Processed records: 9
+CSVImport.tsx:885 Failed records: 0
+CSVImport.tsx:908 ✅ Import job status updated successfully in Supabase
+CSVImport.tsx:919 === IMPORT COMPLETE ===
+CSVImport.tsx:920 Final result: ✅ Import erfolgreich: 9 Leads verarbeitet (9 neu, 0 aktualisiert).
+3useAuth.tsx:38 Auth state changed: TOKEN_REFRESHED 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useProfile.tsx:54 Skipping profile fetch - already have data for this user
