@@ -555,7 +555,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           total_records: leads.length,
           processed_records: 0,
           failed_records: 0,
-          status: 'processing' as const,
+          status: 'processing',
           error_details: null,
           team_id: profile.team_id,
           created_by: user.id
@@ -567,18 +567,20 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         try {
           const { data, error: jobError } = await supabase
             .from('import_jobs')
-            .insert(importJobData)
+            .insert([importJobData])
             .select()
             .single();
 
           if (jobError) {
             console.error('Error creating import job:', jobError);
+            throw new Error(`Failed to create import job: ${jobError.message}`);
           } else {
             importJob = data;
-            console.log('Import job created:', importJob);
+            console.log('Import job created successfully:', importJob);
           }
         } catch (err) {
           console.error('Failed to create import job:', err);
+          // Continue with import even if job creation fails
         }
 
         // Import all leads in batches to improve performance - silently in background
@@ -637,18 +639,31 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         // Update import job status
         if (importJob?.id) {
           try {
-            await supabase
+            const updateData = {
+              processed_records: processedCount,
+              failed_records: failedCount,
+              status: failedCount > 0 ? 'completed_with_errors' : 'completed',
+              error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
+              updated_at: new Date().toISOString()
+            };
+
+            console.log('Updating import job with:', updateData);
+
+            const { error: updateError } = await supabase
               .from('import_jobs')
-              .update({
-                processed_records: processedCount,
-                failed_records: failedCount,
-                status: failedCount > 0 ? 'completed_with_errors' : 'completed',
-                error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null
-              })
+              .update(updateData)
               .eq('id', importJob.id);
+
+            if (updateError) {
+              console.error('Failed to update import job:', updateError);
+            } else {
+              console.log('Import job updated successfully');
+            }
           } catch (updateError) {
             console.error('Failed to update import job:', updateError);
           }
+        } else {
+          console.log('No import job to update');
         }
 
         setImportProgress(100);
