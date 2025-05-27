@@ -24,6 +24,14 @@ type MappingType = {
 };
 
 const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields }) => {
+  
+  // Debug logging
+  React.useEffect(() => {
+    if (customFields) {
+      console.log('CSVImport received customFields:', customFields);
+      console.log('Lead custom fields:', customFields.filter(f => f.entity_type === 'lead'));
+    }
+  }, [customFields]);
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappings, setMappings] = useState<MappingType[]>([]);
@@ -50,9 +58,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     ...((customFields || [])
       .filter(field => field && field.entity_type === 'lead')
       .map(field => ({
-        name: field.name,
+        name: field.name.toLowerCase().replace(/\s+/g, '_'), // Use the standardized field key
         label: `${field.name} (Custom)`,
-        isCustom: true
+        isCustom: true,
+        originalName: field.name // Keep original name for reference
       })) || [])
   ];
 
@@ -177,7 +186,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         const initialMappings: MappingType[] = headers.map(header => {
           const matchedField = allAvailableFields.find(field => 
             field.label.toLowerCase() === header.toLowerCase() || 
-            field.name.toLowerCase() === header.toLowerCase()
+            field.name.toLowerCase() === header.toLowerCase() ||
+            (field.originalName && field.originalName.toLowerCase() === header.toLowerCase())
           );
           
           return {
@@ -248,20 +258,30 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       
       const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
       
+      // Create new custom fields first
       for (const mapping of customFieldMappings) {
         if (mapping.fieldName) {
-          await onAddCustomField(mapping.fieldName, mapping.customFieldType);
+          try {
+            await onAddCustomField(mapping.fieldName, mapping.customFieldType);
+          } catch (error) {
+            console.log('Custom field might already exist:', mapping.fieldName);
+          }
         }
       }
       
-      const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = csvData.map(row => {
+      const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = [];
+      const duplicateNames: string[] = [];
+      
+      for (let i = 0; i < csvData.length; i++) {
+        const row = csvData[i];
         const lead: any = {
           custom_fields: {}
         };
         
         mappings.forEach((mapping, index) => {
           if (mapping.fieldName && index < row.length) {
-            const value = row[index];
+            const value = row[index]?.trim();
+            if (!value) return; // Skip empty values
             
             const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
 
@@ -274,7 +294,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             } else if (mapping.createCustomField && mapping.fieldName) {
               lead.custom_fields[mapping.fieldName] = value;
             } else if (targetField && targetField.isCustom) {
-              // Verwende den Custom Field Namen direkt
+              // Use the standardized field key for custom fields
               lead.custom_fields[targetField.name] = value;
             }
           }
@@ -282,19 +302,43 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         
         if (!lead.status) lead.status = 'potential';
         
-        return lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>;
-      });
+        // Check if lead has required name field
+        if (lead.name && lead.name.trim()) {
+          leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
+        }
+        
+        // Update progress
+        setImportProgress(Math.round(((i + 1) / csvData.length) * 90));
+      }
       
-      await onImport(leads);
+      console.log('Prepared leads for import:', leads.length);
+      console.log('Sample lead:', leads[0]);
       
-      setImportProgress(100);
-      setTimeout(() => {
-        resetState();
-        onClose();
-      }, 1000);
+      try {
+        await onImport(leads);
+        setImportProgress(100);
+        setTimeout(() => {
+          resetState();
+          onClose();
+        }, 1000);
+      } catch (importError: any) {
+        console.error('Error importing leads:', importError);
+        
+        if (importError?.message?.includes('duplicate key')) {
+          const duplicateName = importError.details?.match(/Key \(name\)=\((.*?)\)/)?.[1];
+          if (duplicateName) {
+            setError(`Ein Lead mit dem Namen "${duplicateName}" existiert bereits. Bitte entfernen Sie Duplikate aus Ihrer CSV-Datei oder verwenden Sie eine andere Namenskonvention.`);
+          } else {
+            setError('Einige Leads existieren bereits. Bitte überprüfen Sie Ihre CSV-Datei auf Duplikate.');
+          }
+        } else {
+          setError(`Import-Fehler: ${importError?.message || 'Unbekannter Fehler beim Importieren der Leads.'}`);
+        }
+        setStep('preview');
+      }
     } catch (error) {
-      console.error('Error importing leads:', error);
-      setError('Failed to import leads. Please try again.');
+      console.error('General error during import:', error);
+      setError('Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
       setStep('preview');
     }
   };
