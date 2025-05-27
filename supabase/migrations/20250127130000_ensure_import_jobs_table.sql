@@ -36,11 +36,29 @@ BEGIN
     END IF;
 END $$;
 
--- Create indexes if they don't exist
-CREATE INDEX IF NOT EXISTS idx_import_jobs_team_id ON public.import_jobs(team_id);
-CREATE INDEX IF NOT EXISTS idx_import_jobs_created_at ON public.import_jobs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_import_jobs_status ON public.import_jobs(status);
-CREATE INDEX IF NOT EXISTS idx_import_jobs_undo_status ON public.import_jobs(undo_status);
+-- Create indexes only if columns exist
+DO $$ 
+BEGIN
+    -- Create index for team_id only if column exists
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'import_jobs' AND column_name = 'team_id') THEN
+        CREATE INDEX IF NOT EXISTS idx_import_jobs_team_id ON public.import_jobs(team_id);
+    END IF;
+    
+    -- Create index for created_at only if column exists
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'import_jobs' AND column_name = 'created_at') THEN
+        CREATE INDEX IF NOT EXISTS idx_import_jobs_created_at ON public.import_jobs(created_at DESC);
+    END IF;
+    
+    -- Create index for status only if column exists
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'import_jobs' AND column_name = 'status') THEN
+        CREATE INDEX IF NOT EXISTS idx_import_jobs_status ON public.import_jobs(status);
+    END IF;
+    
+    -- Create index for undo_status only if column exists
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'import_jobs' AND column_name = 'undo_status') THEN
+        CREATE INDEX IF NOT EXISTS idx_import_jobs_undo_status ON public.import_jobs(undo_status);
+    END IF;
+END $$;
 
 -- Enable RLS (Row Level Security)
 ALTER TABLE public.import_jobs ENABLE ROW LEVEL SECURITY;
@@ -50,12 +68,18 @@ DROP POLICY IF EXISTS "Users can view import jobs from their team" ON public.imp
 DROP POLICY IF EXISTS "Users can insert import jobs for their team" ON public.import_jobs;
 DROP POLICY IF EXISTS "Users can update import jobs from their team" ON public.import_jobs;
 
--- Create RLS policies
-CREATE POLICY "Users can view import jobs from their team" ON public.import_jobs
-    FOR SELECT USING (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()));
-
-CREATE POLICY "Users can insert import jobs for their team" ON public.import_jobs
-    FOR INSERT WITH CHECK (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()));
-
-CREATE POLICY "Users can update import jobs from their team" ON public.import_jobs
-    FOR UPDATE USING (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()));
+-- Create RLS policies only if team_id column exists
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'import_jobs' AND column_name = 'team_id') THEN
+        -- Create RLS policies
+        EXECUTE 'CREATE POLICY "Users can view import jobs from their team" ON public.import_jobs
+            FOR SELECT USING (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()))';
+        
+        EXECUTE 'CREATE POLICY "Users can insert import jobs for their team" ON public.import_jobs
+            FOR INSERT WITH CHECK (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()))';
+        
+        EXECUTE 'CREATE POLICY "Users can update import jobs from their team" ON public.import_jobs
+            FOR UPDATE USING (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()))';
+    END IF;
+END $$;
