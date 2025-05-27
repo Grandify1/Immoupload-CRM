@@ -1,8 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
-  ChevronLeft, 
-  ChevronRight, 
   Phone, 
   Mail, 
   MessageSquare,
@@ -29,10 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { useProfile } from '@/hooks/useProfile';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -87,8 +84,6 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const [editForm, setEditForm] = useState(lead);
   const [newNote, setNewNote] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [selectedActivityTemplate, setSelectedActivityTemplate] = useState<string | null>(null);
-  const [activityFormData, setActivityFormData] = useState<Record<string, any>>({});
 
   // State for the new custom field modal
   const [showAddCustomFieldModal, setShowAddCustomFieldModal] = useState(false);
@@ -103,73 +98,45 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   });
 
   useEffect(() => {
-    // When the lead changes, reset the edit form state
     setEditForm(lead);
-    // Also reset edit mode when lead changes
     setIsEditing(false);
   }, [lead]);
 
-  const currentIndex = allLeads.findIndex(l => l.id === lead.id);
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < allLeads.length - 1;
-
-  const navigateTo = (direction: 'prev' | 'next') => {
-    if (direction === 'prev' && hasPrevious) {
-      onLeadSelect(allLeads[currentIndex - 1]);
-    } else if (direction === 'next' && hasNext) {
-      onLeadSelect(allLeads[currentIndex + 1]);
-    }
-  };
-
-  // Function to handle toggling edit mode
   const handleToggleEdit = () => {
     if (!isEditing) {
-      // When entering edit mode, initialize editForm with current lead data
-      // and ensure custom_fields are included, initialized if missing
       const initialCustomFields: Record<string, any> = {};
       if (customFields) {
         customFields
           .filter(field => field.entity_type === 'lead')
           .forEach(field => {
             const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-            // Use existing value from lead if available, otherwise use a default (empty string or false)
             initialCustomFields[fieldKey] = lead.custom_fields?.[fieldKey] ?? 
               (field.field_type === 'checkbox' ? false : 
                field.field_type === 'select' ? '' : 
                field.field_type === 'number' ? '0' : '');
           });
       }
-      console.log('Initializing edit form with custom fields:', initialCustomFields);
-      // Merge with existing standard fields, ensuring custom_fields is the initialized object
       setEditForm({ 
         ...lead, 
         custom_fields: { ...initialCustomFields, ...lead.custom_fields }
       });
     }
-    // When exiting edit mode (via Cancel or Save), the useEffect for lead change will reset the form if needed
     setIsEditing(!isEditing);
   };
 
   const handleSave = () => {
-    // Ensure custom_fields object is not undefined when saving
     const updates = { 
       ...editForm,
       custom_fields: Object.fromEntries(
         Object.entries(editForm.custom_fields || {}).filter(([_, value]) => value !== null && value !== undefined)
       )
     };
-    console.log('Saving lead updates:', updates);
-    console.log('Current editForm:', editForm);
-    console.log('Custom fields before save:', editForm.custom_fields);
-    
     onUpdateLead(lead.id, updates);
-    console.log('onUpdateLead called with:', lead.id, updates);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    console.log('Canceling edit, reverting to:', lead);
-    setEditForm(lead); // Revert to the original lead data
+    setEditForm(lead);
     setIsEditing(false);
   };
 
@@ -186,179 +153,123 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
       setNewNote('');
     }
   };
-  
-  const handleAddCustomActivity = () => {
-    if (!selectedActivityTemplate || !profile) return;
-    
-    const template = activityTemplates?.find(t => t.id === selectedActivityTemplate);
-    if (!template) return;
-    
-    onAddActivity({
-      entity_type: 'lead',
-      entity_id: lead.id,
-      type: 'custom',
-      content: `${template.name} für ${lead.name}`,
-      author_id: profile.id,
-      template_data: activityFormData,
-      template_id: selectedActivityTemplate,
-    });
-    
-    setSelectedActivityTemplate(null);
-    setActivityFormData({});
-    setActiveTab('all');
-  };
-  
-  const formatUrlAsLink = (url: string) => {
-    if (!url) return '';
-    
-    const hasProtocol = url.startsWith('http://') || url.startsWith('https://');
-    const formattedUrl = hasProtocol ? url : `https://${url}`;
-    
-    return (
-      <a 
-        href={formattedUrl} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
-        {url}
-      </a>
-    );
-  };
 
   const handleCreateCustomField = async () => {
-    if (!onAddCustomField || !newCustomField.name) return; // Check if onAddCustomField prop is available
+    if (!onAddCustomField || !newCustomField.name) return;
 
     try {
-      // Call the parent function to add the custom field to the database
       await onAddCustomField({
         name: newCustomField.name,
         field_type: newCustomField.field_type,
-        entity_type: 'lead', // This modal is specifically for lead custom fields
+        entity_type: 'lead',
         options: newCustomField.field_type === 'select' ? newCustomField.options : undefined,
-        sort_order: 0, // Default sort order, might need adjustment in parent component
-        team_id: lead.team_id, // Add team_id from the current lead
-        created_at: new Date().toISOString() // Add current timestamp
+        sort_order: 0,
+        team_id: lead.team_id,
+        created_at: new Date().toISOString()
       });
 
-      // Add the newly created field to the current editForm state immediately
       const fieldKey = newCustomField.name.toLowerCase().replace(/\s+/g, '_');
       setEditForm(prevForm => ({
         ...prevForm,
         custom_fields: {
           ...prevForm.custom_fields,
-          [fieldKey]: newCustomField.field_type === 'checkbox' ? false : '' // Initialize with default value
+          [fieldKey]: newCustomField.field_type === 'checkbox' ? false : ''
         }
       }));
 
-      // Reset the new custom field form and close the modal
       setNewCustomField({ name: '', field_type: 'text', options: [] });
       setShowAddCustomFieldModal(false);
-
     } catch (error) {
-      console.error('Error adding custom field from Lead Detail:', error);
-      // Optionally show a toast notification for the error
+      console.error('Error adding custom field:', error);
     }
   };
 
-  // Add useEffect to monitor editForm changes
-  useEffect(() => {
-    console.log('editForm changed:', editForm);
-  }, [editForm]);
-
-  // Add useEffect to monitor custom fields changes
-  useEffect(() => {
-    if (customFields) {
-      console.log('Available custom fields:', customFields);
-    }
-  }, [customFields]);
-
   return (
     <div 
-      className={`fixed inset-y-0 right-0 z-40 w-full md:w-1/2 bg-white shadow-lg flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      className={`fixed inset-y-0 right-0 z-40 w-[800px] bg-white shadow-lg flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
     >
-      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-bold text-gray-900">{lead.name}</h2>
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
+        <div className="flex items-center space-x-3">
+          <h1 className="text-xl font-semibold text-gray-900">{lead.name}</h1>
           <Badge className={cn(
-            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white",
-            lead.status === 'potential' ? 'bg-gray-500' :
-            lead.status === 'contacted' ? 'bg-blue-500' :
-            lead.status === 'qualified' ? 'bg-green-500' :
-            lead.status === 'closed' ? 'bg-red-500' : 'bg-gray-500'
+            "inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white",
+            statusColors[lead.status]
           )}>
-            {lead.status === 'potential' ? 'Potential' :
-             lead.status === 'contacted' ? 'Contacted' :
-             lead.status === 'qualified' ? 'Qualified' :
-             lead.status === 'closed' ? 'Closed' : lead.status}
+            {statusLabels[lead.status]}
           </Badge>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="sm" onClick={handleToggleEdit}>
             <Edit2 className="w-4 h-4" />
           </Button>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100">
-            <X className="w-5 h-5" />
-          </button>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
+      {/* Action Buttons */}
       {!isEditing && (
-        <div className="px-6 py-3 border-b border-gray-200 flex items-center space-x-2 flex-shrink-0">
-          <Button size="sm" className="flex items-center space-x-1">
-            <StickyNote className="w-4 h-4" />
-            <span>Note</span>
-          </Button>
-          <Button size="sm" variant="outline" className="flex items-center space-x-1">
-            <Mail className="w-4 h-4" />
-            <span>Email</span>
-          </Button>
-          <Button size="sm" variant="outline" className="flex items-center space-x-1">
-            <Phone className="w-4 h-4" />
-            <span>Call</span>
-          </Button>
+        <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center space-x-2">
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <StickyNote className="w-4 h-4 mr-1" />
+              Note
+            </Button>
+            <Button size="sm" variant="outline" className="border-gray-300">
+              <Mail className="w-4 h-4 mr-1" />
+              Email
+            </Button>
+            <Button size="sm" variant="outline" className="border-gray-300">
+              <MessageSquare className="w-4 h-4 mr-1" />
+              SMS
+            </Button>
+            <Button size="sm" variant="outline" className="border-gray-300">
+              <Phone className="w-4 h-4 mr-1" />
+              Call
+            </Button>
+            <Button size="sm" variant="outline" className="border-gray-300">
+              Activity
+            </Button>
+          </div>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto flex">
+      <div className="flex flex-1 overflow-hidden">
         {isEditing ? (
-          <div className="p-6 space-y-6 w-full">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Lead bearbeiten</h4>
-            {/* Using a grid for better layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Standardfelder */}
+          <div className="flex-1 p-6 overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Edit Lead</h3>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
+                <Label className="text-sm font-medium text-gray-700">Name</Label>
                 <Input
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="mt-1"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Email</label>
+                <Label className="text-sm font-medium text-gray-700">Email</Label>
                 <Input
                   value={editForm.email}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="mt-1"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Telefon</label>
+                <Label className="text-sm font-medium text-gray-700">Phone</Label>
                 <Input
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  className="mt-1"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
+                <Label className="text-sm font-medium text-gray-700">Status</Label>
                 <Select
                   value={editForm.status}
                   onValueChange={(value: 'potential' | 'contacted' | 'qualified' | 'closed') => setEditForm({ ...editForm, status: value })}
                 >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Status auswählen" />
+                  <SelectTrigger>
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="potential">Potential</SelectItem>
@@ -368,232 +279,304 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Website</Label>
+                <Input
+                  value={editForm.website}
+                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Address</Label>
+                <Input
+                  value={editForm.address}
+                  onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                />
+              </div>
+              <div className="col-span-2 space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Description</Label>
+                <Textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
 
-              {/* Benutzerdefinierte Felder */}
+              {/* Custom Fields */}
               {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
                 const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                // Render only if the field is in the editForm state (newly added fields will be)
-                // or if it had a value in the original lead data
                 if (editForm.custom_fields && editForm.custom_fields.hasOwnProperty(fieldKey)) {
-                   return (
-                     <div key={field.id} className="space-y-2">
-                       <label className="text-sm font-medium">{field.name}</label>
-                       {field.field_type === 'text' && (
-                         <Input
-                           value={(editForm.custom_fields[fieldKey] as string) || ''}
-                           onChange={(e) => {
-                             const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
-                             setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                           }}
-                           className="mt-1"
-                         />
-                       )}
-                       {field.field_type === 'number' && (
-                         <Input
-                           type="number"
-                           value={(editForm.custom_fields[fieldKey] as string) || ''}
-                           onChange={(e) => {
-                             const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
-                             setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                           }}
-                           className="mt-1"
-                         />
-                       )}
-                       {field.field_type === 'select' && (
-                         <Select
-                           value={(editForm.custom_fields[fieldKey] as string) || ''}
-                           onValueChange={(value) => {
-                             const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: value };
-                             setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                           }}
-                         >
-                           <SelectTrigger className="mt-1">
-                             <SelectValue placeholder={`${field.name} auswählen`} />
-                           </SelectTrigger>
-                           <SelectContent>
-                             {field.options.map((option, index) => (
-                               <SelectItem key={index} value={option}>{option}</SelectItem>
-                             ))}
-                           </SelectContent>
-                         </Select>
-                       )}
-                       {field.field_type === 'checkbox' && (
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Checkbox
-                              id={fieldKey}
-                              checked={!!editForm.custom_fields[fieldKey]}
-                              onCheckedChange={(checked) => {
-                                const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: checked };
-                                setEditForm({ ...editForm, custom_fields: updatedCustomFields });
-                              }}
-                            />
-                            <label htmlFor={fieldKey} className="text-sm text-gray-700">{field.name}</label>
-                          </div>
-                       )}
-                       {field.field_type === 'date' && (
-                          <Input
-                            type="date"
-                            value={(editForm.custom_fields[fieldKey] as string) || ''}
-                            onChange={(e) => {
-                              const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                  return (
+                    <div key={field.id} className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">{field.name}</Label>
+                      {field.field_type === 'text' && (
+                        <Input
+                          value={(editForm.custom_fields[fieldKey] as string) || ''}
+                          onChange={(e) => {
+                            const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                            setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                          }}
+                        />
+                      )}
+                      {field.field_type === 'number' && (
+                        <Input
+                          type="number"
+                          value={(editForm.custom_fields[fieldKey] as string) || ''}
+                          onChange={(e) => {
+                            const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                            setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                          }}
+                        />
+                      )}
+                      {field.field_type === 'select' && (
+                        <Select
+                          value={(editForm.custom_fields[fieldKey] as string) || ''}
+                          onValueChange={(value) => {
+                            const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: value };
+                            setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={`Select ${field.name}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option, index) => (
+                              <SelectItem key={index} value={option}>{option}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {field.field_type === 'checkbox' && (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={fieldKey}
+                            checked={!!editForm.custom_fields[fieldKey]}
+                            onCheckedChange={(checked) => {
+                              const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: checked };
                               setEditForm({ ...editForm, custom_fields: updatedCustomFields });
                             }}
-                            className="mt-1"
                           />
-                       )}
-                     </div>
-                   );
+                          <Label htmlFor={fieldKey} className="text-sm text-gray-700">{field.name}</Label>
+                        </div>
+                      )}
+                      {field.field_type === 'date' && (
+                        <Input
+                          type="date"
+                          value={(editForm.custom_fields[fieldKey] as string) || ''}
+                          onChange={(e) => {
+                            const updatedCustomFields = { ...editForm.custom_fields, [fieldKey]: e.target.value };
+                            setEditForm({ ...editForm, custom_fields: updatedCustomFields });
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
                 }
-                return null; // Don't render if the field isn't in editForm (shouldn't happen with new init logic)
+                return null;
               })}
 
-              {/* Button to add new custom field */}
-              <div className="col-span-1 md:col-span-2">
+              <div className="col-span-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowAddCustomFieldModal(true)}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Neues benutzerdefiniertes Feld hinzufügen
+                  Add Custom Field
                 </Button>
               </div>
-
             </div>
-            <div className="flex justify-end space-x-2 mt-6">
-              <Button variant="outline" onClick={handleCancel}>Abbrechen</Button>
-              <Button onClick={handleSave}>Speichern</Button>
+
+            <div className="flex justify-end space-x-2 mt-6 pt-4 border-t">
+              <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleSave}>Save</Button>
             </div>
           </div>
         ) : (
           <>
-            <div className="w-1/3 border-r border-gray-200 p-6 space-y-6 flex-shrink-0 sticky top-0 h-full overflow-y-auto">
-              <Accordion type="single" collapsible defaultValue="about-section">
-                <AccordionItem value="about-section">
-                  <AccordionTrigger className="text-sm font-medium text-gray-900 py-2 flex justify-between items-center w-full">
-                    ABOUT
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-2">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Mail className="w-4 h-4 mr-2" />
-                        <a href={`mailto:${lead.email}`} className="hover:underline">{lead.email}</a>
+            {/* Left Sidebar - ABOUT Section */}
+            <div className="w-80 border-r border-gray-200 bg-white overflow-y-auto">
+              <div className="p-6">
+                <div className="mb-6">
+                  <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">ABOUT</h2>
+                  
+                  <div className="space-y-3">
+                    {lead.email && (
+                      <div className="flex items-center text-sm">
+                        <Mail className="w-4 h-4 mr-3 text-gray-400" />
+                        <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">
+                          {lead.email}
+                        </a>
                       </div>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Phone className="w-4 h-4 mr-2" />
-                        <a href={`tel:${lead.phone}`} className="hover:underline">{lead.phone}</a>
+                    )}
+                    
+                    {lead.phone && (
+                      <div className="flex items-center text-sm">
+                        <Phone className="w-4 h-4 mr-3 text-gray-400" />
+                        <a href={`tel:${lead.phone}`} className="text-gray-900 hover:underline">
+                          {lead.phone}
+                        </a>
                       </div>
-                      {lead.website && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Globe className="w-4 h-4 mr-2" />
-                          <a href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {lead.website}
-                          </a>
-                        </div>
-                      )}
-                      {lead.address && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          <span>{lead.address}</span>
-                        </div>
-                      )}
-                      {lead.description && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <StickyNote className="w-4 h-4 mr-2" />
-                          <p>{lead.description}</p>
-                        </div>
-                      )}
-                      
-                      {lead.custom_fields?.review_count && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <span className="font-medium mr-2">Review Count:</span>
-                          <span>{lead.custom_fields.review_count as string}</span>
-                        </div>
-                      )}
-                      {lead.custom_fields?.gmb_url && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <span className="font-medium mr-2">GMB URL:</span>
-                          <a href={lead.custom_fields.gmb_url as string} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            {lead.custom_fields.gmb_url as string}
-                          </a>
-                        </div>
-                      )}
+                    )}
+                    
+                    {lead.website && (
+                      <div className="flex items-center text-sm">
+                        <Globe className="w-4 h-4 mr-3 text-gray-400" />
+                        <a 
+                          href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {lead.website}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {lead.address && (
+                      <div className="flex items-center text-sm">
+                        <MapPin className="w-4 h-4 mr-3 text-gray-400" />
+                        <span className="text-gray-900">{lead.address}</span>
+                      </div>
+                    )}
+                    
+                    {lead.description && (
+                      <div className="flex items-start text-sm">
+                        <FileText className="w-4 h-4 mr-3 text-gray-400 mt-0.5" />
+                        <p className="text-gray-900">{lead.description}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                      {/* Benutzerdefinierte Felder innerhalb von ABOUT */}
-                      {customFields && customFields.filter(field => field.entity_type === 'lead').map(field => {
+                {/* Custom Fields Section */}
+                {customFields && customFields.filter(field => field.entity_type === 'lead').length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">CUSTOM FIELDS</h3>
+                    <div className="space-y-3">
+                      {customFields.filter(field => field.entity_type === 'lead').map(field => {
                         const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
                         const fieldValue = lead.custom_fields?.[fieldKey];
                         
-                        if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null; // Don't display if value is empty
+                        if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null;
 
                         return (
-                          <div key={field.id} className="flex items-center text-sm text-gray-600">
-                            {/* Display icon based on field type? Or a generic one? Let's use a generic one for now */}
-                            {/* <FileText className="w-4 h-4 mr-2" /> */}
-                            <span className="font-medium mr-2">{field.name}:</span>
-                            <span>
+                          <div key={field.id} className="text-sm">
+                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                              {field.name}
+                            </div>
+                            <div className="text-gray-900">
                               {field.field_type === 'checkbox' ? (fieldValue ? 'Yes' : 'No') : 
-                               field.field_type === 'select' ? String(fieldValue).split(',').map((item, index) => (
-                                 <Badge key={index} variant="secondary" className="mr-1 mb-1">{item.trim()}</Badge>
-                               )) : 
                                field.field_type === 'date' ? new Date(fieldValue as string).toLocaleDateString() : 
-                               field.field_type === 'number' ? fieldValue as string : 
-                               String(fieldValue) // Default to string for text and others
-                              }
-                            </span>
+                               String(fieldValue)}
+                            </div>
                           </div>
                         );
                       })}
-
-                      {/* Convert to Deal Button */}
-                      <Button onClick={() => onConvertToDeal(lead)} className="mt-4 w-full">
-                        <ArrowRight className="w-4 h-4 mr-2" />
-                        Convert to Deal
-                      </Button>
-
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                  </div>
+                )}
+
+                {/* Convert to Deal Button */}
+                <Button 
+                  onClick={() => onConvertToDeal(lead)} 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Convert to Deal
+                </Button>
+              </div>
             </div>
 
-            <div className="flex-1 p-6 space-y-6">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Add Activity</h4>
-                <div className="flex space-x-2">
-                  <Textarea
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    placeholder="Add a note, log a call, etc..."
-                    className="flex-1 text-sm resize-none"
-                    rows={3}
-                  />
-                  <Button onClick={handleAddNote} disabled={!newNote.trim()} size="sm">
-                    <Send className="w-4 h-4" />
-                  </Button>
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Tabs */}
+              <div className="border-b border-gray-200 bg-white">
+                <div className="px-6">
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="h-12 bg-transparent border-none p-0">
+                      <TabsTrigger 
+                        value="all" 
+                        className="h-12 px-4 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none"
+                      >
+                        All
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="important" 
+                        className="h-12 px-4 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none"
+                      >
+                        Important
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="notes" 
+                        className="h-12 px-4 border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent rounded-none"
+                      >
+                        Notes & Summaries
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Activities</h4>
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Add Note Section */}
+                <div className="mb-6">
+                  <div className="flex space-x-3">
+                    <Textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      placeholder="Add a note, log a call, etc..."
+                      className="flex-1 min-h-[100px] resize-none border-gray-300"
+                    />
+                    <Button 
+                      onClick={handleAddNote} 
+                      disabled={!newNote.trim()}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Activities List */}
                 <div className="space-y-4">
                   {lead.activities && lead.activities.length > 0 ? (
                     lead.activities.map((activity) => (
-                      <div key={activity.id} className="border rounded-md p-3 bg-gray-50">
-                        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                          <span>{activity.type}</span>
-                          <span>{new Date(activity.created_at).toLocaleString()}</span>
-                        </div>
-                        <p className="text-sm text-gray-800">{activity.content}</p>
-                        <div className="flex justify-end mt-2">
-                          <Button variant="ghost" size="sm" onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}>
-                            <Trash2 className="w-3 h-3 text-red-500" />
+                      <div key={activity.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <StickyNote className="w-4 h-4 text-gray-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 capitalize">
+                                  {activity.type}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {new Date(activity.created_at).toLocaleString()}
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-800 ml-10">{activity.content}</p>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-sm text-gray-500">No activities yet.</div>
+                    <div className="text-center py-12 text-gray-500">
+                      <StickyNote className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p>No activities yet. Add your first note above.</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -602,47 +585,47 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
         )}
       </div>
 
-      {/* Modal to add new custom field */}
+      {/* Add Custom Field Modal */}
       <Dialog open={showAddCustomFieldModal} onOpenChange={setShowAddCustomFieldModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Neues benutzerdefiniertes Feld</DialogTitle>
+            <DialogTitle>Add Custom Field</DialogTitle>
             <DialogDescription>
-              Erstellen Sie ein neues benutzerdefiniertes Feld für diesen Lead.
+              Create a new custom field for this lead.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="newFieldName">Feldname</Label>
+              <Label htmlFor="newFieldName">Field Name</Label>
               <Input
                 id="newFieldName"
                 value={newCustomField.name}
                 onChange={(e) => setNewCustomField({...newCustomField, name: e.target.value})}
-                placeholder="z.B. Budget"
+                placeholder="e.g. Budget"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="newFieldType">Feldtyp</Label>
+              <Label htmlFor="newFieldType">Field Type</Label>
               <Select
                 value={newCustomField.field_type}
                 onValueChange={(value: 'text' | 'number' | 'date' | 'select' | 'checkbox') => 
                   setNewCustomField({...newCustomField, field_type: value})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Typ auswählen" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="number">Zahl</SelectItem>
-                  <SelectItem value="date">Datum</SelectItem>
-                  <SelectItem value="select">Auswahl</SelectItem>
+                  <SelectItem value="number">Number</SelectItem>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="select">Select</SelectItem>
                   <SelectItem value="checkbox">Checkbox</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {newCustomField.field_type === 'select' && (
               <div className="space-y-2">
-                <Label>Optionen</Label>
+                <Label>Options</Label>
                 <div className="space-y-2">
                   {newCustomField.options.map((option, index) => (
                     <div key={index} className="flex gap-2">
@@ -675,7 +658,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                     })}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Option hinzufügen
+                    Add Option
                   </Button>
                 </div>
               </div>
@@ -686,15 +669,14 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               setShowAddCustomFieldModal(false);
               setNewCustomField({ name: '', field_type: 'text', options: [] });
             }}>
-              Abbrechen
+              Cancel
             </Button>
             <Button onClick={handleCreateCustomField} disabled={!newCustomField.name || (newCustomField.field_type === 'select' && newCustomField.options.length === 0)}>
-              Feld erstellen
+              Create Field
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };
