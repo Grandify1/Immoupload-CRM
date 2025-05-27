@@ -1,0 +1,1024 @@
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1184 Rendering dropdown options for: closed_on
+CSVImport.tsx?t=1748330329147:1185 Available fields for dropdown: Array(28)
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1184 Rendering dropdown options for: address
+CSVImport.tsx?t=1748330329147:1185 Available fields for dropdown: Array(28)
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1184 Rendering dropdown options for: review_keywords
+CSVImport.tsx?t=1748330329147:1185 Available fields for dropdown: Array(28)
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1184 Rendering dropdown options for: link
+CSVImport.tsx?t=1748330329147:1185 Available fields for dropdown: Array(28)
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1184 Rendering dropdown options for: query
+CSVImport.tsx?t=1748330329147:1185 Available fields for dropdown: Array(28)
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:1187 Adding dropdown option: Object
+CSVImport.tsx?t=1748330329147:588 Prepared leads for import: 9
+CSVImport.tsx?t=1748330329147:589 Sample lead: Object
+CSVImport.tsx?t=1748330329147:606 === IMPORT JOB CREATION START ===
+CSVImport.tsx?t=1748330329147:607 User ID: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx?t=1748330329147:608 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx?t=1748330329147:609 File name: TEST.csv
+CSVImport.tsx?t=1748330329147:610 Total leads to import: 9
+CSVImport.tsx?t=1748330329147:623 Creating import job with data: Object
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?columns=%22file_name%22%2C%22total_records%22%2C%22processed_records%22%2C%22failed_records%22%2C%22status%22%2C%22error_details%22%2C%22team_id%22%2C%22created_by%22%2C%22undo_status%22&select=*:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+CSVImport.tsx?t=1748330329147:629 CRITICAL: Failed to create import job: Object
+handleImport @ CSVImport.tsx?t=1748330329147:629
+CSVImport.tsx?t=1748330329147:630 Job error details: null
+handleImport @ CSVImport.tsx?t=1748330329147:630
+CSVImport.tsx?t=1748330329147:631 Job error hint: null
+handleImport @ CSVImport.tsx?t=1748330329147:631
+CSVImport.tsx?t=1748330329147:632 Job error code: PGRST204
+handleImport @ CSVImport.tsx?t=1748330329147:632
+CSVImport.tsx?t=1748330329147:588 Prepared leads for import: 9
+CSVImport.tsx?t=1748330329147:589 Sample lead: Object
+CSVImport.tsx?t=1748330329147:606 === IMPORT JOB CREATION START ===
+CSVImport.tsx?t=1748330329147:607 User ID: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx?t=1748330329147:608 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx?t=1748330329147:609 File name: TEST.csv
+CSVImport.tsx?t=1748330329147:610 Total leads to import: 9
+CSVImport.tsx?t=1748330329147:623 Creating import job with data: Object
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?columns=%22file_name%22%2C%22total_records%22%2C%22processed_records%22%2C%22failed_records%22%2C%22status%22%2C%22error_details%22%2C%22team_id%22%2C%22created_by%22%2C%22undo_status%22&select=*:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+CSVImport.tsx?t=1748330329147:629 CRITICAL: Failed to create import job: Object
+handleImport @ CSVImport.tsx?t=1748330329147:629
+CSVImport.tsx?t=1748330329147:630 Job error details: null
+handleImport @ CSVImport.tsx?t=1748330329147:630
+CSVImport.tsx?t=1748330329147:631 Job error hint: null
+handleImport @ CSVImport.tsx?t=1748330329147:631
+CSVImport.tsx?t=1748330329147:632 Job error code: PGRST204
+handleImport @ CSVImport.tsx?t=1748330329147:632
+CSVImport.tsx?t=1748330329147:588 Prepared leads for import: 9
+CSVImport.tsx?t=1748330329147:589 Sample lead: Object
+CSVImport.tsx?t=1748330329147:606 === IMPORT JOB CREATION START ===
+CSVImport.tsx?t=1748330329147:607 User ID: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx?t=1748330329147:608 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx?t=1748330329147:609 File name: TEST.csv
+CSVImport.tsx?t=1748330329147:610 Total leads to import: 9
+CSVImport.tsx?t=1748330329147:623 Creating import job with data: Object
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?columns=%22file_name%22%2C%22total_records%22%2C%22processed_records%22%2C%22failed_records%22%2C%22status%22%2C%22error_details%22%2C%22team_id%22%2C%22created_by%22%2C%22undo_status%22&select=*:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+CSVImport.tsx?t=1748330329147:629 CRITICAL: Failed to create import job: Object
+handleImport @ CSVImport.tsx?t=1748330329147:629
+CSVImport.tsx?t=1748330329147:630 Job error details: null
+handleImport @ CSVImport.tsx?t=1748330329147:630
+CSVImport.tsx?t=1748330329147:631 Job error hint: null
+handleImport @ CSVImport.tsx?t=1748330329147:631
+CSVImport.tsx?t=1748330329147:632 Job error code: PGRST204
+handleImport @ CSVImport.tsx?t=1748330329147:632
+3useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useProfile.tsx:54 Skipping profile fetch - already have data for this user
+3useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useProfile.tsx:54 Skipping profile fetch - already have data for this user
+CSVImport.tsx:101 === Building Lead Custom Fields ===
+CSVImport.tsx:111 Field "owner_name" - is lead field: true
+CSVImport.tsx:111 Field "gmb url" - is lead field: true
+CSVImport.tsx:111 Field "Immo Tool" - is lead field: true
+CSVImport.tsx:111 Field "Test" - is lead field: true
+CSVImport.tsx:111 Field "place_id" - is lead field: true
+CSVImport.tsx:111 Field "is_spending_on_ads" - is lead field: true
+CSVImport.tsx:111 Field "rating" - is lead field: true
+CSVImport.tsx:111 Field "competitors" - is lead field: true
+CSVImport.tsx:111 Field "can_claim" - is lead field: true
+CSVImport.tsx:111 Field "owner_profile_link" - is lead field: true
+CSVImport.tsx:111 Field "featured_image" - is lead field: true
+CSVImport.tsx:111 Field "main_category" - is lead field: true
+CSVImport.tsx:111 Field "categories" - is lead field: true
+CSVImport.tsx:111 Field "workday_timing" - is lead field: true
+CSVImport.tsx:111 Field "is_temporarily_closed" - is lead field: true
+CSVImport.tsx:111 Field "closed_on" - is lead field: true
+CSVImport.tsx:111 Field "review_keywords" - is lead field: true
+CSVImport.tsx:111 Field "query" - is lead field: true
+CSVImport.tsx:111 Field "reviews" - is lead field: true
+CSVImport.tsx:111 Field "Review count" - is lead field: true
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:122 Processed custom field: Object
+CSVImport.tsx:126 Final lead custom fields: Array(20)
+CSVImport.tsx:127 === End Building Lead Custom Fields ===
+CSVImport.tsx:132 === Building All Available Fields ===
+CSVImport.tsx:133 Standard fields: Array(8)
+CSVImport.tsx:134 Lead custom fields to add: Array(20)
+CSVImport.tsx:141 Combined available fields: Array(28)
+CSVImport.tsx:142 === End Building All Available Fields ===
+CSVImport.tsx:32 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:33 All customFields received: Array(20)
+CSVImport.tsx:34 customFields is array? true
+CSVImport.tsx:35 customFields length: 20
+CSVImport.tsx:38 Lead custom fields: Array(20)
+CSVImport.tsx:39 First custom field example: Object
+CSVImport.tsx:43 Custom Field 0: Object
+CSVImport.tsx:43 Custom Field 1: Object
+CSVImport.tsx:43 Custom Field 2: Object
+CSVImport.tsx:43 Custom Field 3: Object
+CSVImport.tsx:43 Custom Field 4: Object
+CSVImport.tsx:43 Custom Field 5: Object
+CSVImport.tsx:43 Custom Field 6: Object
+CSVImport.tsx:43 Custom Field 7: Object
+CSVImport.tsx:43 Custom Field 8: Object
+CSVImport.tsx:43 Custom Field 9: Object
+CSVImport.tsx:43 Custom Field 10: Object
+CSVImport.tsx:43 Custom Field 11: Object
+CSVImport.tsx:43 Custom Field 12: Object
+CSVImport.tsx:43 Custom Field 13: Object
+CSVImport.tsx:43 Custom Field 14: Object
+CSVImport.tsx:43 Custom Field 15: Object
+CSVImport.tsx:43 Custom Field 16: Object
+CSVImport.tsx:43 Custom Field 17: Object
+CSVImport.tsx:43 Custom Field 18: Object
+CSVImport.tsx:43 Custom Field 19: Object
+CSVImport.tsx:75 === End Custom Fields Debug ===
+@radix-ui_react-dialog.js?v=6a1a5ac6:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ @radix-ui_react-dialog.js?v=6a1a5ac6:336
+Show 1 more frame
+Show less
+CSVImport.tsx:186 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:206 CSV quote character detected: "
+CSVImport.tsx:303 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:304 Headers detected: Array(22)
+CSVImport.tsx:329 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:377 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:377 Auto-mapped "name" to "name"
+CSVImport.tsx:377 Auto-mapped "description" to "description"
+CSVImport.tsx:397 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:377 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:377 Auto-mapped "rating" to "rating"
+CSVImport.tsx:377 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:377 Auto-mapped "website" to "website"
+CSVImport.tsx:377 Auto-mapped "phone" to "phone"
+CSVImport.tsx:377 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:377 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:377 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:377 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:397 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:397 Exact match found for "categories" -> "categories"
+CSVImport.tsx:397 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:397 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:397 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:377 Auto-mapped "address" to "address"
+CSVImport.tsx:397 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:377 Auto-mapped "link" to "website"
+CSVImport.tsx:397 Exact match found for "query" -> "query"
+CSVImport.tsx:805 Rendering dropdown options for: place_id
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: name
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: description
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: is_spending_on_ads
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: reviews
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: rating
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: competitors
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: website
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: phone
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: can_claim
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: owner_name
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: owner_profile_link
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: featured_image
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: main_category
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: categories
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: workday_timing
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: is_temporarily_closed
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: closed_on
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: address
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: review_keywords
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: link
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:805 Rendering dropdown options for: query
+CSVImport.tsx:806 Available fields for dropdown: Array(28)
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:808 Adding dropdown option: Object
+CSVImport.tsx:475 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:487 CSV data rows: 9
+CSVImport.tsx:488 Mappings: Array(22)
+CSVImport.tsx:491 Custom fields to create: Array(0)
+CSVImport.tsx:506 === PROCESSING CSV DATA ===
+CSVImport.tsx:548 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:555 Sample lead: Object
+CSVImport.tsx:559 === GETTING USER INFO ===
+CSVImport.tsx:575 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:598 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:602 === CREATING IMPORT JOB ===
+CSVImport.tsx:615 Import job data: Object
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/import_jobs?columns=%22file_name%22%2C%22total_records%22%2C%22processed_records%22%2C%22failed_records%22%2C%22status%22%2C%22error_details%22%2C%22team_id%22%2C%22created_by%22%2C%22undo_status%22&select=*:1 
+        
+        
+       Failed to load resource: the server responded with a status of 400 ()
+CSVImport.tsx:624 ❌ CRITICAL: Failed to create import job: Object
+handleImport @ CSVImport.tsx:624
