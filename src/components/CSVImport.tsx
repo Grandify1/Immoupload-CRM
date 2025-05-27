@@ -683,15 +683,24 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         console.log('✅ Edge Function response:', functionResponse);
 
-        // Trigger refresh of leads data
-        if (onRefresh) {
-          console.log('🔄 Triggering automatic refresh of leads data...');
-          onRefresh();
-        }
-
         // Close dialog immediately since import runs in background
         resetState();
         onClose();
+
+        // Show success toast
+        const { toast } = await import('sonner');
+        toast.success('Import gestartet!', {
+          description: `${csvData.length} Leads werden im Hintergrund importiert. Sie können den Fortschritt in der Status-Bar verfolgen.`,
+          duration: 5000,
+        });
+
+        // Trigger refresh of leads data after a short delay
+        if (onRefresh) {
+          console.log('🔄 Triggering automatic refresh of leads data...');
+          setTimeout(() => {
+            onRefresh();
+          }, 1000);
+        }
 
       } catch (error: any) {
         console.error('❌ Edge Function failed:', error);
