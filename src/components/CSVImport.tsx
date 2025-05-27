@@ -607,8 +607,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('Sample lead:', leads[0]);
       setImportProgress(40);
 
-      
-
       // Create import job entry in Supabase
       console.log('=== CREATING IMPORT JOB IN SUPABASE ===');
       let importJob = null;
