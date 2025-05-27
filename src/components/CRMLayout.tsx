@@ -12,6 +12,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ImportStatusBar from './ImportStatusBar';
+import { EmailView } from './EmailView';
 
 const CRMLayout = () => {
   const { team } = useProfile();
@@ -991,6 +992,8 @@ const CRMLayout = () => {
       );
     }
 
+Adding the email section to the renderContent function in CRMLayout.tsx.```text
+
     switch (activeSection) {
       case 'leads':
         return (
@@ -1038,6 +1041,8 @@ const CRMLayout = () => {
             onDeleteActivityTemplate={deleteActivityTemplate}
           />
         );
+      case 'email':
+        return <EmailView />;
       default:
         return null;
     }
