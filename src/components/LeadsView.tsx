@@ -1144,6 +1144,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             return await onAddCustomField(newField);
           }}
           customFields={customFields}
+          onRefresh={onRefresh}
         />
       )}
 

@@ -17,6 +17,7 @@ interface CSVImportProps {
   onImport: (leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => Promise<void>;
   onAddCustomField: (name: string, type: string) => Promise<void>;
   customFields?: CustomField[];
+  onRefresh?: () => void;
 }
 
 type MappingType = {
@@ -31,7 +32,7 @@ type DuplicateHandlingConfig = {
   duplicateAction: 'skip' | 'update' | 'create_new';
 };
 
-const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields }) => {
+const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields, onRefresh }) => {
 
   // Debug logging and load custom fields if not provided
   React.useEffect(() => {
@@ -921,6 +922,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       // Show success message instead of error
       setError(summaryMessage);
+
+      // Trigger refresh of leads data in parent component
+      if (onRefresh) {
+        console.log('🔄 Triggering automatic refresh of leads data...');
+        onRefresh();
+      }
 
       // Close dialog after delay
       setTimeout(() => {
