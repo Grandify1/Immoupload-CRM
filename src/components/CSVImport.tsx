@@ -1,7 +1,4 @@
-The code changes aim to improve import job tracking and error handling in the CSVImport component.
-```
 
-```replit_final_file
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -77,6 +74,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     }
     console.log('=== End Custom Fields Debug ===');
   }, [customFields]);
+  
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappings, setMappings] = useState<MappingType[]>([]);
