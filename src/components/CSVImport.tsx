@@ -657,177 +657,67 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       setImportProgress(45);
 
-      // Now perform the actual import with duplicate handling
-      console.log('=== STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===');
+      // Use Edge Function for background processing
+      console.log('=== STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===');
       console.log('Duplicate Detection Config:', duplicateConfig);
-      console.log('Detection Field:', duplicateConfig.duplicateDetectionField);
-      console.log('Detection Action:', duplicateConfig.duplicateAction);
-      const batchSize = 50; // Smaller batches for better error handling
-      let batchIndex = 0;
-      let totalBatches = Math.ceil(leads.length / batchSize);
-      let processedRecords = 0;
-      let failedRecords = 0;
-      let duplicateRecords = 0;
-      let updatedRecords = 0;
+      console.log('Sending data to Edge Function...');
 
-      // Split leads into batches for more efficient insertion
-      for (let i = 0; i < leads.length; i += batchSize) {
-        const batch = leads.slice(i, i + batchSize);
-        batchIndex = Math.floor(i / batchSize);
+      try {
+        const { data: functionResponse, error: functionError } = await supabase.functions.invoke('csv-import', {
+          body: {
+            csvData: csvData,
+            mappings: mappings,
+            duplicateConfig: duplicateConfig,
+            teamId: profile.team_id,
+            userId: user.id,
+            jobId: importJob?.id
+          }
+        });
 
-        console.log(`=== PROCESSING BATCH ${batchIndex + 1}/${totalBatches} (${batch.length} leads) ===`);
+        if (functionError) {
+          console.error('❌ Edge Function error:', functionError);
+          setError(`Edge Function Fehler: ${functionError.message}`);
+          setStep('preview');
+          return;
+        }
 
-        // Process each lead individually to handle duplicates properly
-        for (const lead of batch) {
-          try {
-            console.log(`\n📋 Processing lead: "${lead.name}" from CSV`);
-            console.log('Lead data:', {
-              name: lead.name,
-              email: lead.email,
-              phone: lead.phone,
-              website: lead.website
-            });
+        console.log('✅ Edge Function response:', functionResponse);
+        setImportProgress(90);
 
-            let existingLead = null;
-            let checkError = null;
+        // Show success message
+        const successMessage = `✅ Import wurde im Hintergrund gestartet. Sie können den Fortschritt in der Status-Bar verfolgen.`;
+        setError(successMessage);
+        setImportProgress(100);
 
-            // Check for duplicates based on user configuration
-            if (duplicateConfig.duplicateDetectionField !== 'none') {
-              const detectionField = duplicateConfig.duplicateDetectionField;
-              const detectionValue = lead[detectionField];
+        // Trigger refresh of leads data
+        if (onRefresh) {
+          console.log('🔄 Triggering automatic refresh of leads data...');
+          onRefresh();
+        }
 
-              if (detectionValue && detectionValue.trim()) {
-                console.log(`🔍 Checking for duplicate using ${detectionField}: "${detectionValue}"`);
+        // Close dialog after delay
+        setTimeout(() => {
+          resetState();
+          onClose();
+        }, 2000);
 
-                let query = supabase
-                  .from('leads')
-                  .select('id, name, email, phone, website, address, description, status, custom_fields')
-                  .eq('team_id', profile.team_id);
+      } catch (error: any) {
+        console.error('❌ Error calling Edge Function:', error);
+        
+        // Fallback to client-side processing if Edge Function fails
+        console.log('⚠️ Falling back to client-side processing...');
+        
+        const batchSize = 50;
+        let processedRecords = 0;
+        let failedRecords = 0;
+        let duplicateRecords = 0;
+        let updatedRecords = 0;
 
-                // Add the appropriate filter based on detection field with exact match
-                if (detectionField === 'name') {
-                  query = query.eq('name', detectionValue.trim());
-                } else if (detectionField === 'email') {
-                  query = query.eq('email', detectionValue.trim());
-                } else if (detectionField === 'phone') {
-                  query = query.eq('phone', detectionValue.trim());
-                }
+        for (let i = 0; i < leads.length; i += batchSize) {
+          const batch = leads.slice(i, i + batchSize);
 
-                const result = await query.single();
-                existingLead = result.data;
-                checkError = result.error;
-
-                if (existingLead) {
-                  console.log(`⚠️ DUPLICATE FOUND: CSV "${detectionValue}" matches existing lead "${existingLead[detectionField]}" (ID: ${existingLead.id})`);
-                } else if (checkError && checkError.code === 'PGRST116') {
-                  console.log(`✅ No duplicate found for ${detectionField}: "${detectionValue}" (PGRST116: no rows found)`);
-                } else if (checkError) {
-                  console.log(`⚠️ Error checking for duplicate on ${detectionField}: "${detectionValue}":`, checkError);
-                } else {
-                  console.log(`✅ No duplicate found for ${detectionField}: "${detectionValue}"`);
-                }
-              }
-            }
-
-            if (checkError && checkError.code !== 'PGRST116') {
-              // PGRST116 is "no rows found" - that's what we want for new leads
-              console.error('❌ Error checking for existing lead:', checkError);
-              failedRecords++;
-              continue;
-            }
-
-            if (existingLead) {
-              // Duplicate found - handle based on user configuration
-              const detectionField = duplicateConfig.duplicateDetectionField;
-              const detectionValue = lead[detectionField];
-
-              if (duplicateConfig.duplicateAction === 'skip') {
-                console.log(`⏭️ SKIPPING: CSV lead "${lead.name}" because duplicate found with existing lead "${existingLead.name}" (${detectionField}: ${detectionValue})`);
-                duplicateRecords++;
-                continue;
-              } else if (duplicateConfig.duplicateAction === 'update') {
-                console.log(`🔄 UPDATING: Existing lead "${existingLead.name}" (ID: ${existingLead.id}) with data from CSV lead "${lead.name}"`);
-
-                // Merge data intelligently: only update fields that have values and are different
-                const updateData: any = {
-                  updated_at: new Date().toISOString()
-                };
-
-                // Update standard fields if they have values and are different
-                if (lead.name && lead.name !== existingLead.name) {
-                  console.log(`  - Updating name: "${existingLead.name}" → "${lead.name}"`);
-                  updateData.name = lead.name;
-                }
-                if (lead.email && lead.email !== existingLead.email) {
-                  console.log(`  - Updating email: "${existingLead.email}" → "${lead.email}"`);
-                  updateData.email = lead.email;
-                }
-                if (lead.phone && lead.phone !== existingLead.phone) {
-                  console.log(`  - Updating phone: "${existingLead.phone}" → "${lead.phone}"`);
-                  updateData.phone = lead.phone;
-                }
-                if (lead.website && lead.website !== existingLead.website) {
-                  console.log(`  - Updating website: "${existingLead.website}" → "${lead.website}"`);
-                  updateData.website = lead.website;
-                }
-                if (lead.address && lead.address !== existingLead.address) updateData.address = lead.address;
-                if (lead.description && lead.description !== existingLead.description) updateData.description = lead.description;
-                if (lead.status && lead.status !== existingLead.status) updateData.status = lead.status;
-
-                // Merge custom fields intelligently
-                if (lead.custom_fields && Object.keys(lead.custom_fields).length > 0) {
-                  const existingCustomFields = existingLead.custom_fields || {};
-                  updateData.custom_fields = {
-                    ...existingCustomFields,
-                    ...lead.custom_fields
-                  };
-                  console.log(`  - Updating custom fields:`, lead.custom_fields);
-                }
-
-                const { error: updateError } = await supabase
-                  .from('leads')
-                  .update(updateData)
-                  .eq('id', existingLead.id);
-
-                if (updateError) {
-                  console.error(`❌ Error updating lead (${detectionField}: ${detectionValue}):`, updateError);
-                  failedRecords++;
-                } else {
-                  console.log(`✅ Successfully updated existing lead "${existingLead.name}" with CSV data`);
-                  updatedRecords++;
-                  processedRecords++;
-                }
-              } else if (duplicateConfig.duplicateAction === 'create_new') {
-                console.log(`📝 Creating new lead despite duplicate (${detectionField}: ${detectionValue})`);
-
-                // For create_new, keep the original data but let Supabase generate a new UUID
-                // This way the name stays clean and professional
-                const { data: insertedLead, error: insertError } = await supabase
-                  .from('leads')
-                  .insert([lead])
-                  .select('id, name')
-                  .single();
-
-                if (insertError) {
-                  console.error(`❌ Error inserting duplicate lead (${detectionField}: ${detectionValue}):`, insertError);
-
-                  // If still fails due to constraint, skip it
-                  if (insertError.code === '23505') {
-                    console.log(`🔍 Still duplicate constraint violation, skipping: ${lead.name}`);
-                    duplicateRecords++;
-                  } else {
-                    failedRecords++;
-                  }
-                } else {
-                  console.log(`✅ Successfully inserted duplicate lead with clean name: ${insertedLead.name} (ID: ${insertedLead.id})`);
-                  processedRecords++;
-                }
-              }
-
-            } else {
-              // Lead doesn't exist - insert new one
-              console.log(`📝 INSERTING NEW LEAD: "${lead.name}" from CSV (no duplicates found)`);
-
+          for (const lead of batch) {
+            try {
               const { data: insertedLead, error: insertError } = await supabase
                 .from('leads')
                 .insert([lead])
@@ -835,33 +725,23 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                 .single();
 
               if (insertError) {
-                console.error(`❌ Error inserting lead "${lead.name}":`, insertError);
-                console.error('Full error details:', insertError);
-
-                // Check if it's a duplicate error that slipped through
-                if (insertError.code === '23505' && insertError.message?.includes('already exists')) {
+                if (insertError.code === '23505') {
                   duplicateRecords++;
-                  console.log(`🔍 Database constraint duplicate detected for: "${lead.name}"`);
                 } else {
                   failedRecords++;
                 }
               } else {
-                console.log(`✅ Successfully inserted new lead: "${insertedLead.name}" (ID: ${insertedLead.id})`);
                 processedRecords++;
               }
+            } catch (error) {
+              failedRecords++;
             }
-
-          } catch (error) {
-            console.error(`❌ Unexpected error processing lead ${lead.name}:`, error);
-            failedRecords++;
           }
+
+          setImportProgress(45 + Math.round(((i + batchSize) / leads.length) * 45));
         }
 
-        // Update progress
-        setImportProgress(45 + Math.round(((i + batchSize) / leads.length) * 45));
-      }
-
-      setImportProgress(95);
+        setImportProgress(95);
 
       // Show detailed final result FIRST
       let summaryMessage = '';
