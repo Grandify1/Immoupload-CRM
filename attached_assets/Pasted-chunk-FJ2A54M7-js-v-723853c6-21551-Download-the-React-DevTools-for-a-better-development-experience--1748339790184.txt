@@ -1,0 +1,263 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:180 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:200 CSV quote character detected: "
+CSVImport.tsx:297 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:298 Headers detected: Array(22)
+CSVImport.tsx:323 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:371 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:371 Auto-mapped "name" to "name"
+CSVImport.tsx:371 Auto-mapped "description" to "description"
+CSVImport.tsx:391 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:371 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:371 Auto-mapped "rating" to "rating"
+CSVImport.tsx:371 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:371 Auto-mapped "website" to "website"
+CSVImport.tsx:371 Auto-mapped "phone" to "phone"
+CSVImport.tsx:371 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:371 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:371 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:371 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:391 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:391 Exact match found for "categories" -> "categories"
+CSVImport.tsx:391 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:391 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:391 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:371 Auto-mapped "address" to "address"
+CSVImport.tsx:391 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:371 Auto-mapped "link" to "website"
+CSVImport.tsx:391 Exact match found for "query" -> "query"
+CSVImport.tsx:474 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:486 CSV data rows: 9
+CSVImport.tsx:487 Mappings: Array(22)
+CSVImport.tsx:490 === GETTING USER INFO ===
+CSVImport.tsx:506 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:529 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:533 Custom fields to create: Array(0)
+CSVImport.tsx:548 === PROCESSING CSV DATA ===
+CSVImport.tsx:592 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:599 Sample lead: Object
+CSVImport.tsx:603 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:620 Import job data: Object
+CSVImport.tsx:643 ✅ Import job created with ID: daf9111a-4391-4d97-a55a-a93f41ab898e
+CSVImport.tsx:653 === STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===
+CSVImport.tsx:667 === PROCESSING BATCH 1/1 (9 leads) ===
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Bergen Real Estate (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Bergen Real Estate (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: BSK Immobilien GmbH (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: BSK Immobilien GmbH (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Mein Makler Berlin-Spandau (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Mein Makler Berlin-Spandau (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Hesse Immobilien - Immobilienmakler Spandau (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Hesse Immobilien - Immobilienmakler Spandau (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Melde Immobilien - Immobilienmakler Spandau (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Melde Immobilien - Immobilienmakler Spandau (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: OF POLL IMMOBILIEN Berlin-Spandau (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Top-Immobilien GmbH (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Top-Immobilien GmbH (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:757 📝 Creating new lead despite duplicate (name: Neumann Immobilien (Pemilik))
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:767 ❌ Error inserting duplicate lead (name: Neumann Immobilien (Pemilik)): Object
+handleImport @ CSVImport.tsx:767
+CSVImport.tsx:817 === UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===
+CSVImport.tsx:818 Final status: completed_with_errors
+CSVImport.tsx:819 Processed records: 0
+CSVImport.tsx:820 Failed records: 9
+CSVImport.tsx:846 ⚠️ Could not update final import job status: ReferenceError: Cannot access 'summaryMessage' before initialization
+    at handleImport (CSVImport.tsx:834:26)
+handleImport @ CSVImport.tsx:846
+CSVImport.tsx:867 === IMPORT COMPLETE ===
+CSVImport.tsx:868 Final result: ❌ Import fehlgeschlagen: 9 Leads konnten nicht verarbeitet werden, 0 Duplikate übersprungen.
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(7)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:401 Manual refresh triggered
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(7)
+SettingsView.tsx:90 Job 1: Objectcreated_at: "2025-05-27T09:55:12.934495+00:00"file_name: "TESTINGER.csv"id: "daf9111a-4391-4d97-a55a-a93f41ab898e"status: "processing"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"total_records: 9[[Prototype]]: Objectconstructor: ƒ Object()assign: ƒ assign()length: 2name: "assign"arguments: (...)caller: (...)[[Prototype]]: ƒ ()apply: ƒ apply()arguments: (...)bind: ƒ bind()call: ƒ call()caller: (...)constructor: ƒ Function()length: 0name: ""toString: ƒ toString()Symbol(Symbol.hasInstance): ƒ [Symbol.hasInstance]()get arguments: ƒ ()set arguments: ƒ ()get caller: ƒ ()set caller: ƒ ()[[FunctionLocation]]: [[Prototype]]: Object[[Scopes]]: Scopes[0][[Scopes]]: Scopes[0]create: ƒ create()length: 2name: "create"arguments: (...)caller: (...)[[Prototype]]: ƒ ()apply: ƒ apply()arguments: (...)bind: ƒ bind()call: ƒ call()caller: (...)constructor: ƒ Function()length: 0name: ""toString: ƒ toString()Symbol(Symbol.hasInstance): ƒ [Symbol.hasInstance]()get arguments: ƒ ()set arguments: ƒ ()get caller: ƒ ()set caller: ƒ ()[[FunctionLocation]]: [[Prototype]]: Object[[Scopes]]: Scopes[0][[Scopes]]: Scopes[0]defineProperties: ƒ defineProperties()length: 2name: "defineProperties"arguments: (...)caller: (...)[[Prototype]]: ƒ ()apply: ƒ apply()arguments: (...)bind: ƒ bind()call: ƒ call()caller: (...)constructor: ƒ Function()length: 0name: ""toString: ƒ toString()Symbol(Symbol.hasInstance): ƒ [Symbol.hasInstance]()get arguments: ƒ ()set arguments: ƒ ()get caller: ƒ ()set caller: ƒ ()[[FunctionLocation]]: [[Prototype]]: Object[[Scopes]]: Scopes[0][[Scopes]]: Scopes[0]No propertiesdefineProperty: ƒ defineProperty()entries: ƒ entries()freeze: ƒ freeze()fromEntries: ƒ fromEntries()getOwnPropertyDescriptor: ƒ getOwnPropertyDescriptor()getOwnPropertyDescriptors: ƒ getOwnPropertyDescriptors()getOwnPropertyNames: ƒ getOwnPropertyNames()getOwnPropertySymbols: ƒ getOwnPropertySymbols()getPrototypeOf: ƒ getPrototypeOf()groupBy: ƒ groupBy()hasOwn: ƒ hasOwn()is: ƒ is()isExtensible: ƒ isExtensible()isFrozen: ƒ isFrozen()isSealed: ƒ isSealed()keys: ƒ keys()length: 1name: "Object"preventExtensions: ƒ preventExtensions()prototype: {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}seal: ƒ seal()setPrototypeOf: ƒ setPrototypeOf()values: ƒ values()arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:401 Manual refresh triggered
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(7)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:401 Manual refresh triggered
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(7)
+SettingsView.tsx:90 Job 1: Objectcreated_at: "2025-05-27T09:55:12.934495+00:00"file_name: "TESTINGER.csv"id: "daf9111a-4391-4d97-a55a-a93f41ab898e"status: "processing"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"total_records: 9[[Prototype]]: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: (7) [{…}, {…}, {…}, {…}, {…}, {…}, {…}]
+SettingsView.tsx:90 Job 1: {id: 'daf9111a-4391-4d97-a55a-a93f41ab898e', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:55:12.934495+00:00', …}
+SettingsView.tsx:90 Job 2: {id: '4db06b24-292f-43e3-be6d-245910cc5fe7', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:46:18.200775+00:00', …}
+SettingsView.tsx:90 Job 3: {id: '3daed0d2-0df9-4965-8943-eba408e61ea2', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:43:40.997019+00:00', …}
+SettingsView.tsx:90 Job 4: {id: '0960e93d-9a3b-4a8f-8da9-c6726a59dfca', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:41:46.153113+00:00', …}
+SettingsView.tsx:90 Job 5: {id: 'e15701ec-0e5a-4c30-b059-7d5bb15152b0', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:40:54.437134+00:00', …}
+SettingsView.tsx:90 Job 6: {id: 'db216e41-5989-4530-b79d-3f032a27b5f5', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:39:13.184473+00:00', …}
+SettingsView.tsx:90 Job 7: {id: '91f808ad-4e1f-420a-aeb5-da8fd5ba1e02', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:25:02.908567+00:00', …}
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: (7) [{…}, {…}, {…}, {…}, {…}, {…}, {…}]
+SettingsView.tsx:90 Job 1: {id: 'daf9111a-4391-4d97-a55a-a93f41ab898e', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:55:12.934495+00:00', …}
+SettingsView.tsx:90 Job 2: {id: '4db06b24-292f-43e3-be6d-245910cc5fe7', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:46:18.200775+00:00', …}
+SettingsView.tsx:90 Job 3: {id: '3daed0d2-0df9-4965-8943-eba408e61ea2', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:43:40.997019+00:00', …}
+SettingsView.tsx:90 Job 4: {id: '0960e93d-9a3b-4a8f-8da9-c6726a59dfca', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:41:46.153113+00:00', …}
+SettingsView.tsx:90 Job 5: {id: 'e15701ec-0e5a-4c30-b059-7d5bb15152b0', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:40:54.437134+00:00', …}
+SettingsView.tsx:90 Job 6: {id: 'db216e41-5989-4530-b79d-3f032a27b5f5', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:39:13.184473+00:00', …}
+SettingsView.tsx:90 Job 7: {id: '91f808ad-4e1f-420a-aeb5-da8fd5ba1e02', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:25:02.908567+00:00', …}
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: (7) [{…}, {…}, {…}, {…}, {…}, {…}, {…}]
+SettingsView.tsx:90 Job 1: {id: 'daf9111a-4391-4d97-a55a-a93f41ab898e', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:55:12.934495+00:00', …}
+SettingsView.tsx:90 Job 2: {id: '4db06b24-292f-43e3-be6d-245910cc5fe7', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:46:18.200775+00:00', …}
+SettingsView.tsx:90 Job 3: {id: '3daed0d2-0df9-4965-8943-eba408e61ea2', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:43:40.997019+00:00', …}
+SettingsView.tsx:90 Job 4: {id: '0960e93d-9a3b-4a8f-8da9-c6726a59dfca', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:41:46.153113+00:00', …}
+SettingsView.tsx:90 Job 5: {id: 'e15701ec-0e5a-4c30-b059-7d5bb15152b0', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:40:54.437134+00:00', …}
+SettingsView.tsx:90 Job 6: {id: 'db216e41-5989-4530-b79d-3f032a27b5f5', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:39:13.184473+00:00', …}
+SettingsView.tsx:90 Job 7: {id: '91f808ad-4e1f-420a-aeb5-da8fd5ba1e02', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:25:02.908567+00:00', …}
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: (7) [{…}, {…}, {…}, {…}, {…}, {…}, {…}]
+SettingsView.tsx:90 Job 1: {id: 'daf9111a-4391-4d97-a55a-a93f41ab898e', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:55:12.934495+00:00', …}
+SettingsView.tsx:90 Job 2: {id: '4db06b24-292f-43e3-be6d-245910cc5fe7', file_name: 'TESTINGER.csv', status: 'processing', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:46:18.200775+00:00', …}
+SettingsView.tsx:90 Job 3: {id: '3daed0d2-0df9-4965-8943-eba408e61ea2', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:43:40.997019+00:00', …}
+SettingsView.tsx:90 Job 4: {id: '0960e93d-9a3b-4a8f-8da9-c6726a59dfca', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:41:46.153113+00:00', …}
+SettingsView.tsx:90 Job 5: {id: 'e15701ec-0e5a-4c30-b059-7d5bb15152b0', file_name: 'TESTINGER.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:40:54.437134+00:00', …}
+SettingsView.tsx:90 Job 6: {id: 'db216e41-5989-4530-b79d-3f032a27b5f5', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:39:13.184473+00:00', …}
+SettingsView.tsx:90 Job 7: {id: '91f808ad-4e1f-420a-aeb5-da8fd5ba1e02', file_name: 'TEST.csv', status: 'completed_with_errors', team_id: 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0', created_at: '2025-05-27T09:25:02.908567+00:00', …}
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
