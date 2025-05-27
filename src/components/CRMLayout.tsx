@@ -18,7 +18,7 @@ const CRMLayout = () => {
   const { team } = useProfile();
   const { toast } = useToast();
 
-  const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings'>('leads');
+  const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings' | 'email'>('leads');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [leadsView, setLeadsView] = useState<'table' | 'kanban'>('table');
@@ -991,8 +991,6 @@ const CRMLayout = () => {
         </div>
       );
     }
-
-Adding the email section to the renderContent function in CRMLayout.tsx.```text
 
     switch (activeSection) {
       case 'leads':
