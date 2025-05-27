@@ -151,15 +151,17 @@ export function EmailView() {
 
   const moveEmailToFolder = async (emailId: string, folder: EmailFolder) => {
     try {
+      if (folder === 'deleted') {
+        // Use the IMAP deletion function for deleted emails
+        await deleteEmailViaIMAP(emailId, false);
+        return;
+      }
+
       const updateData: any = { 
         updated_at: new Date().toISOString()
       };
 
-      if (folder === 'deleted') {
-        updateData.is_deleted = true;
-        updateData.is_archived = false;
-        updateData.folder = null; // Don't set folder for deleted emails
-      } else if (folder === 'archived') {
+      if (folder === 'archived') {
         updateData.is_archived = true;
         updateData.is_deleted = false;
         updateData.folder = null; // Don't set folder for archived emails
@@ -214,31 +216,52 @@ export function EmailView() {
     }
   };
 
-  const deleteEmailPermanently = async (emailId: string) => {
+  const deleteEmailViaIMAP = async (emailId: string, permanent: boolean = false) => {
     try {
-      const { error } = await supabase
-        .from('emails')
-        .delete()
-        .eq('id', emailId)
-        .eq('team_id', user?.id);
+      setLoading(true);
+      
+      const { data, error } = await supabase.functions.invoke('delete-email', {
+        body: {
+          emailId,
+          userId: user?.id,
+          permanent
+        }
+      });
 
       if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+        console.error('IMAP deletion error:', error);
+        throw new Error(error.message || 'Fehler beim Löschen über IMAP');
       }
 
-      toast.success('Email dauerhaft gelöscht');
+      console.log('Email deletion result:', data);
       
-      // Update local state immediately
-      setEmails(prev => prev.filter(email => email.id !== emailId));
+      if (permanent) {
+        toast.success('Email dauerhaft vom Server und aus der Datenbank gelöscht');
+        // Remove from local state
+        setEmails(prev => prev.filter(email => email.id !== emailId));
+      } else {
+        toast.success('Email vom Server gelöscht und in den Papierkorb verschoben');
+        // Update local state to mark as deleted
+        setEmails(prev => prev.map(email => 
+          email.id === emailId 
+            ? { ...email, is_deleted: true, is_archived: false, folder: null }
+            : email
+        ));
+      }
 
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
     } catch (error) {
-      console.error('Error deleting email:', error);
-      toast.error(`Fehler beim dauerhaften Löschen der Email: ${error.message}`);
+      console.error('Error deleting email via IMAP:', error);
+      toast.error(`Fehler beim Löschen der Email: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const deleteEmailPermanently = async (emailId: string) => {
+    await deleteEmailViaIMAP(emailId, true);
   };
 
   const markAsRead = async (emailId: string) => {
@@ -568,18 +591,31 @@ export function EmailView() {
                             variant="outline"
                             size="sm"
                             onClick={() => moveEmailToFolder(selectedEmail.id, 'deleted')}
+                            disabled={loading}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         ) : (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteEmailPermanently(selectedEmail.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Dauerhaft löschen
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => moveEmailToFolder(selectedEmail.id, 'inbox')}
+                              disabled={loading}
+                            >
+                              <FolderOpen className="w-4 h-4" />
+                              Wiederherstellen
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => deleteEmailPermanently(selectedEmail.id)}
+                              disabled={loading}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Dauerhaft löschen
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
