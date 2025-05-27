@@ -583,7 +583,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         </div>
       )}
 
-      <div className="overflow-x-auto max-h-[calc(100vh-300px)] overflow-y-auto">
+      <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto pb-6">
         <table className="w-full">
           <thead className="bg-gray-50 border-b">
             <tr>
@@ -746,7 +746,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     return (
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-4 gap-6 max-h-[calc(100vh-300px)] overflow-y-auto">
+        <div className="grid grid-cols-4 gap-6 max-h-[calc(100vh-200px)] overflow-y-auto pb-6">
           {columns.map((column) => (
             <div key={column.key} className="bg-gray-50 rounded-lg p-4">
               <h3 className="font-medium mb-4 flex items-center justify-between">
