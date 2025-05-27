@@ -756,18 +756,30 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               } else if (duplicateConfig.duplicateAction === 'create_new') {
                 console.log(`📝 Creating new lead despite duplicate (${detectionField}: ${detectionValue})`);
                 
-                // Insert new lead even though duplicate exists
+                // For create_new, modify the name to make it unique
+                const modifiedLead = {
+                  ...lead,
+                  name: `${lead.name} (Copy ${Date.now()})`
+                };
+                
                 const { data: insertedLead, error: insertError } = await supabase
                   .from('leads')
-                  .insert([lead])
+                  .insert([modifiedLead])
                   .select('id')
                   .single();
 
                 if (insertError) {
                   console.error(`❌ Error inserting duplicate lead (${detectionField}: ${detectionValue}):`, insertError);
-                  failedRecords++;
+                  
+                  // If still fails due to constraint, skip it
+                  if (insertError.code === '23505') {
+                    console.log(`🔍 Still duplicate after modification, skipping: ${lead.name}`);
+                    duplicateRecords++;
+                  } else {
+                    failedRecords++;
+                  }
                 } else {
-                  console.log(`✅ Successfully inserted duplicate lead (${detectionField}: ${detectionValue})`);
+                  console.log(`✅ Successfully inserted duplicate lead with modified name: ${modifiedLead.name}`);
                   processedRecords++;
                 }
               }
@@ -784,6 +796,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
               if (insertError) {
                 console.error(`❌ Error inserting lead ${lead.name}:`, insertError);
+                console.error('Full error details:', insertError);
                 
                 // Check if it's a duplicate error that slipped through
                 if (insertError.code === '23505' && insertError.message?.includes('already exists')) {
@@ -809,6 +822,19 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       }
 
       setImportProgress(95);
+
+      // Show detailed final result FIRST
+      let summaryMessage = '';
+      const totalAttempted = leads.length;
+      
+      if (failedRecords === 0 && duplicateRecords === 0) {
+        summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads verarbeitet (${processedRecords - updatedRecords} neu, ${updatedRecords} aktualisiert).`;
+      } else if (processedRecords === 0) {
+        summaryMessage = `❌ Import fehlgeschlagen: ${failedRecords} Leads konnten nicht verarbeitet werden, ${duplicateRecords} Duplikate übersprungen.`;
+      } else {
+        const newLeads = processedRecords - updatedRecords;
+        summaryMessage = `⚠️ Import abgeschlossen: ${newLeads} neue Leads, ${updatedRecords} aktualisiert, ${duplicateRecords} Duplikate übersprungen, ${failedRecords} fehlgeschlagen.`;
+      }
 
       // Update final import job status in Supabase (only if job tracking is available)
       if (!skipJobTracking && importJob) {
@@ -850,19 +876,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       }
 
       setImportProgress(100);
-
-      // Show detailed final result
-      let summaryMessage = '';
-      const totalAttempted = leads.length;
-      
-      if (failedRecords === 0 && duplicateRecords === 0) {
-        summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads verarbeitet (${processedRecords - updatedRecords} neu, ${updatedRecords} aktualisiert).`;
-      } else if (processedRecords === 0) {
-        summaryMessage = `❌ Import fehlgeschlagen: ${failedRecords} Leads konnten nicht verarbeitet werden, ${duplicateRecords} Duplikate übersprungen.`;
-      } else {
-        const newLeads = processedRecords - updatedRecords;
-        summaryMessage = `⚠️ Import abgeschlossen: ${newLeads} neue Leads, ${updatedRecords} aktualisiert, ${duplicateRecords} Duplikate übersprungen, ${failedRecords} fehlgeschlagen.`;
-      }
 
       console.log('=== IMPORT COMPLETE ===');
       console.log('Final result:', summaryMessage);
