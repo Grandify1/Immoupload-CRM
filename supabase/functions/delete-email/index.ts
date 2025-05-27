@@ -8,12 +8,13 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-// Simple IMAP client implementation
-class SimpleIMAPClient {
+// Enhanced IMAP client implementation
+class EnhancedIMAPClient {
   private conn: Deno.TcpConn | null = null;
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   private writer: WritableStreamDefaultWriter<Uint8Array> | null = null;
   private tagCounter = 0;
+  private responseBuffer = '';
 
   constructor(private config: {
     host: string;
@@ -27,7 +28,72 @@ class SimpleIMAPClient {
     return `A${++this.tagCounter.toString().padStart(3, '0')}`;
   }
 
-  private async sendCommand(command: string): Promise<string> {
+  private async readUntilComplete(tag: string, timeout = 30000): Promise<string> {
+    if (!this.reader) throw new Error('Not connected');
+    
+    const decoder = new TextDecoder();
+    let response = this.responseBuffer;
+    this.responseBuffer = '';
+    
+    const startTime = Date.now();
+    
+    while (true) {
+      // Check timeout
+      if (Date.now() - startTime > timeout) {
+        throw new Error('IMAP command timeout');
+      }
+      
+      // Try to read with a shorter timeout for each read
+      const readPromise = this.reader.read();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Read timeout')), 5000)
+      );
+      
+      try {
+        const result = await Promise.race([readPromise, timeoutPromise]) as ReadableStreamDefaultReadResult<Uint8Array>;
+        
+        if (result.done) {
+          console.log('IMAP connection closed by server');
+          break;
+        }
+        
+        const chunk = decoder.decode(result.value);
+        response += chunk;
+        
+        // Check if we have a complete response
+        const lines = response.split('\r\n');
+        for (const line of lines) {
+          if (line.startsWith(`${tag} OK`) || line.startsWith(`${tag} NO`) || line.startsWith(`${tag} BAD`)) {
+            // Store any remaining data in buffer
+            const responseLines = response.split('\r\n');
+            const tagLineIndex = responseLines.findIndex(l => l.startsWith(`${tag} `));
+            if (tagLineIndex >= 0 && tagLineIndex < responseLines.length - 1) {
+              this.responseBuffer = responseLines.slice(tagLineIndex + 1).join('\r\n');
+            }
+            return response;
+          }
+        }
+        
+        // Prevent infinite growth
+        if (response.length > 50000) {
+          console.log('Response too long, truncating...');
+          return response;
+        }
+        
+      } catch (readError) {
+        console.log('Read error (continuing):', readError.message);
+        // For timeout errors, continue the loop
+        if (readError.message === 'Read timeout') {
+          continue;
+        }
+        throw readError;
+      }
+    }
+    
+    return response;
+  }
+
+  private async sendCommand(command: string, timeout = 30000): Promise<string> {
     if (!this.writer) throw new Error('Not connected');
     
     const tag = this.generateTag();
@@ -37,27 +103,7 @@ class SimpleIMAPClient {
     
     await this.writer.write(new TextEncoder().encode(fullCommand));
     
-    // Read response
-    let response = '';
-    const decoder = new TextDecoder();
-    
-    while (true) {
-      const { value, done } = await this.reader!.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value);
-      response += chunk;
-      
-      if (response.includes(`${tag} OK`) || response.includes(`${tag} NO`) || response.includes(`${tag} BAD`)) {
-        break;
-      }
-      
-      // Add timeout to prevent infinite loops
-      if (response.length > 10000) {
-        console.log('Response too long, breaking...');
-        break;
-      }
-    }
+    const response = await this.readUntilComplete(tag, timeout);
     
     console.log(`IMAP << ${response.trim()}`);
     
@@ -70,6 +116,8 @@ class SimpleIMAPClient {
 
   async connect(): Promise<void> {
     try {
+      console.log(`Connecting to ${this.config.host}:${this.config.port} (SSL: ${this.config.useSSL})`);
+      
       if (this.config.useSSL) {
         this.conn = await Deno.connectTls({
           hostname: this.config.host,
@@ -85,45 +133,106 @@ class SimpleIMAPClient {
       this.reader = this.conn.readable.getReader();
       this.writer = this.conn.writable.getWriter();
 
-      // Read greeting
-      const { value } = await this.reader.read();
-      const greeting = new TextDecoder().decode(value!);
+      // Read greeting with timeout
+      const greetingPromise = this.reader.read();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+      
+      const result = await Promise.race([greetingPromise, timeoutPromise]) as ReadableStreamDefaultReadResult<Uint8Array>;
+      
+      if (result.done) {
+        throw new Error('Connection closed immediately');
+      }
+      
+      const greeting = new TextDecoder().decode(result.value!);
       console.log(`IMAP << ${greeting.trim()}`);
 
       if (!greeting.includes('* OK')) {
-        throw new Error('IMAP server greeting failed');
+        throw new Error(`IMAP server greeting failed: ${greeting}`);
       }
 
+      console.log('✅ IMAP connection established');
+
     } catch (error) {
+      console.error('IMAP connection error:', error);
       throw new Error(`Failed to connect to IMAP server: ${error.message}`);
     }
   }
 
   async login(): Promise<void> {
-    const response = await this.sendCommand(`LOGIN "${this.config.username}" "${this.config.password}"`);
-    if (!response.includes('OK')) {
-      throw new Error('IMAP login failed');
+    try {
+      const response = await this.sendCommand(`LOGIN "${this.config.username}" "${this.config.password}"`);
+      if (!response.includes('OK')) {
+        throw new Error('IMAP login failed');
+      }
+      console.log('✅ IMAP login successful');
+    } catch (error) {
+      console.error('IMAP login error:', error);
+      throw error;
     }
   }
 
-  async selectMailbox(mailbox: string): Promise<void> {
-    const response = await this.sendCommand(`SELECT "${mailbox}"`);
-    if (!response.includes('OK')) {
-      throw new Error(`Failed to select mailbox: ${mailbox}`);
+  async listMailboxes(): Promise<string[]> {
+    try {
+      const response = await this.sendCommand('LIST "" "*"');
+      const mailboxes: string[] = [];
+      
+      const lines = response.split('\r\n');
+      for (const line of lines) {
+        if (line.startsWith('* LIST')) {
+          // Extract mailbox name - it's usually the last quoted string
+          const match = line.match(/"([^"]+)"$/);
+          if (match) {
+            mailboxes.push(match[1]);
+          }
+        }
+      }
+      
+      console.log('Available mailboxes:', mailboxes);
+      return mailboxes;
+    } catch (error) {
+      console.log('Failed to list mailboxes:', error.message);
+      return [];
+    }
+  }
+
+  async selectMailbox(mailbox: string): Promise<boolean> {
+    try {
+      const response = await this.sendCommand(`SELECT "${mailbox}"`);
+      if (response.includes('OK')) {
+        console.log(`✅ Selected mailbox: ${mailbox}`);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log(`Failed to select mailbox ${mailbox}:`, error.message);
+      return false;
     }
   }
 
   async searchByMessageId(messageId: string): Promise<string[]> {
     try {
-      // Clean message ID - remove < > if present
+      // Clean message ID
       const cleanMessageId = messageId.replace(/^<|>$/g, '');
+      console.log(`Searching for Message-ID: ${cleanMessageId}`);
+      
       const response = await this.sendCommand(`UID SEARCH HEADER "Message-ID" "${cleanMessageId}"`);
       
       // Look for UID SEARCH response
-      const match = response.match(/\* SEARCH (.+)/);
-      if (match && match[1].trim()) {
-        return match[1].trim().split(' ').filter(uid => uid && uid !== '');
+      const lines = response.split('\r\n');
+      for (const line of lines) {
+        if (line.startsWith('* SEARCH ')) {
+          const uids = line.substring(9).trim();
+          if (uids) {
+            const uidList = uids.split(' ').filter(uid => uid && uid !== '');
+            console.log(`Found UIDs: ${uidList}`);
+            return uidList;
+          }
+        }
       }
+      
+      console.log('No emails found with this Message-ID');
       return [];
     } catch (error) {
       console.log(`Search failed: ${error.message}`);
@@ -131,18 +240,50 @@ class SimpleIMAPClient {
     }
   }
 
+  async searchBySender(sender: string): Promise<string[]> {
+    try {
+      console.log(`Searching for sender: ${sender}`);
+      const response = await this.sendCommand(`UID SEARCH FROM "${sender}"`);
+      
+      const lines = response.split('\r\n');
+      for (const line of lines) {
+        if (line.startsWith('* SEARCH ')) {
+          const uids = line.substring(9).trim();
+          if (uids) {
+            const uidList = uids.split(' ').filter(uid => uid && uid !== '');
+            console.log(`Found UIDs by sender: ${uidList}`);
+            return uidList;
+          }
+        }
+      }
+      
+      return [];
+    } catch (error) {
+      console.log(`Sender search failed: ${error.message}`);
+      return [];
+    }
+  }
+
   async moveToTrash(uid: string): Promise<void> {
     try {
-      // First try to move to common trash folders
-      const trashFolders = ['INBOX.Trash', 'Trash', 'INBOX.Deleted Items', 'Deleted Items'];
+      console.log(`Attempting to move email UID ${uid} to trash`);
+      
+      // Try common trash folder names
+      const trashFolders = [
+        'INBOX.Trash', 'Trash', 'INBOX.Deleted Items', 'Deleted Items',
+        'INBOX.Junk', 'Junk', 'INBOX.Deleted', 'Deleted',
+        '[Gmail]/Trash', 'Papierkorb', 'INBOX.Papierkorb'
+      ];
       
       let moved = false;
       for (const folder of trashFolders) {
         try {
-          await this.sendCommand(`UID MOVE ${uid} "${folder}"`);
-          console.log(`Successfully moved email to ${folder}`);
-          moved = true;
-          break;
+          const response = await this.sendCommand(`UID MOVE ${uid} "${folder}"`);
+          if (response.includes('OK')) {
+            console.log(`✅ Successfully moved email to ${folder}`);
+            moved = true;
+            break;
+          }
         } catch (error) {
           console.log(`Failed to move to ${folder}: ${error.message}`);
           continue;
@@ -150,10 +291,25 @@ class SimpleIMAPClient {
       }
       
       if (!moved) {
-        // If move fails, mark as deleted and expunge
-        console.log('Move failed, marking as deleted instead');
+        console.log('MOVE command failed, trying COPY + STORE + EXPUNGE');
+        
+        // Try to copy to trash first
+        for (const folder of trashFolders) {
+          try {
+            await this.sendCommand(`UID COPY ${uid} "${folder}"`);
+            console.log(`✅ Copied email to ${folder}`);
+            break;
+          } catch (error) {
+            continue;
+          }
+        }
+        
+        // Mark as deleted and expunge
         await this.sendCommand(`UID STORE ${uid} +FLAGS (\\Deleted)`);
+        console.log(`✅ Marked email UID ${uid} as deleted`);
+        
         await this.sendCommand(`EXPUNGE`);
+        console.log(`✅ Expunged deleted emails`);
       }
     } catch (error) {
       throw new Error(`Failed to move email to trash: ${error.message}`);
@@ -162,27 +318,47 @@ class SimpleIMAPClient {
 
   async permanentDelete(uid: string): Promise<void> {
     try {
+      console.log(`Permanently deleting email UID ${uid}`);
+      
       // Mark as deleted
       await this.sendCommand(`UID STORE ${uid} +FLAGS (\\Deleted)`);
+      console.log(`✅ Marked email UID ${uid} as deleted`);
+      
       // Expunge to permanently remove
       await this.sendCommand(`EXPUNGE`);
-      console.log(`Email with UID ${uid} permanently deleted`);
+      console.log(`✅ Email UID ${uid} permanently deleted`);
     } catch (error) {
       throw new Error(`Failed to permanently delete email: ${error.message}`);
     }
   }
 
   async close(): Promise<void> {
-    if (this.writer) {
-      try {
-        await this.sendCommand('LOGOUT');
-      } catch (error) {
-        console.log('Logout error (ignored):', error);
+    try {
+      if (this.writer) {
+        try {
+          await this.sendCommand('LOGOUT');
+          console.log('✅ IMAP logout successful');
+        } catch (error) {
+          console.log('Logout error (ignored):', error.message);
+        }
+        
+        try {
+          await this.writer.close();
+        } catch (error) {
+          console.log('Writer close error (ignored):', error.message);
+        }
       }
-      await this.writer.close();
-    }
-    if (this.conn) {
-      this.conn.close();
+      
+      if (this.conn) {
+        try {
+          this.conn.close();
+          console.log('✅ IMAP connection closed');
+        } catch (error) {
+          console.log('Connection close error (ignored):', error.message);
+        }
+      }
+    } catch (error) {
+      console.log('Close error (ignored):', error.message);
     }
   }
 }
@@ -197,7 +373,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log(`Delete email request: ${req.method}`)
+    console.log(`=== Delete email request: ${req.method} ===`)
     
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -223,8 +399,9 @@ serve(async (req) => {
 
     const account = email.email_accounts
 
-    console.log(`Found email: ${email.subject} from account ${account.email}`)
-    console.log(`Message ID: ${email.message_id}`)
+    console.log(`Found email: "${email.subject}" from ${email.sender}`)
+    console.log(`Account: ${account.email}`)
+    console.log(`Message ID: ${email.message_id || 'N/A'}`)
 
     // Configure IMAP settings
     const imapConfig = {
@@ -235,62 +412,98 @@ serve(async (req) => {
       useSSL: true
     }
 
-    console.log(`Connecting to IMAP: ${imapConfig.host}:${imapConfig.port}`)
+    console.log(`IMAP Config: ${imapConfig.host}:${imapConfig.port}`)
 
     let imapSuccess = false;
+    let imapErrorMessage = '';
 
     // Connect to IMAP and delete email
-    if (email.message_id) {
-      const imap = new SimpleIMAPClient(imapConfig);
+    const imap = new EnhancedIMAPClient(imapConfig);
+    
+    try {
+      await imap.connect();
+      await imap.login();
       
-      try {
-        await imap.connect();
-        await imap.login();
+      // Get list of available mailboxes for debugging
+      const mailboxes = await imap.listMailboxes();
+      console.log(`Available mailboxes: ${mailboxes.join(', ')}`);
+      
+      // Try different mailboxes in order of preference
+      const searchMailboxes = [
+        'INBOX',
+        'Sent',
+        'Drafts',
+        'INBOX.Sent',
+        'INBOX.Drafts',
+        '[Gmail]/Sent Mail',
+        '[Gmail]/Drafts',
+        ...mailboxes.filter(m => !['INBOX', 'Sent', 'Drafts'].includes(m))
+      ];
+      
+      let foundAndProcessed = false;
+      
+      for (const mailbox of searchMailboxes) {
+        if (foundAndProcessed) break;
         
-        // Try different mailboxes
-        const mailboxes = ['INBOX', 'Sent', 'Drafts'];
+        console.log(`\n--- Checking mailbox: ${mailbox} ---`);
         
-        for (const mailbox of mailboxes) {
-          try {
-            await imap.selectMailbox(mailbox);
-            
-            // Search for email by Message-ID
-            const uids = await imap.searchByMessageId(email.message_id);
-            
-            if (uids.length > 0) {
-              const uid = uids[0];
-              console.log(`Found email with UID ${uid} in ${mailbox}`);
-              
-              if (permanent) {
-                await imap.permanentDelete(uid);
-                console.log(`✅ Email permanently deleted from IMAP server (${mailbox})`);
-              } else {
-                await imap.moveToTrash(uid);
-                console.log(`✅ Email moved to trash on IMAP server (${mailbox})`);
-              }
-              
-              imapSuccess = true;
-              break;
-            } else {
-              console.log(`Email not found in ${mailbox}`);
-            }
-          } catch (mailboxError) {
-            console.log(`Failed to process ${mailbox}: ${mailboxError.message}`);
-            continue;
-          }
+        const selected = await imap.selectMailbox(mailbox);
+        if (!selected) {
+          console.log(`Could not select mailbox: ${mailbox}`);
+          continue;
         }
         
-        await imap.close();
+        let uids: string[] = [];
         
-      } catch (imapError) {
-        console.error('IMAP operation failed:', imapError);
-        // Continue with database update even if IMAP fails
+        // First try searching by Message-ID if available
+        if (email.message_id) {
+          uids = await imap.searchByMessageId(email.message_id);
+        }
+        
+        // If no results and we have sender info, try searching by sender
+        if (uids.length === 0 && email.sender) {
+          console.log(`No results by Message-ID, trying sender search...`);
+          uids = await imap.searchBySender(email.sender);
+        }
+        
+        if (uids.length > 0) {
+          console.log(`Found ${uids.length} emails in ${mailbox}`);
+          
+          // Process each UID (in case there are multiple matches)
+          for (const uid of uids) {
+            try {
+              if (permanent) {
+                await imap.permanentDelete(uid);
+                console.log(`✅ Email UID ${uid} permanently deleted from ${mailbox}`);
+              } else {
+                await imap.moveToTrash(uid);
+                console.log(`✅ Email UID ${uid} moved to trash from ${mailbox}`);
+              }
+              foundAndProcessed = true;
+              imapSuccess = true;
+            } catch (uidError) {
+              console.log(`Failed to process UID ${uid}: ${uidError.message}`);
+              imapErrorMessage += `UID ${uid}: ${uidError.message}; `;
+            }
+          }
+        } else {
+          console.log(`No emails found in ${mailbox}`);
+        }
       }
-    } else {
-      console.log('No message_id found, skipping IMAP deletion');
+      
+      if (!foundAndProcessed) {
+        imapErrorMessage = 'Email not found in any mailbox';
+        console.log(`❌ ${imapErrorMessage}`);
+      }
+      
+    } catch (imapError) {
+      console.error('IMAP operation failed:', imapError);
+      imapErrorMessage = imapError.message;
+    } finally {
+      await imap.close();
     }
 
-    // Update database
+    // Update database regardless of IMAP success
     let updateData: any = {
       updated_at: new Date().toISOString()
     };
@@ -315,9 +528,10 @@ serve(async (req) => {
           success: true, 
           message: imapSuccess 
             ? 'Email permanently deleted from server and database'
-            : 'Email permanently deleted from database (IMAP deletion failed)',
+            : `Email permanently deleted from database. IMAP error: ${imapErrorMessage}`,
           action: 'permanent_delete',
-          imapSuccess
+          imapSuccess,
+          imapError: imapErrorMessage || null
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -348,9 +562,10 @@ serve(async (req) => {
           success: true, 
           message: imapSuccess 
             ? 'Email moved to trash on server and marked as deleted'
-            : 'Email marked as deleted in database (IMAP deletion failed)',
+            : `Email marked as deleted in database. IMAP error: ${imapErrorMessage}`,
           action: 'move_to_trash',
-          imapSuccess
+          imapSuccess,
+          imapError: imapErrorMessage || null
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
