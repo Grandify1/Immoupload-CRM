@@ -11,6 +11,7 @@ import { Mail, Send, Inbox, Settings, Plus, Trash2, RefreshCw, Archive, AlertTri
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface EmailAccount {
   id: string;
@@ -55,6 +56,7 @@ export function EmailView() {
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState(0);
+  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
 
   const [accountForm, setAccountForm] = useState({
     name: '',
@@ -108,7 +110,7 @@ export function EmailView() {
     try {
       setLastLoadTime(now);
       console.log('Loading emails from database...');
-      
+
       // Load all emails first, then filter in getFilteredEmails()
       // This ensures we have full control over what's shown in each folder
       const { data, error } = await supabase
@@ -118,10 +120,10 @@ export function EmailView() {
         .limit(200); // Increased limit to account for deleted emails
 
       if (error) throw error;
-      
+
       // Keep all emails from database - filtering will be done in getFilteredEmails()
       const allEmails = data || [];
-      
+
       console.log(`Loaded ${allEmails.length} emails from database`);
       setEmails(allEmails);
     } catch (error) {
@@ -208,7 +210,7 @@ export function EmailView() {
       }
 
       toast.success(`Email nach ${folders.find(f => f.id === folder)?.name} verschoben`);
-      
+
       // Update local state immediately
       setEmails(prev => {
         const newEmails = prev.map(email => 
@@ -239,7 +241,7 @@ export function EmailView() {
     try {
       setLoading(true);
       console.log(`Starting email deletion: ${emailId}, permanent: ${permanent}`);
-      
+
       const { data, error } = await supabase.functions.invoke('delete-email', {
         body: {
           emailId,
@@ -254,7 +256,7 @@ export function EmailView() {
       }
 
       console.log('Email deletion result:', data);
-      
+
       // Check if the deletion was actually successful
       if (!data || !data.success) {
         throw new Error(data?.error || 'Email-Löschung fehlgeschlagen');
@@ -274,7 +276,7 @@ export function EmailView() {
       } else {
         // IMAP failed but database was updated - provide more specific feedback
         const isNotFoundError = data.imapError && data.imapError.includes('not found');
-        
+
         if (isNotFoundError) {
           // Email not found on IMAP server - this is actually OK, it means it was already deleted
           if (permanent) {
@@ -299,7 +301,7 @@ export function EmailView() {
           }
         }
       }
-      
+
       // Update local state based on deletion type
       if (permanent) {
         // Remove from local state completely
@@ -334,7 +336,7 @@ export function EmailView() {
 
     } catch (error) {
       console.error('Error deleting email via IMAP:', error);
-      
+
       // Show specific error messages
       if (error.message.includes('not found')) {
         toast.error('Email nicht gefunden', {
@@ -501,8 +503,37 @@ export function EmailView() {
     }
   };
 
-  
-  
+  const handleSelectEmail = (emailId: string) => {
+    setSelectedEmails(prev => {
+      if (prev.includes(emailId)) {
+        return prev.filter(id => id !== emailId);
+      } else {
+        return [...prev, emailId];
+      }
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedEmails.length === 0) {
+      toast.warning('Bitte wähle zuerst Emails aus.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await Promise.all(
+        selectedEmails.map(emailId => deleteEmailViaIMAP(emailId, false))
+      );
+      toast.success('Ausgewählte Emails wurden gelöscht.');
+      setSelectedEmails([]);
+    } catch (error) {
+      console.error('Fehler beim Löschen von Emails:', error);
+      toast.error('Fehler beim Löschen der ausgewählten Emails.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredEmails = getFilteredEmails();
   const unreadCount = emails.filter(e => !e.is_read && !e.is_deleted && (!e.folder || e.folder === 'inbox')).length;
 
@@ -613,6 +644,14 @@ export function EmailView() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 flex-1 overflow-hidden">
+                {selectedEmails.length > 0 && (
+                    <div className="p-4">
+                      <Button variant="destructive" onClick={handleBulkDelete} disabled={loading}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Ausgewählte löschen ({selectedEmails.length})
+                      </Button>
+                    </div>
+                  )}
                   {filteredEmails.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground">
                       Keine Emails in diesem Ordner
@@ -627,7 +666,12 @@ export function EmailView() {
                           } ${!email.is_read ? 'font-semibold' : ''}`}
                           onClick={() => handleEmailSelect(email)}
                         >
-                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center justify-between mb-1">
+                            <Checkbox
+                                id={`email-${email.id}`}
+                                checked={selectedEmails.includes(email.id)}
+                                onCheckedChange={() => handleSelectEmail(email.id)}
+                            />
                             <span className="text-sm font-medium truncate">
                               {email.sender}
                             </span>
@@ -885,6 +929,7 @@ export function EmailView() {
                   </div>
                   <div>
                     <Label htmlFor="imap_port">IMAP Port</Label>
+# Adding bulk selection and bulk delete functionality to the EmailView component.
                     <Input
                       id="imap_port"
                       type="number"
