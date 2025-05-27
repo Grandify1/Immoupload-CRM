@@ -1,0 +1,42 @@
+[Error] TypeError: Importing a module script failed.
+
+	warnFailedUpdate (client:174)
+	(anonymous function) (client:213)
+[Error] [hmr] Failed to reload /src/components/CSVImport.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+	warnFailedUpdate (client:176)
+	(anonymous function) (client:213)
+[Error] TypeError: Importing a module script failed.
+
+	warnFailedUpdate (client:174)
+	(anonymous function) (client:213)
+[Error] [hmr] Failed to reload /src/index.css. This could be due to syntax errors or importing non-existent modules. (see errors above)
+	warnFailedUpdate (client:176)
+	(anonymous function) (client:213)
+[Debug] [vite] hot updated: /src/components/CSVImport.tsx (client, line 223)
+[Debug] [vite] hot updated: /src/index.css (client, line 223)
+[Debug] [vite] connecting... (client, line 495)
+[Debug] [vite] connected. (client, line 614)
+[Log] SalesPipelineSettings.tsx: Datei wird verarbeitet (SalesPipelineSettings.tsx, line 11)
+[Log] Auth state changed: – "INITIAL_SESSION" – "4467ca04-af24-4c9e-b26b-f3152a00f429" (useAuth.tsx, line 39, x2)
+[Log] Profile fetch cooldown active, skipping... (useProfile.tsx, line 82)
+[Log] Auth state changed: – "INITIAL_SESSION" – "4467ca04-af24-4c9e-b26b-f3152a00f429" (useAuth.tsx, line 39)
+[Log] CRMLayout: Initial fetchData call (CRMLayout.tsx, line 43)
+[Log] fetchData: Starting data fetch... (CRMLayout.tsx, line 59)
+[Log] fetchDeals: Starting deals fetch... (CRMLayout.tsx, line 133)
+[Log] fetchData: Finished data fetch. (CRMLayout.tsx, line 123)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (@radix-ui_react-dialog.js, line 336)
+[Log] CSV parsing completed: 421 valid rows from 421 total rows (CSVImport.tsx, line 165)
+[Error] Failed to load resource: the server responded with a status of 409 () (leads, line 0)
+[Error] Error importing leads:
+Object
+
+code: "23505"
+
+details: "Key (name)=(H. & F. Rovenich GmbH) already exists."
+
+hint: null
+
+message: "duplicate key value violates unique constraint \"leads_name_unique\""
+
+Object Prototype
+	(anonymous function) (CRMLayout.tsx:363)
