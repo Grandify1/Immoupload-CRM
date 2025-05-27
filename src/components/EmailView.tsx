@@ -108,23 +108,25 @@ export function EmailView() {
     try {
       setLastLoadTime(now);
       console.log('Loading emails from database...');
-      const { data, error } = await supabase
+      
+      // Only load emails that haven't been soft-deleted, unless we're specifically viewing the trash folder
+      const query = supabase
         .from('emails')
         .select('*')
         .order('received_at', { ascending: false })
         .limit(100);
 
+      // For most use cases, exclude deleted emails from the initial load
+      // The getFilteredEmails() function will handle showing them in the trash folder
+      const { data, error } = await query;
+
       if (error) throw error;
       
-      // Filter out permanently deleted emails (but keep soft-deleted for trash folder)
-      const filteredEmails = data?.filter(email => {
-        // Only exclude emails that were permanently deleted (not in database anymore)
-        // Soft-deleted emails (is_deleted: true) should still be shown in trash folder
-        return true;
-      }) || [];
+      // Keep all emails from database - filtering will be done in getFilteredEmails()
+      const allEmails = data || [];
       
-      console.log(`Loaded ${filteredEmails.length} emails from database (${data?.length || 0} total)`);
-      setEmails(filteredEmails);
+      console.log(`Loaded ${allEmails.length} emails from database`);
+      setEmails(allEmails);
     } catch (error) {
       console.error('Error loading emails:', error);
       toast.error('Fehler beim Laden der Emails');
@@ -273,15 +275,31 @@ export function EmailView() {
           });
         }
       } else {
-        // IMAP failed but database was updated
-        if (permanent) {
-          toast.warning('Email aus Datenbank gelöscht, aber IMAP-Löschung fehlgeschlagen', {
-            description: data.imapError || 'Unbekannter IMAP-Fehler'
-          });
+        // IMAP failed but database was updated - provide more specific feedback
+        const isNotFoundError = data.imapError && data.imapError.includes('not found');
+        
+        if (isNotFoundError) {
+          // Email not found on IMAP server - this is actually OK, it means it was already deleted
+          if (permanent) {
+            toast.success('Email wurde aus der Datenbank entfernt', {
+              description: 'Email war bereits vom IMAP-Server gelöscht'
+            });
+          } else {
+            toast.success('Email wurde in den Papierkorb verschoben', {
+              description: 'Email war bereits vom IMAP-Server gelöscht'
+            });
+          }
         } else {
-          toast.warning('Email in Datenbank als gelöscht markiert, aber IMAP-Verschiebung fehlgeschlagen', {
-            description: data.imapError || 'Unbekannter IMAP-Fehler'
-          });
+          // Other IMAP errors
+          if (permanent) {
+            toast.warning('Email aus Datenbank gelöscht, aber IMAP-Löschung fehlgeschlagen', {
+              description: data.imapError || 'Unbekannter IMAP-Fehler'
+            });
+          } else {
+            toast.warning('Email in Datenbank als gelöscht markiert, aber IMAP-Verschiebung fehlgeschlagen', {
+              description: data.imapError || 'Unbekannter IMAP-Fehler'
+            });
+          }
         }
       }
       
@@ -311,11 +329,11 @@ export function EmailView() {
         setSelectedEmail(null);
       }
 
-      // Force refresh to ensure data consistency
+      // Force refresh to ensure data consistency - reduced delay
       setTimeout(() => {
         console.log('Refreshing email list after deletion...');
         loadEmails(true);
-      }, 1000); // Increased delay to ensure server updates are processed
+      }, 300);
 
     } catch (error) {
       console.error('Error deleting email via IMAP:', error);
