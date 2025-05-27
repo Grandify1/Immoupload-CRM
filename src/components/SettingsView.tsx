@@ -87,16 +87,29 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
     };
   }, [teamId]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, undoStatus?: string) => {
+    // Show undo status if present and not "active"
+    if (undoStatus && undoStatus !== 'active') {
+      switch (undoStatus) {
+        case 'undoing':
+          return <Badge className="bg-orange-100 text-orange-800">Rückgängig machen...</Badge>;
+        case 'undone':
+          return <Badge className="bg-gray-100 text-gray-800">Rückgängig gemacht</Badge>;
+        case 'undo_failed':
+          return <Badge className="bg-red-100 text-red-800">Undo fehlgeschlagen</Badge>;
+      }
+    }
+
+    // Show regular import status
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Abgeschlossen</Badge>;
       case 'processing':
-        return <Badge className="bg-blue-100 text-blue-800">Processing</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">In Bearbeitung</Badge>;
       case 'completed_with_errors':
-        return <Badge className="bg-yellow-100 text-yellow-800">With Errors</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">Mit Fehlern</Badge>;
       case 'failed':
-        return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
+        return <Badge className="bg-red-100 text-red-800">Fehlgeschlagen</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
     }
@@ -134,6 +147,165 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
         description: "Ein unerwarteter Fehler ist aufgetreten.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleUndoImport = async (jobId: string) => {
+    if (!confirm('Möchten Sie diesen Import wirklich rückgängig machen? Alle durch diesen Import hinzugefügten Leads werden gelöscht.')) {
+      return;
+    }
+
+    try {
+      // Update job status to "undoing"
+      const { error: updateError } = await supabase
+        .from('import_jobs')
+        .update({ 
+          undo_status: 'undoing',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast({
+        title: "Import wird rückgängig gemacht",
+        description: "Der Vorgang läuft im Hintergrund...",
+      });
+
+      // Refresh immediately to show "undoing" status
+      fetchImportJobs();
+
+      // Get job details to find related leads
+      const { data: job, error: jobError } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (jobError) {
+        throw jobError;
+      }
+
+      // Find and delete leads created during this import
+      // We'll use created_at timestamp and team_id to identify leads from this import
+      const importStartTime = new Date(job.created_at);
+      const importEndTime = new Date(job.updated_at || job.created_at);
+      
+      // Add some buffer time (5 minutes) around the import window
+      importStartTime.setMinutes(importStartTime.getMinutes() - 5);
+      importEndTime.setMinutes(importEndTime.getMinutes() + 5);
+
+      const { data: leadsToDelete, error: leadsError } = await supabase
+        .from('leads')
+        .select('id, name, email')
+        .eq('team_id', teamId)
+        .gte('created_at', importStartTime.toISOString())
+        .lte('created_at', importEndTime.toISOString());
+
+      if (leadsError) {
+        throw leadsError;
+      }
+
+      let deletedCount = 0;
+      let failedCount = 0;
+      const undoDetails: any[] = [];
+
+      if (leadsToDelete && leadsToDelete.length > 0) {
+        // Delete leads in batches
+        const batchSize = 50;
+        for (let i = 0; i < leadsToDelete.length; i += batchSize) {
+          const batch = leadsToDelete.slice(i, i + batchSize);
+          const batchIds = batch.map(lead => lead.id);
+
+          try {
+            const { error: deleteError } = await supabase
+              .from('leads')
+              .delete()
+              .in('id', batchIds);
+
+            if (deleteError) {
+              throw deleteError;
+            }
+
+            deletedCount += batch.length;
+            undoDetails.push(...batch.map(lead => ({ 
+              action: 'deleted', 
+              lead_id: lead.id, 
+              name: lead.name, 
+              email: lead.email 
+            })));
+          } catch (batchError) {
+            console.error('Error deleting batch:', batchError);
+            failedCount += batch.length;
+            undoDetails.push(...batch.map(lead => ({ 
+              action: 'failed_to_delete', 
+              lead_id: lead.id, 
+              name: lead.name, 
+              email: lead.email,
+              error: batchError.message 
+            })));
+          }
+        }
+      }
+
+      // Update job with undo results
+      const finalUndoStatus = failedCount > 0 ? 'undo_failed' : 'undone';
+      const { error: finalUpdateError } = await supabase
+        .from('import_jobs')
+        .update({
+          undo_status: finalUndoStatus,
+          undo_date: new Date().toISOString(),
+          undo_details: {
+            deleted_leads: deletedCount,
+            failed_deletions: failedCount,
+            details: undoDetails
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+
+      if (finalUpdateError) {
+        console.error('Error updating final undo status:', finalUpdateError);
+      }
+
+      // Show result
+      if (failedCount === 0) {
+        toast({
+          title: "Import erfolgreich rückgängig gemacht",
+          description: `${deletedCount} Leads wurden gelöscht.`,
+        });
+      } else {
+        toast({
+          title: "Import teilweise rückgängig gemacht",
+          description: `${deletedCount} Leads gelöscht, ${failedCount} Fehler aufgetreten.`,
+          variant: "destructive"
+        });
+      }
+
+      fetchImportJobs();
+
+    } catch (error: any) {
+      console.error('Error undoing import:', error);
+      
+      // Update job status to failed
+      await supabase
+        .from('import_jobs')
+        .update({ 
+          undo_status: 'undo_failed',
+          undo_details: { error: error.message },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId);
+
+      toast({
+        title: "Fehler",
+        description: `Import konnte nicht rückgängig gemacht werden: ${error.message}`,
+        variant: "destructive"
+      });
+
+      fetchImportJobs();
     }
   };
 
@@ -184,32 +356,64 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h4 className="font-medium">{job.file_name}</h4>
-                    {getStatusBadge(job.status)}
+                    {getStatusBadge(job.status, job.undo_status)}
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
-                    {job.processed_records} processed, {job.failed_records} failed
+                    {job.processed_records} verarbeitet, {job.failed_records} fehlgeschlagen
                   </div>
                   <div className="text-xs text-gray-500">
-                    {new Date(job.created_at).toLocaleString()}
+                    Importiert: {new Date(job.created_at).toLocaleString()}
                   </div>
+                  {job.undo_date && (
+                    <div className="text-xs text-gray-500">
+                      Rückgängig gemacht: {new Date(job.undo_date).toLocaleString()}
+                    </div>
+                  )}
                   {job.error_details && (
                     <div className="text-xs text-red-600 mt-1">
-                      Errors occurred during import
+                      Fehler beim Import aufgetreten
+                    </div>
+                  )}
+                  {job.undo_details && (
+                    <div className="text-xs text-gray-600 mt-1">
+                      {job.undo_details.deleted_leads} Leads gelöscht
+                      {job.undo_details.failed_deletions > 0 && `, ${job.undo_details.failed_deletions} Löschfehler`}
                     </div>
                   )}
                 </div>
-                <div className="text-right">
+                <div className="text-right mr-4">
                   <div className="text-lg font-semibold">{job.total_records}</div>
-                  <div className="text-xs text-gray-500">total records</div>
+                  <div className="text-xs text-gray-500">Gesamt</div>
                 </div>
-                <Button
+                <div className="flex gap-2">
+                  {(job.status === 'completed' || job.status === 'completed_with_errors') && 
+                   (!job.undo_status || job.undo_status === 'active') && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUndoImport(job.id)}
+                      className="text-orange-600 hover:text-orange-700"
+                    >
+                      <MoveVertical className="w-4 h-4 mr-2 rotate-180" />
+                      Rückgängig
+                    </Button>
+                  )}
+                  {job.undo_status === 'undoing' && (
+                    <Button variant="outline" size="sm" disabled>
+                      <MoveVertical className="w-4 h-4 mr-2 rotate-180 animate-spin" />
+                      Läuft...
+                    </Button>
+                  )}
+                  <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteImportJob(job.id)}
+                    disabled={job.undo_status === 'undoing'}
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    Löschen
                   </Button>
+                </div>
               </div>
             ))}
           </div>

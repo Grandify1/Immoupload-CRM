@@ -173,6 +173,9 @@ export type Database = {
           status: string
           team_id: string
           total_records: number
+          undo_date: string | null
+          undo_details: Json | null
+          undo_status: string
           updated_at: string
         }
         Insert: {
@@ -186,6 +189,9 @@ export type Database = {
           status?: string
           team_id: string
           total_records: number
+          undo_date?: string | null
+          undo_details?: Json | null
+          undo_status?: string
           updated_at?: string
         }
         Update: {
@@ -199,6 +205,9 @@ export type Database = {
           status?: string
           team_id?: string
           total_records?: number
+          undo_date?: string | null
+          undo_details?: Json | null
+          undo_status?: string
           updated_at?: string
         }
         Relationships: [
