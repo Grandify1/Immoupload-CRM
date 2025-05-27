@@ -26,6 +26,8 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
   const fetchImportJobs = async () => {
     try {
+      console.log('Fetching import jobs for team:', teamId);
+      
       const { data, error } = await supabase
         .from('import_jobs')
         .select('*')
@@ -41,6 +43,8 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
           variant: "destructive"
         });
       } else {
+        console.log('Import jobs fetched successfully:', data?.length || 0, 'jobs found');
+        console.log('Import jobs data:', data);
         setImportJobs(data || []);
       }
     } catch (error) {
@@ -68,18 +72,27 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
           table: 'import_jobs' 
         }, 
         (payload) => {
+          console.log('Import job change detected:', payload);
+          console.log('Event type:', payload.eventType);
+          console.log('New data:', payload.new);
+          console.log('Old data:', payload.old);
+          
           if (payload.new && payload.new.team_id === teamId) {
-            console.log('Import job change detected:', payload);
+            console.log('Import job change for our team - refreshing list');
             fetchImportJobs(); // Refresh the list when changes occur
+          } else if (payload.old && payload.old.team_id === teamId) {
+            console.log('Import job deletion for our team - refreshing list');
+            fetchImportJobs();
           }
         }
       )
       .subscribe();
 
-    // Auto-refresh every 30 seconds
+    // More frequent auto-refresh to catch any missed updates
     const interval = setInterval(() => {
+      console.log('Auto-refreshing import jobs...');
       fetchImportJobs();
-    }, 30000);
+    }, 10000); // Every 10 seconds instead of 30
 
     return () => {
       subscription.unsubscribe();
@@ -332,6 +345,7 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
           variant="outline" 
           size="sm" 
           onClick={() => {
+            console.log('Manual refresh triggered');
             setIsLoading(true);
             fetchImportJobs();
           }}

@@ -562,6 +562,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         };
 
         console.log('Creating import job:', importJobData);
+        console.log('User ID:', user.id);
+        console.log('Team ID:', profile.team_id);
 
         let importJob: any = null;
         try {
@@ -573,14 +575,19 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
           if (jobError) {
             console.error('Error creating import job:', jobError);
+            console.error('Job error details:', jobError.details);
+            console.error('Job error hint:', jobError.hint);
+            console.error('Job error code:', jobError.code);
             throw new Error(`Failed to create import job: ${jobError.message}`);
           } else {
             importJob = data;
-            console.log('Import job created successfully:', importJob);
+            console.log('Import job created successfully with ID:', importJob.id);
+            console.log('Import job details:', importJob);
           }
         } catch (err) {
           console.error('Failed to create import job:', err);
-          // Continue with import even if job creation fails
+          // Continue with import even if job creation fails but log the error
+          console.error('Import will continue without job tracking');
         }
 
         // Import all leads in batches to improve performance - silently in background
@@ -658,12 +665,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               console.error('Failed to update import job:', updateError);
             } else {
               console.log('Import job updated successfully');
+              console.log('Import job final status:', importJob.id, updateData.status);
             }
           } catch (updateError) {
             console.error('Failed to update import job:', updateError);
           }
         } else {
-          console.log('No import job to update');
+          console.log('No import job to update - this will cause issues with import history');
         }
 
         setImportProgress(100);
