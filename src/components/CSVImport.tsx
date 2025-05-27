@@ -658,6 +658,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       // Now perform the actual import with duplicate handling
       console.log('=== STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===');
+      console.log('Duplicate Detection Config:', duplicateConfig);
+      console.log('Detection Field:', duplicateConfig.duplicateDetectionField);
+      console.log('Detection Action:', duplicateConfig.duplicateAction);
       const batchSize = 50; // Smaller batches for better error handling
       let batchIndex = 0;
       let totalBatches = Math.ceil(leads.length / batchSize);
@@ -695,18 +698,18 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               if (detectionValue && detectionValue.trim()) {
                 console.log(`🔍 Checking for duplicate using ${detectionField}: "${detectionValue}"`);
 
-                const query = supabase
+                let query = supabase
                   .from('leads')
                   .select('id, name, email, phone, website, address, description, status, custom_fields')
                   .eq('team_id', profile.team_id);
 
                 // Add the appropriate filter based on detection field with exact match
                 if (detectionField === 'name') {
-                  query.eq('name', detectionValue.trim());
+                  query = query.eq('name', detectionValue.trim());
                 } else if (detectionField === 'email') {
-                  query.eq('email', detectionValue.trim());
+                  query = query.eq('email', detectionValue.trim());
                 } else if (detectionField === 'phone') {
-                  query.eq('phone', detectionValue.trim());
+                  query = query.eq('phone', detectionValue.trim());
                 }
 
                 const result = await query.single();
@@ -715,6 +718,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
                 if (existingLead) {
                   console.log(`⚠️ DUPLICATE FOUND: CSV "${detectionValue}" matches existing lead "${existingLead[detectionField]}" (ID: ${existingLead.id})`);
+                } else if (checkError && checkError.code === 'PGRST116') {
+                  console.log(`✅ No duplicate found for ${detectionField}: "${detectionValue}" (PGRST116: no rows found)`);
+                } else if (checkError) {
+                  console.log(`⚠️ Error checking for duplicate on ${detectionField}: "${detectionValue}":`, checkError);
                 } else {
                   console.log(`✅ No duplicate found for ${detectionField}: "${detectionValue}"`);
                 }
