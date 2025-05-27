@@ -47,11 +47,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   const allAvailableFields = [
     ...standardFields,
-    ...(customFields || []).filter(field => field.entity_type === 'lead').map(field => ({
-        name: `custom_${field.name.toLowerCase().replace(/\s+/g, '_')}`,
+    ...(customFields || [])
+      .filter(field => field.entity_type === 'lead')
+      .map(field => ({
+        name: field.name,
         label: `${field.name} (Custom)`,
         isCustom: true
-    }))
+      }))
   ];
 
   const resetState = () => {
@@ -122,23 +124,50 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         }
         
         const data: string[][] = [];
+        let rowsProcessed = 0;
+        let rowsSkipped = 0;
+        
         for (let i = 1; i < lines.length; i++) {
-          if (lines[i].trim() === '') continue;
-          const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, '').trim());
+          const line = lines[i].trim();
           
-          // Flexiblere Spaltenanzahl-Prüfung
-          if (values.length < headers.length) {
-             // Fehlende Spalten mit leeren Strings auffüllen
-             while (values.length < headers.length) {
-               values.push('');
-             }
-          } else if (values.length > headers.length) {
-             // Überschüssige Spalten abschneiden
-             values.splice(headers.length);
+          // Skip komplett leere Zeilen
+          if (line === '') {
+            continue;
+          }
+          
+          // Skip Zeilen die nur Kommas enthalten
+          if (line.match(/^,+$/)) {
+            continue;
+          }
+          
+          const values = parseCSVLine(line).map(v => v.replace(/^"|"$/g, '').trim());
+          
+          // Bessere Validierung: Prüfe ob die Zeile mindestens ein nicht-leeres Feld hat
+          const hasContent = values.some(value => value && value.length > 0);
+          if (!hasContent) {
+            rowsSkipped++;
+            console.log(`Skipping row ${i + 1} due to no content.`);
+            continue;
+          }
+          
+          // Spaltenanzahl-Prüfung
+          if (values.length !== headers.length) {
+            if (values.length < headers.length) {
+              // Fehlende Spalten mit leeren Strings auffüllen
+              while (values.length < headers.length) {
+                values.push('');
+              }
+            } else if (values.length > headers.length) {
+              // Überschüssige Spalten abschneiden
+              values.splice(headers.length);
+            }
           }
           
           data.push(values);
+          rowsProcessed++;
         }
+        
+        console.log(`CSV parsing completed: ${rowsProcessed} valid rows, ${rowsSkipped} rows skipped`);
 
         if (data.length === 0) {
             setError('CSV-Datei enthält keine Datenzeilen.');
@@ -249,9 +278,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             } else if (mapping.createCustomField && mapping.fieldName) {
               lead.custom_fields[mapping.fieldName] = value;
             } else if (targetField && targetField.isCustom) {
-              // Entferne das "custom_" Präfix für das Custom Field
-              const customFieldName = targetField.name.replace('custom_', '');
-              lead.custom_fields[customFieldName] = value;
+              // Verwende den Custom Field Namen direkt
+              lead.custom_fields[targetField.name] = value;
             }
           }
         });
@@ -277,7 +305,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Import Leads from CSV</DialogTitle>
         </DialogHeader>
@@ -310,14 +338,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         )}
         
         {step === 'map' && (
-          <div className="py-4">
+          <div className="py-4 flex-1 overflow-hidden flex flex-col">
             <p className="text-sm text-gray-600 mb-4">
               Map the CSV columns to lead fields. You can also create custom fields for unmapped columns.
             </p>
             
-            <div className="max-h-96 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto border rounded-md">
               <table className="w-full">
-                <thead className="bg-gray-50 text-left">
+                <thead className="bg-gray-50 text-left sticky top-0 z-10">
                   <tr>
                     <th className="px-4 py-2 text-sm font-medium text-gray-600">CSV Column</th>
                     <th className="px-4 py-2 text-sm font-medium text-gray-600">Map to Field</th>
@@ -418,23 +446,27 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         )}
         
         {step === 'preview' && (
-          <div className="py-4">
+          <div className="py-4 flex-1 overflow-hidden flex flex-col">
             <p className="text-sm text-gray-600 mb-4">
               Preview of the first 5 leads to be imported. Total: {csvData.length} leads.
             </p>
             
-            <div className="max-h-96 overflow-auto border rounded-md">
-              <div className="min-w-max">
+            <div className="flex-1 overflow-auto border rounded-md">
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-left sticky top-0">
+                  <thead className="bg-gray-50 text-left sticky top-0 z-10">
                     <tr>
                       {mappings
                         .filter(m => m.fieldName || m.createCustomField)
                         .map((mapping, index) => (
-                          <th key={index} className="px-3 py-2 font-medium text-gray-600 whitespace-nowrap min-w-32">
-                            {mapping.createCustomField 
+                          <th key={index} className="px-3 py-2 font-medium text-gray-600 whitespace-nowrap w-40 max-w-40">
+                            <div className="truncate" title={mapping.createCustomField 
                               ? `${mapping.fieldName} (Custom)` 
-                              : allAvailableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}
+                              : allAvailableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}>
+                              {mapping.createCustomField 
+                                ? `${mapping.fieldName} (Custom)` 
+                                : allAvailableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}
+                            </div>
                           </th>
                         ))}
                     </tr>
@@ -446,9 +478,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                           .filter(m => m.fieldName || m.createCustomField)
                           .map((mapping, colIndex) => {
                             const mappingIndex = mappings.findIndex(m => m.csvHeader === mapping.csvHeader);
+                            const cellContent = row[mappingIndex] || '-';
                             return (
-                              <td key={colIndex} className="px-3 py-2 text-gray-600 whitespace-nowrap min-w-32">
-                                {row[mappingIndex] || '-'}
+                              <td key={colIndex} className="px-3 py-2 text-gray-600 w-40 max-w-40">
+                                <div className="truncate" title={cellContent}>
+                                  {cellContent}
+                                </div>
                               </td>
                             );
                           })}
