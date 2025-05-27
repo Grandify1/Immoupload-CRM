@@ -229,7 +229,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     onAddActivity({
       entity_type: 'lead',
       entity_id: lead.id,
-      type: 'custom_activity',
+      type: 'custom',
       content: content,
       author_id: profile.id,
       template_data: templateData
@@ -261,7 +261,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     onAddActivity({
       entity_type: 'lead',
       entity_id: lead.id,
-      type: 'custom_activity',
+      type: 'custom',
       content: content,
       author_id: profile.id,
       template_data: templateData
@@ -637,7 +637,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
                               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                {activity.type === 'custom_activity' ? (
+                                {activity.type === 'custom' ? (
                                   <Briefcase className="w-4 h-4 text-gray-600" />
                                 ) : (
                                   <StickyNote className="w-4 h-4 text-gray-600" />
@@ -645,7 +645,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                               </div>
                               <div>
                                 <div className="text-sm font-medium text-gray-900">
-                                  {activity.type === 'custom_activity' && activity.template_data?.template_name 
+                                  {activity.type === 'custom' && activity.template_data?.template_name 
                                     ? activity.template_data.template_name 
                                     : activity.type.charAt(0).toUpperCase() + activity.type.slice(1).replace('_', ' ')
                                   }
@@ -656,7 +656,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                               </div>
                             </div>
                             <div className="ml-10">
-                              {activity.type === 'custom_activity' && activity.template_data?.responses ? (
+                              {activity.type === 'custom' && activity.template_data?.responses ? (
                                 <div className="space-y-2">
                                   {Object.entries(activity.template_data.responses).map(([questionId, answer]) => {
                                     const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
