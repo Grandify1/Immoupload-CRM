@@ -115,8 +115,16 @@ export function EmailView() {
         .limit(100);
 
       if (error) throw error;
-      console.log(`Loaded ${data?.length || 0} emails from database`);
-      setEmails(data || []);
+      
+      // Filter out permanently deleted emails (but keep soft-deleted for trash folder)
+      const filteredEmails = data?.filter(email => {
+        // Only exclude emails that were permanently deleted (not in database anymore)
+        // Soft-deleted emails (is_deleted: true) should still be shown in trash folder
+        return true;
+      }) || [];
+      
+      console.log(`Loaded ${filteredEmails.length} emails from database (${data?.length || 0} total)`);
+      setEmails(filteredEmails);
     } catch (error) {
       console.error('Error loading emails:', error);
       toast.error('Fehler beim Laden der Emails');
@@ -134,19 +142,19 @@ export function EmailView() {
     return emails.filter(email => {
       switch (selectedFolder) {
         case 'inbox':
-          return !email.folder || email.folder === 'inbox';
+          return !email.is_deleted && !email.is_archived && (!email.folder || email.folder === 'inbox');
         case 'sent':
-          return email.folder === 'sent';
+          return !email.is_deleted && email.folder === 'sent';
         case 'drafts':
-          return email.folder === 'drafts';
+          return !email.is_deleted && email.folder === 'drafts';
         case 'junk':
-          return email.folder === 'junk';
+          return !email.is_deleted && email.folder === 'junk';
         case 'archived':
-          return email.is_archived === true;
+          return !email.is_deleted && email.is_archived === true;
         case 'deleted':
           return email.is_deleted === true;
         default:
-          return !email.folder || email.folder === 'inbox';
+          return !email.is_deleted && (!email.folder || email.folder === 'inbox');
       }
     });
   };
@@ -481,7 +489,7 @@ export function EmailView() {
   
   
   const filteredEmails = getFilteredEmails();
-  const unreadCount = emails.filter(e => !e.is_read && (!e.folder || e.folder === 'inbox')).length;
+  const unreadCount = emails.filter(e => !e.is_read && !e.is_deleted && (!e.folder || e.folder === 'inbox')).length;
 
   return (
     <div className="p-6 space-y-6">
@@ -530,15 +538,15 @@ export function EmailView() {
                       const folderEmails = emails.filter(email => {
                         switch (folder.id) {
                           case 'inbox':
-                            return !email.folder || email.folder === 'inbox';
+                            return !email.is_deleted && !email.is_archived && (!email.folder || email.folder === 'inbox');
                           case 'sent':
-                            return email.folder === 'sent';
+                            return !email.is_deleted && email.folder === 'sent';
                           case 'drafts':
-                            return email.folder === 'drafts';
+                            return !email.is_deleted && email.folder === 'drafts';
                           case 'junk':
-                            return email.folder === 'junk';
+                            return !email.is_deleted && email.folder === 'junk';
                           case 'archived':
-                            return email.is_archived === true;
+                            return !email.is_deleted && email.is_archived === true;
                           case 'deleted':
                             return email.is_deleted === true;
                           default:
