@@ -213,24 +213,33 @@ class IMAPDeleteClient {
     if (!this.selectedMailbox) throw new Error('No mailbox selected');
     
     try {
+      // Try different variations of Message-ID
       const cleanMessageId = messageId.replace(/^<|>$/g, '');
-      console.log(`🔍 Searching for Message-ID: ${cleanMessageId}`);
+      const variations = [
+        messageId, // Original with < >
+        cleanMessageId, // Without < >
+        `<${cleanMessageId}>`, // With < > if not present
+      ];
       
-      const response = await this.sendCommand(`UID SEARCH HEADER "Message-ID" "${cleanMessageId}"`);
-      
-      const lines = response.split('\r\n');
-      for (const line of lines) {
-        if (line.startsWith('* SEARCH ')) {
-          const uids = line.substring(9).trim();
-          if (uids) {
-            const uidList = uids.split(' ').filter(uid => uid && uid !== '');
-            console.log(`✅ Found UIDs by Message-ID: ${uidList.join(', ')}`);
-            return uidList;
+      for (const variation of variations) {
+        console.log(`🔍 Searching for Message-ID variation: "${variation}"`);
+        
+        const response = await this.sendCommand(`UID SEARCH HEADER "Message-ID" "${variation}"`, false);
+        
+        const lines = response.split('\r\n');
+        for (const line of lines) {
+          if (line.startsWith('* SEARCH ')) {
+            const uids = line.substring(9).trim();
+            if (uids) {
+              const uidList = uids.split(' ').filter(uid => uid && uid !== '');
+              console.log(`✅ Found UIDs by Message-ID "${variation}": ${uidList.join(', ')}`);
+              return uidList;
+            }
           }
         }
       }
       
-      console.log('❌ No emails found with this Message-ID');
+      console.log('❌ No emails found with any Message-ID variation');
       return [];
       
     } catch (error) {
@@ -245,7 +254,7 @@ class IMAPDeleteClient {
     try {
       console.log(`🔍 Searching for sender: ${sender}`);
       
-      const response = await this.sendCommand(`UID SEARCH FROM "${sender}"`);
+      const response = await this.sendCommand(`UID SEARCH FROM "${sender}"`, false);
       
       const lines = response.split('\r\n');
       for (const line of lines) {
@@ -263,6 +272,69 @@ class IMAPDeleteClient {
       
     } catch (error) {
       console.log(`❌ Sender search failed: ${error.message}`);
+      return [];
+    }
+  }
+
+  async searchBySubject(subject: string): Promise<string[]> {
+    if (!this.selectedMailbox) throw new Error('No mailbox selected');
+    
+    try {
+      console.log(`🔍 Searching for subject: "${subject}"`);
+      
+      const response = await this.sendCommand(`UID SEARCH SUBJECT "${subject}"`, false);
+      
+      const lines = response.split('\r\n');
+      for (const line of lines) {
+        if (line.startsWith('* SEARCH ')) {
+          const uids = line.substring(9).trim();
+          if (uids) {
+            const uidList = uids.split(' ').filter(uid => uid && uid !== '');
+            console.log(`✅ Found UIDs by subject: ${uidList.join(', ')}`);
+            return uidList.slice(0, 3); // Even more conservative for subject search
+          }
+        }
+      }
+      
+      return [];
+      
+    } catch (error) {
+      console.log(`❌ Subject search failed: ${error.message}`);
+      return [];
+    }
+  }
+
+  async searchByDateRange(receivedAt: string): Promise<string[]> {
+    if (!this.selectedMailbox) throw new Error('No mailbox selected');
+    
+    try {
+      const date = new Date(receivedAt);
+      const dateStr = date.toLocaleDateString('en-US', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+      }).replace(/,/g, '');
+      
+      console.log(`🔍 Searching for emails on date: ${dateStr}`);
+      
+      const response = await this.sendCommand(`UID SEARCH ON "${dateStr}"`, false);
+      
+      const lines = response.split('\r\n');
+      for (const line of lines) {
+        if (line.startsWith('* SEARCH ')) {
+          const uids = line.substring(9).trim();
+          if (uids) {
+            const uidList = uids.split(' ').filter(uid => uid && uid !== '');
+            console.log(`✅ Found UIDs by date: ${uidList.join(', ')}`);
+            return uidList;
+          }
+        }
+      }
+      
+      return [];
+      
+    } catch (error) {
+      console.log(`❌ Date search failed: ${error.message}`);
       return [];
     }
   }
@@ -510,16 +582,30 @@ serve(async (req) => {
       const mailboxes = await imap.listMailboxes();
       
       // Search through mailboxes in priority order
-      const searchMailboxes = [
+      const priorityMailboxes = [
         'INBOX',
-        'Sent',
-        'Drafts',
-        'INBOX.Sent',
-        'INBOX.Drafts',
-        '[Gmail]/Sent Mail',
-        '[Gmail]/Drafts',
-        ...mailboxes.filter(m => !['INBOX', 'Sent', 'Drafts'].some(priority => m.includes(priority)))
+        'Sent', 'INBOX.Sent', '[Gmail]/Sent Mail', 'Sent Items', 'INBOX.Sent Items',
+        'Drafts', 'INBOX.Drafts', '[Gmail]/Drafts', 'Draft',
+        'Junk', 'Spam', 'INBOX.Junk', 'INBOX.Spam', '[Gmail]/Spam',
+        'Trash', 'Deleted Items', 'INBOX.Trash', 'INBOX.Deleted Items', '[Gmail]/Trash', 'Papierkorb', 'INBOX.Papierkorb'
       ];
+      
+      // Add all other mailboxes that weren't in the priority list
+      const otherMailboxes = mailboxes.filter(m => 
+        !priorityMailboxes.some(priority => 
+          m.toLowerCase().includes(priority.toLowerCase()) || 
+          priority.toLowerCase().includes(m.toLowerCase())
+        )
+      );
+      
+      const searchMailboxes = [...priorityMailboxes.filter(m => mailboxes.includes(m)), ...otherMailboxes];
+      
+      console.log(`📂 Will search ${searchMailboxes.length} mailboxes: ${searchMailboxes.join(', ')}`);
+      console.log(`📧 Looking for email with:`)
+      console.log(`   - Message-ID: ${email.message_id || 'N/A'}`)
+      console.log(`   - Subject: "${email.subject}"`)
+      console.log(`   - Sender: ${email.sender}`)
+      console.log(`   - Received: ${email.received_at}`);
       
       let foundAndProcessed = false;
       
@@ -539,12 +625,31 @@ serve(async (req) => {
         // Search by Message-ID first (most reliable)
         if (email.message_id) {
           uids = await imap.searchByMessageId(email.message_id);
+          console.log(`📧 Message-ID search result: ${uids.length} UIDs found`);
         }
         
         // Fallback to sender search if Message-ID search fails
         if (uids.length === 0 && email.sender) {
           console.log(`🔍 No results by Message-ID, trying sender search...`);
           uids = await imap.searchBySender(email.sender);
+          console.log(`📧 Sender search result: ${uids.length} UIDs found`);
+        }
+        
+        // Additional fallback: search by subject
+        if (uids.length === 0 && email.subject) {
+          console.log(`🔍 No results by sender, trying subject search...`);
+          uids = await imap.searchBySubject(email.subject);
+          console.log(`📧 Subject search result: ${uids.length} UIDs found`);
+        }
+        
+        // Last resort: search by date and then filter manually
+        if (uids.length === 0 && email.received_at) {
+          console.log(`🔍 No results by subject, trying date search...`);
+          const dateUids = await imap.searchByDateRange(email.received_at);
+          console.log(`📧 Date search result: ${dateUids.length} UIDs found`);
+          
+          // For date search, we'd need to fetch headers to verify - skip for now to avoid false positives
+          uids = [];
         }
         
         if (uids.length > 0) {
