@@ -109,16 +109,13 @@ export function EmailView() {
       setLastLoadTime(now);
       console.log('Loading emails from database...');
       
-      // Only load emails that haven't been soft-deleted, unless we're specifically viewing the trash folder
-      const query = supabase
+      // Load all emails first, then filter in getFilteredEmails()
+      // This ensures we have full control over what's shown in each folder
+      const { data, error } = await supabase
         .from('emails')
         .select('*')
         .order('received_at', { ascending: false })
-        .limit(100);
-
-      // For most use cases, exclude deleted emails from the initial load
-      // The getFilteredEmails() function will handle showing them in the trash folder
-      const { data, error } = await query;
+        .limit(200); // Increased limit to account for deleted emails
 
       if (error) throw error;
       
