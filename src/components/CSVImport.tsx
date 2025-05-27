@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -337,29 +336,37 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           const headerNormalized = headerMeta.normalized || header.toLowerCase();
 
           // Erweiterte Zuordnungsregeln für verschiedene Sprachen und Formate
-          const fieldMappings = {
-            // Standard Lead Felder - Deutsch
-            'name': ['name', 'namen', 'firmenname', 'firma', 'unternehmen', 'company', 'business_name'],
-            'email': ['email', 'e_mail', 'e-mail', 'mail', 'kontakt_email'],
-            'phone': ['phone', 'telefon', 'tel', 'telephone', 'handy', 'mobile', 'contact_phone'],
-            'website': ['website', 'webseite', 'homepage', 'url', 'web', 'link', 'site'],
-            'address': ['address', 'adresse', 'anschrift', 'standort', 'ort', 'location'],
-            'description': ['description', 'beschreibung', 'info', 'information', 'details', 'kommentar'],
-            'status': ['status', 'zustand', 'state', 'stage'],
+            const fieldMappings = {
+              // Standard Lead Felder - Deutsch
+              'name': ['name', 'namen', 'firmenname', 'firma', 'unternehmen', 'company', 'business_name'],
+              'email': ['email', 'e_mail', 'e-mail', 'mail', 'kontakt_email'],
+              'phone': ['phone', 'telefon', 'tel', 'telephone', 'handy', 'mobile', 'contact_phone'],
+              'website': ['website', 'webseite', 'homepage', 'url', 'web'],
+              'address': ['address', 'adresse', 'anschrift', 'standort', 'ort', 'location'],
+              'description': ['description', 'beschreibung', 'info', 'information', 'details', 'kommentar'],
+              'status': ['status', 'zustand', 'state', 'stage'],
 
-            // Spezielle Felder aus Google Maps Daten
-            'reviews': ['reviews', 'bewertungen', 'anzahl_bewertungen', 'review_count'],
-            'rating': ['rating', 'bewertung', 'sterne', 'stars', 'durchschnitt'],
-            'category': ['category', 'kategorie', 'main_category', 'hauptkategorie', 'branche'],
-            'competitors': ['competitors', 'konkurrenz', 'wettbewerber'],
-            'opening_hours': ['opening_hours', 'oeffnungszeiten', 'workday_timing', 'arbeitszeiten'],
-            'owner': ['owner', 'besitzer', 'eigentumer', 'owner_name', 'inhaber'],
-            'place_id': ['place_id', 'id', 'google_place_id'],
-            'featured_image': ['featured_image', 'image', 'bild', 'foto'],
-            'can_claim': ['can_claim', 'beanspruchbar'],
-            'is_closed': ['is_closed', 'geschlossen', 'is_temporarily_closed'],
-            'keywords': ['keywords', 'schlusselworter', 'review_keywords', 'suchbegriffe']
-          };
+              // Spezielle Felder aus Google Maps Daten - KEINE Überschneidungen mit Standard-Feldern
+              'reviews': ['reviews', 'bewertungen', 'anzahl_bewertungen', 'review_count'],
+              'rating': ['rating', 'bewertung', 'sterne', 'stars', 'durchschnitt'],
+              'competitors': ['competitors', 'konkurrenz', 'wettbewerber'],
+
+              // Custom Fields - diese werden NICHT zu Standard-Feldern gemappt
+              'place_id': ['place_id', 'google_place_id'],
+              'owner_name': ['owner_name', 'besitzer', 'eigentumer', 'inhaber'],
+              'owner_profile_link': ['owner_profile_link', 'owner_link'],
+              'featured_image': ['featured_image', 'image', 'bild', 'foto'],
+              'main_category': ['main_category', 'kategorie', 'hauptkategorie', 'branche'],
+              'categories': ['categories', 'kategorien'],
+              'workday_timing': ['workday_timing', 'opening_hours', 'oeffnungszeiten', 'arbeitszeiten'],
+              'can_claim': ['can_claim', 'beanspruchbar'],
+              'is_temporarily_closed': ['is_temporarily_closed', 'is_closed', 'geschlossen'],
+              'closed_on': ['closed_on', 'geschlossen_am'],
+              'review_keywords': ['review_keywords', 'keywords', 'schlusselworter', 'suchbegriffe'],
+              'link': ['link', 'google_link'],
+              'query': ['query', 'suchbegriff'],
+              'is_spending_on_ads': ['is_spending_on_ads', 'werbung', 'anzeigen']
+            };
 
           // Suche nach passenden Feldern
           for (const [fieldName, patterns] of Object.entries(fieldMappings)) {
@@ -676,7 +683,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               phone: lead.phone,
               website: lead.website
             });
-            
+
             let existingLead = null;
             let checkError = null;
 
@@ -687,7 +694,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
               if (detectionValue && detectionValue.trim()) {
                 console.log(`🔍 Checking for duplicate using ${detectionField}: "${detectionValue}"`);
-                
+
                 const query = supabase
                   .from('leads')
                   .select('id, name, email, phone, website, address, description, status, custom_fields')
@@ -705,7 +712,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                 const result = await query.single();
                 existingLead = result.data;
                 checkError = result.error;
-                
+
                 if (existingLead) {
                   console.log(`⚠️ DUPLICATE FOUND: CSV "${detectionValue}" matches existing lead "${existingLead[detectionField]}" (ID: ${existingLead.id})`);
                 } else {
@@ -725,14 +732,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               // Duplicate found - handle based on user configuration
               const detectionField = duplicateConfig.duplicateDetectionField;
               const detectionValue = lead[detectionField];
-              
+
               if (duplicateConfig.duplicateAction === 'skip') {
                 console.log(`⏭️ SKIPPING: CSV lead "${lead.name}" because duplicate found with existing lead "${existingLead.name}" (${detectionField}: ${detectionValue})`);
                 duplicateRecords++;
                 continue;
               } else if (duplicateConfig.duplicateAction === 'update') {
                 console.log(`🔄 UPDATING: Existing lead "${existingLead.name}" (ID: ${existingLead.id}) with data from CSV lead "${lead.name}"`);
-                
+
                 // Merge data intelligently: only update fields that have values and are different
                 const updateData: any = {
                   updated_at: new Date().toISOString()
@@ -784,13 +791,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                 }
               } else if (duplicateConfig.duplicateAction === 'create_new') {
                 console.log(`📝 Creating new lead despite duplicate (${detectionField}: ${detectionValue})`);
-                
+
                 // For create_new, modify the name to make it unique
                 const modifiedLead = {
                   ...lead,
                   name: `${lead.name} (Copy ${Date.now()})`
                 };
-                
+
                 const { data: insertedLead, error: insertError } = await supabase
                   .from('leads')
                   .insert([modifiedLead])
@@ -799,7 +806,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
                 if (insertError) {
                   console.error(`❌ Error inserting duplicate lead (${detectionField}: ${detectionValue}):`, insertError);
-                  
+
                   // If still fails due to constraint, skip it
                   if (insertError.code === '23505') {
                     console.log(`🔍 Still duplicate after modification, skipping: ${lead.name}`);
@@ -816,7 +823,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             } else {
               // Lead doesn't exist - insert new one
               console.log(`📝 INSERTING NEW LEAD: "${lead.name}" from CSV (no duplicates found)`);
-              
+
               const { data: insertedLead, error: insertError } = await supabase
                 .from('leads')
                 .insert([lead])
@@ -826,7 +833,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               if (insertError) {
                 console.error(`❌ Error inserting lead "${lead.name}":`, insertError);
                 console.error('Full error details:', insertError);
-                
+
                 // Check if it's a duplicate error that slipped through
                 if (insertError.code === '23505' && insertError.message?.includes('already exists')) {
                   duplicateRecords++;
@@ -855,7 +862,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       // Show detailed final result FIRST
       let summaryMessage = '';
       const totalAttempted = leads.length;
-      
+
       if (failedRecords === 0 && duplicateRecords === 0) {
         summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads verarbeitet (${processedRecords - updatedRecords} neu, ${updatedRecords} aktualisiert).`;
       } else if (processedRecords === 0) {
