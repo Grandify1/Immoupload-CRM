@@ -682,12 +682,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         }
 
         console.log('✅ Edge Function response:', functionResponse);
-        setImportProgress(90);
-
-        // Show success message
-        const successMessage = `✅ Import wurde im Hintergrund gestartet. Sie können den Fortschritt in der Status-Bar verfolgen.`;
-        setError(successMessage);
-        setImportProgress(100);
 
         // Trigger refresh of leads data
         if (onRefresh) {
@@ -695,125 +689,15 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           onRefresh();
         }
 
-        // Close dialog after delay
-        setTimeout(() => {
-          resetState();
-          onClose();
-        }, 2000);
+        // Close dialog immediately since import runs in background
+        resetState();
+        onClose();
 
       } catch (error: any) {
-        console.error('❌ Edge Function error:', error);
-
-        // Fallback to client-side processing if Edge Function fails
-        console.log('⚠️ Falling back to client-side processing...');
-
-        const batchSize = 50;
-        let processedRecords = 0;
-        let failedRecords = 0;
-        let duplicateRecords = 0;
-        let updatedRecords = 0;
-
-        for (let i = 0; i < leads.length; i += batchSize) {
-          const batch = leads.slice(i, i + batchSize);
-
-          for (const lead of batch) {
-            try {
-              const { data: insertedLead, error: insertError } = await supabase
-                .from('leads')
-                .insert([lead])
-                .select('id, name')
-                .single();
-
-              if (insertError) {
-                if (insertError.code === '23505') {
-                  duplicateRecords++;
-                } else {
-                  failedRecords++;
-                }
-              } else {
-                processedRecords++;
-              }
-            } catch (error) {
-              failedRecords++;
-            }
-          }
-
-          setImportProgress(45 + Math.round(((i + batchSize) / leads.length) * 45));
-        }
-
-        setImportProgress(95);
-
-        // Show detailed final result
-        let summaryMessage = '';
-        const totalAttempted = leads.length;
-
-        if (failedRecords === 0 && duplicateRecords === 0) {
-          summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads verarbeitet (${processedRecords - updatedRecords} neu, ${updatedRecords} aktualisiert).`;
-        } else if (processedRecords === 0) {
-          summaryMessage = `❌ Import fehlgeschlagen: ${failedRecords} Leads konnten nicht verarbeitet werden, ${duplicateRecords} Duplikate übersprungen.`;
-        } else {
-          const newLeads = processedRecords - updatedRecords;
-          summaryMessage = `⚠️ Import abgeschlossen: ${newLeads} neue Leads, ${updatedRecords} aktualisiert, ${duplicateRecords} Duplikate übersprungen, ${failedRecords} fehlgeschlagen.`;
-        }
-
-        // Update final import job status in Supabase (only if job tracking is available)
-        if (!skipJobTracking && importJob) {
-          const finalStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
-
-          console.log('=== UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===');
-          console.log('Final status:', finalStatus);
-          console.log('Processed records:', processedRecords);
-          console.log('Failed records:', failedRecords);
-
-          try {
-            const { error: updateError } = await supabase
-              .from('import_jobs')
-              .update({
-                status: finalStatus,
-                processed_records: processedRecords,
-                failed_records: failedRecords,
-                error_details: {
-                  new_records: processedRecords - updatedRecords,
-                  updated_records: updatedRecords,
-                  duplicate_records: duplicateRecords,
-                  failed_records: failedRecords,
-                  summary: summaryMessage
-                },
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', importJob.id);
-
-            if (updateError) {
-              console.error('❌ Error updating import job status in Supabase:', updateError);
-            } else {
-              console.log('✅ Import job status updated successfully in Supabase');
-            }
-          } catch (updateError) {
-            console.warn('⚠️ Could not update final import job status:', updateError);
-          }
-        } else {
-          console.log('⚠️ Import job tracking skipped - table not available');
-        }
-
-        setImportProgress(100);
-
-        console.log('=== IMPORT COMPLETE ===');
-        console.log('Final result:', summaryMessage);
-
-        // Show success message instead of error
-        setError(summaryMessage);
-
-        // Trigger refresh of leads data in parent component
-        if (onRefresh) {
-          console.log('🔄 Triggering automatic refresh of leads data...');
-          onRefresh();
-        }
-
-        // Close dialog after delay
-        setTimeout(() => {
-          resetState();
-          onClose();
-        }, 3000);
+        console.error('❌ Edge Function failed:', error);
+        setError(`Edge Function Fehler: ${error.message}`);
+        setStep('preview');
+        return;
       }
 
     } catch (error: any) {
