@@ -244,10 +244,10 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const handleSubmitActivity = () => {
     if (!selectedActivityTemplate || !profile) return;
 
-    // Create content for the activity from template field values
-    const content = `${selectedActivityTemplate.name}\n\n${Object.entries(templateFieldValues)
-      .map(([fieldName, value]) => `${fieldName}: ${value}`)
-      .join('\n')}`;
+    // Create markdown formatted content
+    const content = `**${selectedActivityTemplate.name}**\n\n${Object.entries(templateFieldValues)
+      .map(([fieldName, value]) => `**${fieldName}:**\n${value}`)
+      .join('\n\n')}`;
 
     // Create template data structure
     const templateData = {
@@ -656,21 +656,31 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                               </div>
                             </div>
                             <div className="ml-10">
-                              {activity.type === 'custom' && activity.template_data?.responses ? (
+                              {activity.type === 'custom' && activity.template_data?.field_values ? (
                                 <div className="prose prose-sm max-w-none">
-                                  <div 
-                                    className="text-sm text-gray-800"
-                                    dangerouslySetInnerHTML={{
-                                      __html: Object.entries(activity.template_data.responses)
-                                        .map(([questionId, answer]) => {
-                                          const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
-                                          const questionText = question?.text || 'Question';
-                                          const answerText = String(answer);
-                                          return `<p><strong>${questionText}</strong><br/>${answerText}</p>`;
-                                        })
-                                        .join('')
-                                    }}
-                                  />
+                                  <div className="text-sm text-gray-800 space-y-2">
+                                    {Object.entries(activity.template_data.field_values).map(([fieldName, value]) => (
+                                      <div key={fieldName} className="border-l-2 border-gray-200 pl-3">
+                                        <div className="font-semibold text-gray-900">{fieldName}</div>
+                                        <div className="text-gray-700">{String(value)}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : activity.type === 'custom' && activity.template_data?.responses ? (
+                                <div className="prose prose-sm max-w-none">
+                                  <div className="text-sm text-gray-800 space-y-2">
+                                    {Object.entries(activity.template_data.responses).map(([questionId, answer]) => {
+                                      const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
+                                      const questionText = question?.text || 'Question';
+                                      return (
+                                        <div key={questionId} className="border-l-2 border-gray-200 pl-3">
+                                          <div className="font-semibold text-gray-900">{questionText}</div>
+                                          <div className="text-gray-700">{String(answer)}</div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
                               ) : (
                                 <p className="text-sm text-gray-800">{activity.content}</p>
