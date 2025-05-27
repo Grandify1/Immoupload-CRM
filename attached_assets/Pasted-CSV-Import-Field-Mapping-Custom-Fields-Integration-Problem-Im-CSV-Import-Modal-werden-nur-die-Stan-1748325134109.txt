@@ -1,0 +1,87 @@
+CSV Import Field Mapping - Custom Fields Integration
+Problem
+Im CSV Import Modal werden nur die Standard-Felder (Name, Email, Phone, etc.) im "Map to Field" Dropdown angezeigt. Die bereits vorhandenen Custom Fields erscheinen NICHT im Dropdown, obwohl sie in den Settings unter "Custom Fields" klar sichtbar und verfügbar sind.
+Aufgabe
+Du musst die Custom Fields Integration in das CSV Import Modal implementieren, damit alle verfügbaren Lead-Felder (Standard + Custom) im Field-Mapping Dropdown erscheinen.
+Analysiere bestehende Custom Fields Implementierung
+1. Settings View Custom Fields analysieren
+Untersuche GENAU wie die Custom Fields in der Settings View geladen und angezeigt werden:
+
+Welche API-Calls werden verwendet um Custom Fields zu laden
+Wie ist die Datenstruktur der Custom Fields
+Welche Supabase-Tabelle wird verwendet
+Wie werden sie gefiltert nach entity_type (sollte 'lead' sein)
+Welche TypeScript-Interfaces werden verwendet
+
+2. CSV Import Komponente analysieren
+Finde die CSV Import Komponente und untersuche:
+
+Wo wird das "Map to Field" Dropdown befüllt
+Welche Daten werden aktuell für das Dropdown verwendet
+Wie wird die Field-Options Liste generiert
+Wo müssen Custom Fields hinzugefügt werden
+
+3. Field-Options Erweiterung implementieren
+Das Dropdown muss erweitert werden um:
+
+Alle Standard-Felder (Name, Email, Phone, Website, Address, Description, Status, Owner)
+PLUS alle Custom Fields die für 'lead' entity_type erstellt wurden
+Custom Fields sollten klar als solche erkennbar sein (z.B. mit Präfix oder Gruppierung)
+
+4. Custom Fields Loading integrieren
+Implementiere das Laden der Custom Fields in der CSV Import Komponente:
+
+Verwende dieselben API-Calls wie in der Settings View
+Lade Custom Fields beim Öffnen des Import Modals
+Filter nur Custom Fields mit entity_type 'lead'
+Kombiniere Standard-Felder mit Custom Fields für das Dropdown
+
+5. Field-Mapping Logic erweitern
+Die Field-Mapping Logic muss Custom Fields unterstützen:
+
+Custom Fields korrekt in der Mapping-Tabelle speichern
+Bei Import-Verarbeitung Custom Fields in das custom_fields JSON-Objekt der Leads einbauen
+Validation für Custom Fields implementieren falls nötig
+
+Spezifische Anforderungen
+Custom Fields im Dropdown
+
+Custom Fields müssen im "Map to Field" Dropdown erscheinen
+Sie sollten von Standard-Feldern unterscheidbar sein
+Alle Custom Fields mit entity_type 'lead' müssen verfügbar sein
+Die Reihenfolge soll logisch sein (Standard-Felder zuerst, dann Custom Fields)
+
+Integration mit bestehendem System
+
+Verwende exakt dieselbe Custom Fields Loading-Logic wie in Settings
+Nutze bestehende TypeScript-Interfaces
+Folge etablierten Patterns für API-Calls
+Keine Duplikation von Code - teile Loading-Logic wenn möglich
+
+Data Flow
+
+Custom Fields beim Modal-Öffnen laden
+Im Dropdown korrekt anzeigen
+Bei Mapping-Auswahl korrekt speichern
+Bei Import-Ausführung Custom Fields in leads.custom_fields JSON schreiben
+
+Debugging-Schritte
+1. Custom Fields API identifizieren
+Finde heraus welche API-Endpunkte für Custom Fields verwendet werden und teste sie.
+2. Settings vs Import vergleichen
+Vergleiche GENAU wie Custom Fields in Settings geladen werden vs. wie es im Import gemacht wird.
+3. Dropdown-Daten loggen
+Logge die Field-Options die für das Dropdown generiert werden und prüfe ob Custom Fields dabei sind.
+4. Import-Mapping testen
+Teste ob Custom Field Mappings korrekt gespeichert und verarbeitet werden.
+Erfolgskriterien
+
+Custom Fields erscheinen im "Map to Field" Dropdown
+Custom Fields können korrekt ausgewählt und gemappt werden
+Importierte Leads enthalten Custom Field Daten im custom_fields JSON
+Keine Duplikate oder Konflikte mit Standard-Feldern
+Loading-States und Error-Handling funktionieren
+
+Wichtiger Hinweis
+Die Custom Fields existieren bereits und funktionieren in Settings. Du musst NUR die bestehende Implementierung in das CSV Import Modal integrieren. Verwende dieselben Datenquellen und API-Calls wie bereits etabliert.
+Identifiziere GENAU wie Custom Fields in Settings geladen werden und implementiere dasselbe System im CSV Import Modal.
