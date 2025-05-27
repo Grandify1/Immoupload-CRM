@@ -1,0 +1,144 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 1
+SettingsView.tsx:86 Import jobs fetched successfully: 1 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(1)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+CSVImport.tsx:31 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:32 All customFields received: Array(20)
+CSVImport.tsx:33 customFields is array? true
+CSVImport.tsx:34 customFields length: 20
+CSVImport.tsx:37 Lead custom fields: Array(20)
+CSVImport.tsx:38 First custom field example: Object
+CSVImport.tsx:42 Custom Field 0: Object
+CSVImport.tsx:42 Custom Field 1: Object
+CSVImport.tsx:42 Custom Field 2: Object
+CSVImport.tsx:42 Custom Field 3: Object
+CSVImport.tsx:42 Custom Field 4: Object
+CSVImport.tsx:42 Custom Field 5: Object
+CSVImport.tsx:42 Custom Field 6: Object
+CSVImport.tsx:42 Custom Field 7: Object
+CSVImport.tsx:42 Custom Field 8: Object
+CSVImport.tsx:42 Custom Field 9: Object
+CSVImport.tsx:42 Custom Field 10: Object
+CSVImport.tsx:42 Custom Field 11: Object
+CSVImport.tsx:42 Custom Field 12: Object
+CSVImport.tsx:42 Custom Field 13: Object
+CSVImport.tsx:42 Custom Field 14: Object
+CSVImport.tsx:42 Custom Field 15: Object
+CSVImport.tsx:42 Custom Field 16: Object
+CSVImport.tsx:42 Custom Field 17: Object
+CSVImport.tsx:42 Custom Field 18: Object
+CSVImport.tsx:42 Custom Field 19: Object
+CSVImport.tsx:74 === End Custom Fields Debug ===
+@radix-ui_react-dialog.js?v=723853c6:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ @radix-ui_react-dialog.js?v=723853c6:336
+Show 1 more frame
+Show less
+CSVImport.tsx:164 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:184 CSV quote character detected: "
+CSVImport.tsx:281 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:282 Headers detected: Array(22)
+CSVImport.tsx:307 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:355 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:355 Auto-mapped "name" to "name"
+CSVImport.tsx:355 Auto-mapped "description" to "description"
+CSVImport.tsx:375 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:355 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:355 Auto-mapped "rating" to "rating"
+CSVImport.tsx:355 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:355 Auto-mapped "website" to "website"
+CSVImport.tsx:355 Auto-mapped "phone" to "phone"
+CSVImport.tsx:355 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:355 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:355 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:355 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:375 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:375 Exact match found for "categories" -> "categories"
+CSVImport.tsx:375 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:375 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:375 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:355 Auto-mapped "address" to "address"
+CSVImport.tsx:375 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:355 Auto-mapped "link" to "website"
+CSVImport.tsx:375 Exact match found for "query" -> "query"
+CSVImport.tsx:453 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:465 CSV data rows: 9
+CSVImport.tsx:466 Mappings: Array(22)
+CSVImport.tsx:469 Custom fields to create: Array(0)
+CSVImport.tsx:484 === PROCESSING CSV DATA ===
+CSVImport.tsx:750 ❌ CRITICAL ERROR during import: ReferenceError: Cannot access 'profile' before initialization
+    at handleImport (CSVImport.tsx:517:24)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=723853c6:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=723853c6:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=723853c6:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=723853c6:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=723853c6:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=723853c6:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=723853c6:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=723853c6:7051:11)
+    at chunk-FJ2A54M7.js?v=723853c6:7174:20
+handleImport @ CSVImport.tsx:750
+CSVImport.tsx:453 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:465 CSV data rows: 9
+CSVImport.tsx:466 Mappings: Array(22)
+CSVImport.tsx:469 Custom fields to create: Array(0)
+CSVImport.tsx:484 === PROCESSING CSV DATA ===
+CSVImport.tsx:750 ❌ CRITICAL ERROR during import: ReferenceError: Cannot access 'profile' before initialization
+    at handleImport (CSVImport.tsx:517:24)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=723853c6:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=723853c6:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=723853c6:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=723853c6:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=723853c6:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=723853c6:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=723853c6:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=723853c6:7051:11)
+    at chunk-FJ2A54M7.js?v=723853c6:7174:20
+handleImport @ CSVImport.tsx:750
+CSVImport.tsx:453 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:465 CSV data rows: 9
+CSVImport.tsx:466 Mappings: Array(22)
+CSVImport.tsx:469 Custom fields to create: Array(0)
+CSVImport.tsx:484 === PROCESSING CSV DATA ===
+CSVImport.tsx:750 ❌ CRITICAL ERROR during import: ReferenceError: Cannot access 'profile' before initialization
+    at handleImport (CSVImport.tsx:517:24)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=723853c6:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=723853c6:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=723853c6:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=723853c6:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=723853c6:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=723853c6:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=723853c6:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=723853c6:7051:11)
+    at chunk-FJ2A54M7.js?v=723853c6:7174:20
+handleImport @ CSVImport.tsx:750
+CSVImport.tsx:453 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:465 CSV data rows: 9
+CSVImport.tsx:466 Mappings: Array(22)
+CSVImport.tsx:469 Custom fields to create: Array(0)
+CSVImport.tsx:484 === PROCESSING CSV DATA ===
+CSVImport.tsx:750 ❌ CRITICAL ERROR during import: ReferenceError: Cannot access 'profile' before initialization
+    at handleImport (CSVImport.tsx:517:24)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=723853c6:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=723853c6:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=723853c6:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=723853c6:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=723853c6:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=723853c6:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=723853c6:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=723853c6:7051:11)
+    at chunk-FJ2A54M7.js?v=723853c6:7174:20
+handleImport @ CSVImport.tsx:750
