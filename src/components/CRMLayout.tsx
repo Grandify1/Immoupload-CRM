@@ -369,6 +369,7 @@ const CRMLayout = () => {
       const newLeadData = data as Lead;
       setLeads(prev => [newLeadData, ...prev]);
 
+      // Only show toast for manual lead creation, not during import
       toast({
         title: "Success",
         description: "Lead created successfully",
@@ -396,7 +397,7 @@ const CRMLayout = () => {
         team_id: team.id
       }));
 
-      // Batch-Insert für alle Leads
+      // Batch-Insert für alle Leads - silent import
       const { data, error } = await supabase
         .from('leads')
         .insert(leadsWithTeamId)
@@ -408,6 +409,8 @@ const CRMLayout = () => {
       }
 
       const importedLeads = data as Lead[];
+      
+      // Update leads state silently - no toast notifications during import
       setLeads(prev => [...importedLeads, ...prev]);
 
       return importedLeads;

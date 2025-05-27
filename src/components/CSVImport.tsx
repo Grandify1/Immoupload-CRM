@@ -421,44 +421,57 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           console.error('Failed to create import job:', err);
         }
         
-        // Import all leads in batches to improve performance
+        // Import all leads in batches to improve performance - silently in background
         let processedCount = 0;
         let failedCount = 0;
         const failedLeads: any[] = [];
-        const batchSize = 50; // Process in smaller batches
+        const batchSize = 100; // Larger batches for faster processing
+        
+        // Import all leads without showing individual toast messages
+        const allLeadsToImport: typeof leads = [];
         
         for (let i = 0; i < leads.length; i += batchSize) {
           const batch = leads.slice(i, i + batchSize);
           
           try {
-            // Import batch of leads
-            await onImport(batch);
+            // Collect leads for batch import without immediate UI updates
+            allLeadsToImport.push(...batch);
             processedCount += batch.length;
           } catch (batchError: any) {
-            console.error(`Failed to import batch ${Math.floor(i/batchSize) + 1}:`, batchError);
-            
-            // Try individual imports for failed batch
-            for (const lead of batch) {
-              try {
-                await onImport([lead]);
-                processedCount++;
-              } catch (leadError: any) {
-                failedCount++;
-                
-                // Skip duplicate errors - they're expected
-                if (!leadError?.message?.includes('duplicate key')) {
-                  failedLeads.push({ 
-                    lead: lead, 
-                    error: leadError.message || 'Unknown error' 
-                  });
-                }
-              }
-            }
+            console.error(`Failed to prepare batch ${Math.floor(i/batchSize) + 1}:`, batchError);
+            failedCount += batch.length;
           }
           
           // Update progress
           const progress = Math.round(((i + batch.length) / leads.length) * 90);
           setImportProgress(progress);
+        }
+        
+        // Now do the actual import in one go
+        try {
+          await onImport(allLeadsToImport);
+          processedCount = allLeadsToImport.length;
+          failedCount = 0;
+        } catch (importError: any) {
+          console.error('Batch import failed:', importError);
+          // Try individual imports as fallback
+          processedCount = 0;
+          failedCount = 0;
+          
+          for (const lead of allLeadsToImport) {
+            try {
+              await onImport([lead]);
+              processedCount++;
+            } catch (leadError: any) {
+              failedCount++;
+              if (!leadError?.message?.includes('duplicate key')) {
+                failedLeads.push({ 
+                  lead: lead, 
+                  error: leadError.message || 'Unknown error' 
+                });
+              }
+            }
+          }
         }
         
         // Update import job status
@@ -480,16 +493,16 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         
         setImportProgress(100);
         
-        // Show final import summary
+        // Show final import summary without toast notifications
         const totalLeads = processedCount + failedCount;
         let summaryMessage = '';
         
         if (failedCount === 0) {
-          summaryMessage = `Import erfolgreich abgeschlossen: ${processedCount} Leads importiert.`;
+          summaryMessage = `✅ Import erfolgreich abgeschlossen: ${processedCount} Leads wurden importiert.`;
         } else if (processedCount === 0) {
-          summaryMessage = `Import fehlgeschlagen: ${failedCount} Leads konnten nicht importiert werden.`;
+          summaryMessage = `❌ Import fehlgeschlagen: ${failedCount} Leads konnten nicht importiert werden.`;
         } else {
-          summaryMessage = `Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen.`;
+          summaryMessage = `⚠️ Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen.`;
         }
         
         // Show result and close after delay
@@ -498,7 +511,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         setTimeout(() => {
           resetState();
           onClose();
-        }, 3000); // Show result for 3 seconds
+        }, 4000); // Show result for 4 seconds to read the message
         
       } catch (importError: any) {
         console.error('Error importing leads:', importError);
