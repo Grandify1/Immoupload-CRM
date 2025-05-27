@@ -152,19 +152,37 @@ export function EmailView() {
   const moveEmailToFolder = async (emailId: string, folder: EmailFolder) => {
     try {
       const updateData: any = { 
-        folder,
         updated_at: new Date().toISOString()
       };
 
       if (folder === 'deleted') {
         updateData.is_deleted = true;
         updateData.is_archived = false;
+        updateData.folder = null; // Don't set folder for deleted emails
       } else if (folder === 'archived') {
         updateData.is_archived = true;
         updateData.is_deleted = false;
+        updateData.folder = null; // Don't set folder for archived emails
+      } else if (folder === 'inbox') {
+        updateData.is_deleted = false;
+        updateData.is_archived = false;
+        updateData.folder = 'inbox';
+      } else if (folder === 'sent') {
+        updateData.is_deleted = false;
+        updateData.is_archived = false;
+        updateData.folder = 'sent';
+      } else if (folder === 'drafts') {
+        updateData.is_deleted = false;
+        updateData.is_archived = false;
+        updateData.folder = 'drafts';
+      } else if (folder === 'junk') {
+        updateData.is_deleted = false;
+        updateData.is_archived = false;
+        updateData.folder = 'junk';
       } else {
         updateData.is_deleted = false;
         updateData.is_archived = false;
+        updateData.folder = 'inbox';
       }
 
       const { error } = await supabase
