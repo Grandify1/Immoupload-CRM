@@ -47,13 +47,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   const allAvailableFields = [
     ...standardFields,
-    ...(customFields || [])
-      .filter(field => field.entity_type === 'lead')
+    ...((customFields || [])
+      .filter(field => field && field.entity_type === 'lead')
       .map(field => ({
         name: field.name,
         label: `${field.name} (Custom)`,
         isCustom: true
-      }))
+      })) || [])
   ];
 
   const resetState = () => {
@@ -79,43 +79,69 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const lines = text.split(/\r?\n/);
-        if (lines.length === 0) {
-          setError('CSV-Datei ist leer.');
-          setStep('upload');
-          return;
-        }
-
-        // Bessere CSV-Parsing-Funktion die mit Anführungszeichen umgeht
-        const parseCSVLine = (line: string): string[] => {
-          const result: string[] = [];
+        
+        // Verbessertes CSV-Parsing für mehrzeilige Felder
+        const parseCSVContent = (csvText: string): { headers: string[], data: string[][] } => {
+          const result: string[][] = [];
           let current = '';
           let inQuotes = false;
+          let row: string[] = [];
           
-          for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            const nextChar = line[i + 1];
+          for (let i = 0; i < csvText.length; i++) {
+            const char = csvText[i];
+            const nextChar = csvText[i + 1];
             
             if (char === '"') {
               if (inQuotes && nextChar === '"') {
+                // Escaped quote
                 current += '"';
                 i++; // Skip next quote
               } else {
+                // Toggle quote state
                 inQuotes = !inQuotes;
               }
             } else if (char === ',' && !inQuotes) {
-              result.push(current.trim());
+              // Field separator
+              row.push(current.trim());
               current = '';
+            } else if ((char === '\n' || char === '\r') && !inQuotes) {
+              // Row separator (only when not in quotes)
+              if (current.trim() !== '' || row.length > 0) {
+                row.push(current.trim());
+                if (row.some(field => field !== '')) { // Only add rows with content
+                  result.push(row);
+                }
+                row = [];
+                current = '';
+              }
+              // Skip \r\n combination
+              if (char === '\r' && nextChar === '\n') {
+                i++;
+              }
             } else {
               current += char;
             }
           }
           
-          result.push(current.trim());
-          return result;
+          // Add last field and row if exists
+          if (current.trim() !== '' || row.length > 0) {
+            row.push(current.trim());
+            if (row.some(field => field !== '')) {
+              result.push(row);
+            }
+          }
+          
+          if (result.length === 0) {
+            throw new Error('Keine gültigen Zeilen gefunden');
+          }
+          
+          const headers = result[0].map(h => h.replace(/^"|"$/g, '').trim());
+          const data = result.slice(1);
+          
+          return { headers, data };
         };
 
-        const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').trim());
+        const { headers, data } = parseCSVContent(text);
 
         if (headers.some(header => header === '')) {
           setError('CSV-Datei enthält leere Spaltenüberschriften.');
@@ -123,60 +149,30 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           return;
         }
         
-        const data: string[][] = [];
-        let rowsProcessed = 0;
-        let rowsSkipped = 0;
+        // Filtere und validiere Datenzeilen
+        const validData = data.filter(row => {
+          // Normalisiere Spaltenzahl
+          while (row.length < headers.length) {
+            row.push('');
+          }
+          if (row.length > headers.length) {
+            row.splice(headers.length);
+          }
+          
+          // Prüfe ob Zeile mindestens ein nicht-leeres Feld hat
+          return row.some(value => value && value.length > 0);
+        });
         
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          
-          // Skip komplett leere Zeilen
-          if (line === '') {
-            continue;
-          }
-          
-          // Skip Zeilen die nur Kommas enthalten
-          if (line.match(/^,+$/)) {
-            continue;
-          }
-          
-          const values = parseCSVLine(line).map(v => v.replace(/^"|"$/g, '').trim());
-          
-          // Bessere Validierung: Prüfe ob die Zeile mindestens ein nicht-leeres Feld hat
-          const hasContent = values.some(value => value && value.length > 0);
-          if (!hasContent) {
-            rowsSkipped++;
-            console.log(`Skipping row ${i + 1} due to no content.`);
-            continue;
-          }
-          
-          // Spaltenanzahl-Prüfung
-          if (values.length !== headers.length) {
-            if (values.length < headers.length) {
-              // Fehlende Spalten mit leeren Strings auffüllen
-              while (values.length < headers.length) {
-                values.push('');
-              }
-            } else if (values.length > headers.length) {
-              // Überschüssige Spalten abschneiden
-              values.splice(headers.length);
-            }
-          }
-          
-          data.push(values);
-          rowsProcessed++;
-        }
-        
-        console.log(`CSV parsing completed: ${rowsProcessed} valid rows, ${rowsSkipped} rows skipped`);
+        console.log(`CSV parsing completed: ${validData.length} valid rows from ${data.length} total rows`);
 
-        if (data.length === 0) {
-            setError('CSV-Datei enthält keine Datenzeilen.');
+        if (validData.length === 0) {
+            setError('CSV-Datei enthält keine gültigen Datenzeilen.');
             setStep('upload');
             return;
         }
         
         setHeaders(headers);
-        setCSVData(data);
+        setCSVData(validData);
         
         const initialMappings: MappingType[] = headers.map(header => {
           const matchedField = allAvailableFields.find(field => 
@@ -448,7 +444,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         {step === 'preview' && (
           <div className="py-4 flex-1 overflow-hidden flex flex-col">
             <p className="text-sm text-gray-600 mb-4">
-              Preview of the first 5 leads to be imported. Total: {csvData.length} leads.
+              Vorschau der ersten 5 zu importierenden Leads. Gesamt: {csvData.length} Leads.
             </p>
             
             <div className="flex-1 overflow-auto border rounded-md">
