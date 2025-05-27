@@ -1,0 +1,150 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:180 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:200 CSV quote character detected: "
+CSVImport.tsx:297 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:298 Headers detected: Array(22)
+CSVImport.tsx:323 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:371 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:371 Auto-mapped "name" to "name"
+CSVImport.tsx:371 Auto-mapped "description" to "description"
+CSVImport.tsx:391 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:371 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:371 Auto-mapped "rating" to "rating"
+CSVImport.tsx:371 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:371 Auto-mapped "website" to "website"
+CSVImport.tsx:371 Auto-mapped "phone" to "phone"
+CSVImport.tsx:371 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:371 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:371 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:371 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:391 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:391 Exact match found for "categories" -> "categories"
+CSVImport.tsx:391 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:391 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:391 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:371 Auto-mapped "address" to "address"
+CSVImport.tsx:391 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:371 Auto-mapped "link" to "website"
+CSVImport.tsx:391 Exact match found for "query" -> "query"
+CSVImport.tsx:474 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:486 CSV data rows: 9
+CSVImport.tsx:487 Mappings: Array(22)
+CSVImport.tsx:490 === GETTING USER INFO ===
+CSVImport.tsx:506 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:529 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:533 Custom fields to create: Array(0)
+CSVImport.tsx:548 === PROCESSING CSV DATA ===
+CSVImport.tsx:592 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:599 Sample lead: Object
+CSVImport.tsx:603 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:620 Import job data: Object
+CSVImport.tsx:643 ✅ Import job created with ID: b1cdeef7-31b5-4e38-86a7-fbb05d273469
+CSVImport.tsx:653 === STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===
+CSVImport.tsx:667 === PROCESSING BATCH 1/1 (9 leads) ===
+CSVImport.tsx:672 
+📋 Processing lead: "Bergen Real Estate (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Bergen Real Estate (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Bergen Real Estate (Pemilik)" matches existing lead "Bergen Real Estate (Pemilik)" (ID: fd1eb313-cff5-4ea4-8d70-bb0ad9414def)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Bergen Real Estate (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Bergen Real Estate (Pemilik) (Copy 1748340177522)
+CSVImport.tsx:672 
+📋 Processing lead: "BSK Immobilien GmbH (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "BSK Immobilien GmbH (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "BSK Immobilien GmbH (Pemilik)" matches existing lead "BSK Immobilien GmbH (Pemilik)" (ID: 017659aa-2bfd-496b-b733-3dc74f542037)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: BSK Immobilien GmbH (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: BSK Immobilien GmbH (Pemilik) (Copy 1748340178669)
+CSVImport.tsx:672 
+📋 Processing lead: "Mein Makler Berlin-Spandau (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Mein Makler Berlin-Spandau (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Mein Makler Berlin-Spandau (Pemilik)" matches existing lead "Mein Makler Berlin-Spandau (Pemilik)" (ID: ce6af827-648c-4ef7-a433-b30580bc6c4c)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Mein Makler Berlin-Spandau (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Mein Makler Berlin-Spandau (Pemilik) (Copy 1748340179479)
+CSVImport.tsx:672 
+📋 Processing lead: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" matches existing lead "Hesse Immobilien - Immobilienmakler Spandau (Pemilik)" (ID: c43a97a6-adfa-47e5-85fe-9fecc1fce2e5)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Hesse Immobilien - Immobilienmakler Spandau (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Hesse Immobilien - Immobilienmakler Spandau (Pemilik) (Copy 1748340180295)
+CSVImport.tsx:672 
+📋 Processing lead: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Melde Immobilien - Immobilienmakler Spandau (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" matches existing lead "Melde Immobilien - Immobilienmakler Spandau (Pemilik)" (ID: ac8a66eb-47a7-4f2d-90c2-cf140ff3a67c)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Melde Immobilien - Immobilienmakler Spandau (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Melde Immobilien - Immobilienmakler Spandau (Pemilik) (Copy 1748340181423)
+CSVImport.tsx:672 
+📋 Processing lead: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" matches existing lead "OF POLL IMMOBILIEN Berlin-Spandau (Pemilik)" (ID: b6d1a21b-631a-4672-bf10-df70e7b76d8f)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: OF POLL IMMOBILIEN Berlin-Spandau (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: OF POLL IMMOBILIEN Berlin-Spandau (Pemilik) (Copy 1748340182222)
+CSVImport.tsx:672 
+📋 Processing lead: "Top-Immobilien GmbH (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Top-Immobilien GmbH (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Top-Immobilien GmbH (Pemilik)" matches existing lead "Top-Immobilien GmbH (Pemilik)" (ID: 140c2747-adaf-4224-89d4-37b3313c4e27)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Top-Immobilien GmbH (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Top-Immobilien GmbH (Pemilik) (Copy 1748340182712)
+CSVImport.tsx:672 
+📋 Processing lead: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" matches existing lead "Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik)" (ID: 0ae35f87-1053-4a8b-a512-5b92cec7ea64)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Engel & Volkers Berlin Spandau | Immobilienmakler (Pemilik) (Copy 1748340183522)
+CSVImport.tsx:672 
+📋 Processing lead: "Neumann Immobilien (Pemilik)" from CSV
+CSVImport.tsx:673 Lead data: Object
+CSVImport.tsx:689 🔍 Checking for duplicate using name: "Neumann Immobilien (Pemilik)"
+CSVImport.tsx:710 ⚠️ DUPLICATE FOUND: CSV "Neumann Immobilien (Pemilik)" matches existing lead "Neumann Immobilien (Pemilik)" (ID: e8fc5f8c-c4e9-4237-acad-7672810b4148)
+CSVImport.tsx:786 📝 Creating new lead despite duplicate (name: Neumann Immobilien (Pemilik))
+CSVImport.tsx:811 ✅ Successfully inserted duplicate lead with modified name: Neumann Immobilien (Pemilik) (Copy 1748340184022)
+CSVImport.tsx:872 === UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===
+CSVImport.tsx:873 Final status: completed
+CSVImport.tsx:874 Processed records: 9
+CSVImport.tsx:875 Failed records: 0
+CSVImport.tsx:898 ✅ Import job status updated successfully in Supabase
+CSVImport.tsx:909 === IMPORT COMPLETE ===
+CSVImport.tsx:910 Final result: ✅ Import erfolgreich: 9 Leads verarbeitet (9 neu, 0 aktualisiert).
