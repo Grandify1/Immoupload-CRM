@@ -1,0 +1,114 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:32 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:33 All customFields received: Array(20)
+CSVImport.tsx:34 customFields is array? true
+CSVImport.tsx:35 customFields length: 20
+CSVImport.tsx:38 Lead custom fields: Array(20)
+CSVImport.tsx:39 First custom field example: Object
+CSVImport.tsx:43 Custom Field 0: Object
+CSVImport.tsx:43 Custom Field 1: Object
+CSVImport.tsx:43 Custom Field 2: Object
+CSVImport.tsx:43 Custom Field 3: Object
+CSVImport.tsx:43 Custom Field 4: Object
+CSVImport.tsx:43 Custom Field 5: Object
+CSVImport.tsx:43 Custom Field 6: Object
+CSVImport.tsx:43 Custom Field 7: Object
+CSVImport.tsx:43 Custom Field 8: Object
+CSVImport.tsx:43 Custom Field 9: Object
+CSVImport.tsx:43 Custom Field 10: Object
+CSVImport.tsx:43 Custom Field 11: Object
+CSVImport.tsx:43 Custom Field 12: Object
+CSVImport.tsx:43 Custom Field 13: Object
+CSVImport.tsx:43 Custom Field 14: Object
+CSVImport.tsx:43 Custom Field 15: Object
+CSVImport.tsx:43 Custom Field 16: Object
+CSVImport.tsx:43 Custom Field 17: Object
+CSVImport.tsx:43 Custom Field 18: Object
+CSVImport.tsx:43 Custom Field 19: Object
+CSVImport.tsx:75 === End Custom Fields Debug ===
+@radix-ui_react-dialog.js?v=723853c6:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ @radix-ui_react-dialog.js?v=723853c6:336
+Show 1 more frame
+Show less
+CSVImport.tsx:165 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:185 CSV quote character detected: "
+CSVImport.tsx:282 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:283 Headers detected: Array(22)
+CSVImport.tsx:308 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:356 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:356 Auto-mapped "name" to "name"
+CSVImport.tsx:356 Auto-mapped "description" to "description"
+CSVImport.tsx:376 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:356 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:356 Auto-mapped "rating" to "rating"
+CSVImport.tsx:356 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:356 Auto-mapped "website" to "website"
+CSVImport.tsx:356 Auto-mapped "phone" to "phone"
+CSVImport.tsx:356 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:356 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:356 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:356 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:376 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:376 Exact match found for "categories" -> "categories"
+CSVImport.tsx:376 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:376 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:376 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:356 Auto-mapped "address" to "address"
+CSVImport.tsx:376 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:356 Auto-mapped "link" to "website"
+CSVImport.tsx:376 Exact match found for "query" -> "query"
+CSVImport.tsx:454 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:466 CSV data rows: 9
+CSVImport.tsx:467 Mappings: Array(22)
+CSVImport.tsx:470 === GETTING USER INFO ===
+CSVImport.tsx:486 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:509 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:513 Custom fields to create: Array(0)
+CSVImport.tsx:528 === PROCESSING CSV DATA ===
+CSVImport.tsx:572 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:579 Sample lead: Object
+CSVImport.tsx:583 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:600 Import job data: Object
+CSVImport.tsx:623 ✅ Import job created with ID: 3daed0d2-0df9-4965-8943-eba408e61ea2
+CSVImport.tsx:633 === STARTING LEAD IMPORT ===
+CSVImport.tsx:646 === INSERTING BATCH 1/1 (9 leads) TO SUPABASE ===
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?columns=%22custom_fields%22%2C%22name%22%2C%22description%22%2C%22website%22%2C%22phone%22%2C%22address%22%2C%22status%22%2C%22team_id%22&select=id:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+CSVImport.tsx:654 ❌ Supabase error inserting batch 1: Object
+handleImport @ CSVImport.tsx:654
+CSVImport.tsx:655 Error details: Key (name)=(Bergen Real Estate (Pemilik)) already exists.
+handleImport @ CSVImport.tsx:655
+CSVImport.tsx:656 Error hint: null
+handleImport @ CSVImport.tsx:656
+CSVImport.tsx:657 Error code: 23505
+handleImport @ CSVImport.tsx:657
+CSVImport.tsx:695 === UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===
+CSVImport.tsx:696 Final status: completed_with_errors
+CSVImport.tsx:697 Processed records: 0
+CSVImport.tsx:698 Failed records: 9
+CSVImport.tsx:714 ✅ Import job status updated successfully in Supabase
+CSVImport.tsx:735 === IMPORT COMPLETE ===
+CSVImport.tsx:736 Final result: ❌ Import fehlgeschlagen: 9 Leads konnten nicht importiert werden.
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 5
+SettingsView.tsx:86 Import jobs fetched successfully: 5 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(5)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
