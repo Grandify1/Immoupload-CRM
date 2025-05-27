@@ -994,7 +994,8 @@ const CRMLayout = () => {
     switch (activeSection) {
       case 'leads':
         return (
-          <LeadsViewleads={leads}
+          <LeadsView
+            leads={leads}
             view={leadsView}
             onViewChange={setLeadsView}
             filters={currentFilters}

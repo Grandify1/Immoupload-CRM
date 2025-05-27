@@ -874,7 +874,11 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           </div>
         </div>
 
-        {/* New Lead Form Modal */}
+        {/* Content */}
+        {view === 'table' ? <TableView /> : <KanbanView />}
+      </div>
+
+      {/* New Lead Form Modal */}
         <Dialog open={showNewLeadForm} onOpenChange={setShowNewLeadForm}>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
