@@ -629,58 +629,108 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       setImportProgress(45);
 
-      // Now perform the actual import
-      console.log('=== STARTING LEAD IMPORT ===');
-      const batchSize = 100;
+      // Now perform the actual import with duplicate handling
+      console.log('=== STARTING LEAD IMPORT WITH DUPLICATE HANDLING ===');
+      const batchSize = 50; // Smaller batches for better error handling
       let batchIndex = 0;
       let totalBatches = Math.ceil(leads.length / batchSize);
       let processedRecords = 0;
       let failedRecords = 0;
+      let duplicateRecords = 0;
+      let updatedRecords = 0;
 
       // Split leads into batches for more efficient insertion
       for (let i = 0; i < leads.length; i += batchSize) {
         const batch = leads.slice(i, i + batchSize);
         batchIndex = Math.floor(i / batchSize);
 
-        // Insert leads in batches using Supabase
-        console.log(`=== INSERTING BATCH ${batchIndex + 1}/${totalBatches} (${batch.length} leads) TO SUPABASE ===`);
+        console.log(`=== PROCESSING BATCH ${batchIndex + 1}/${totalBatches} (${batch.length} leads) ===`);
 
-        const { data: insertedLeads, error: insertError } = await supabase
-          .from('leads')
-          .insert(batch)
-          .select('id');
+        // Process each lead individually to handle duplicates properly
+        for (const lead of batch) {
+          try {
+            // First, check if a lead with this name already exists
+            const { data: existingLead, error: checkError } = await supabase
+              .from('leads')
+              .select('id, name, email, phone')
+              .eq('team_id', profile.team_id)
+              .eq('name', lead.name)
+              .single();
 
-        if (insertError) {
-          console.error(`❌ Supabase error inserting batch ${batchIndex + 1}:`, insertError);
-          console.error('Error details:', insertError.details);
-          console.error('Error hint:', insertError.hint);
-          console.error('Error code:', insertError.code);
-          failedRecords += batch.length;
-
-          // Update import job with error in Supabase (only if job tracking is available)
-          if (!skipJobTracking && importJob) {
-            try {
-              await supabase
-                .from('import_jobs')
-                .update({
-                  failed_records: failedRecords,
-                  error_details: { 
-                    batch: batchIndex + 1,
-                    error: insertError.message,
-                    details: insertError.details || 'Unknown Supabase error'
-                  }
-                })
-                .eq('id', importJob.id);
-            } catch (updateError) {
-              console.warn('⚠️ Could not update import job status:', updateError);
+            if (checkError && checkError.code !== 'PGRST116') {
+              // PGRST116 is "no rows found" - that's what we want for new leads
+              console.error('❌ Error checking for existing lead:', checkError);
+              failedRecords++;
+              continue;
             }
+
+            if (existingLead) {
+              // Lead with this name already exists - update instead of insert
+              console.log(`🔄 Updating existing lead: ${lead.name}`);
+              
+              // Merge data intelligently: only update fields that have values and are different
+              const updateData: any = {
+                updated_at: new Date().toISOString()
+              };
+
+              // Update standard fields if they have values and are different
+              if (lead.email && lead.email !== existingLead.email) updateData.email = lead.email;
+              if (lead.phone && lead.phone !== existingLead.phone) updateData.phone = lead.phone;
+              if (lead.website) updateData.website = lead.website;
+              if (lead.address) updateData.address = lead.address;
+              if (lead.description) updateData.description = lead.description;
+              if (lead.status) updateData.status = lead.status;
+
+              // Merge custom fields
+              if (lead.custom_fields && Object.keys(lead.custom_fields).length > 0) {
+                updateData.custom_fields = lead.custom_fields;
+              }
+
+              const { error: updateError } = await supabase
+                .from('leads')
+                .update(updateData)
+                .eq('id', existingLead.id);
+
+              if (updateError) {
+                console.error(`❌ Error updating lead ${lead.name}:`, updateError);
+                failedRecords++;
+              } else {
+                console.log(`✅ Successfully updated lead: ${lead.name}`);
+                updatedRecords++;
+                processedRecords++;
+              }
+
+            } else {
+              // Lead doesn't exist - insert new one
+              console.log(`📝 Inserting new lead: ${lead.name}`);
+              
+              const { data: insertedLead, error: insertError } = await supabase
+                .from('leads')
+                .insert([lead])
+                .select('id')
+                .single();
+
+              if (insertError) {
+                console.error(`❌ Error inserting lead ${lead.name}:`, insertError);
+                
+                // Check if it's a duplicate error that slipped through
+                if (insertError.code === '23505' && insertError.message?.includes('already exists')) {
+                  duplicateRecords++;
+                  console.log(`🔍 Duplicate detected for: ${lead.name}`);
+                } else {
+                  failedRecords++;
+                }
+              } else {
+                console.log(`✅ Successfully inserted lead: ${lead.name}`);
+                processedRecords++;
+              }
+            }
+
+          } catch (error) {
+            console.error(`❌ Unexpected error processing lead ${lead.name}:`, error);
+            failedRecords++;
           }
-
-          continue;
         }
-
-        console.log(`✅ Successfully inserted batch ${batchIndex + 1} to Supabase, ${insertedLeads?.length || 0} leads`);
-        processedRecords += insertedLeads?.length || 0;
 
         // Update progress
         setImportProgress(45 + Math.round(((i + batchSize) / leads.length) * 45));
@@ -704,6 +754,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               status: finalStatus,
               processed_records: processedRecords,
               failed_records: failedRecords,
+              error_details: {
+                new_records: processedRecords - updatedRecords,
+                updated_records: updatedRecords,
+                duplicate_records: duplicateRecords,
+                failed_records: failedRecords,
+                summary: summaryMessage
+              },
               updated_at: new Date().toISOString()
             })
             .eq('id', importJob.id);
@@ -722,14 +779,17 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       setImportProgress(100);
 
-      // Show final result
+      // Show detailed final result
       let summaryMessage = '';
-      if (failedRecords === 0) {
-        summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads importiert.`;
+      const totalAttempted = leads.length;
+      
+      if (failedRecords === 0 && duplicateRecords === 0) {
+        summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads verarbeitet (${processedRecords - updatedRecords} neu, ${updatedRecords} aktualisiert).`;
       } else if (processedRecords === 0) {
-        summaryMessage = `❌ Import fehlgeschlagen: ${failedRecords} Leads konnten nicht importiert werden.`;
+        summaryMessage = `❌ Import fehlgeschlagen: ${failedRecords} Leads konnten nicht verarbeitet werden, ${duplicateRecords} Duplikate übersprungen.`;
       } else {
-        summaryMessage = `⚠️ Import abgeschlossen: ${processedRecords} erfolgreich, ${failedRecords} fehlgeschlagen.`;
+        const newLeads = processedRecords - updatedRecords;
+        summaryMessage = `⚠️ Import abgeschlossen: ${newLeads} neue Leads, ${updatedRecords} aktualisiert, ${duplicateRecords} Duplikate übersprungen, ${failedRecords} fehlgeschlagen.`;
       }
 
       console.log('=== IMPORT COMPLETE ===');
