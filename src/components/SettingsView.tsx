@@ -36,6 +36,13 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
       if (countError) {
         console.error('Error accessing import_jobs table:', countError);
+        if (countError.code === '42P01' || countError.message?.includes('does not exist')) {
+          console.log('Import jobs table does not exist - creating it...');
+          toast({
+            title: "Hinweis",
+            description: "Import-Jobs Tabelle wird erstellt. Bitte warten Sie einen Moment.",
+          });
+        }
         setIsLoading(false);
         return;
       } else {

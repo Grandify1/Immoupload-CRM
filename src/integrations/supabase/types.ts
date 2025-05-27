@@ -191,7 +191,7 @@ export type Database = {
           total_records: number
           undo_date?: string | null
           undo_details?: Json | null
-          undo_status?: 'active' | 'undone'
+          undo_status?: 'active' | 'undoing' | 'undone' | 'undo_failed'
           updated_at?: string
         }
         Update: {
@@ -207,7 +207,7 @@ export type Database = {
           total_records?: number
           undo_date?: string | null
           undo_details?: Json | null
-          undo_status?: 'active' | 'undone'
+          undo_status?: 'active' | 'undoing' | 'undone' | 'undo_failed'
           updated_at?: string
         }
         Relationships: [
