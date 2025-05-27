@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,9 +33,38 @@ serve(async (req) => {
       throw new Error('Email account not found')
     }
 
-    // Here you would implement actual SMTP sending
-    // For now, we'll just log the email and store it in the database
-    console.log('Sending email:', { to, subject, body, from: account.email })
+    console.log('Sending email via SMTP:', { to, subject, from: account.email })
+
+    // Send email via SMTP using denomailer
+    try {
+      const client = new SMTPClient({
+        connection: {
+          hostname: account.smtp_host,
+          port: account.smtp_port,
+          tls: account.smtp_port === 465,
+          auth: {
+            username: account.smtp_username,
+            password: account.smtp_password,
+          },
+        },
+      });
+
+      await client.send({
+        from: account.email,
+        to: to,
+        subject: subject,
+        content: body,
+        html: body.replace(/\n/g, '<br>'), // Convert line breaks to HTML
+      });
+
+      await client.close();
+      
+      console.log('✅ Email sent successfully via SMTP');
+
+    } catch (smtpError) {
+      console.error('❌ SMTP Error:', smtpError);
+      throw new Error(`SMTP Fehler: ${smtpError.message}`);
+    }
 
     // Store sent email in database
     const { error: insertError } = await supabaseAdmin
@@ -47,34 +77,17 @@ serve(async (req) => {
         received_at: new Date().toISOString(),
         is_read: true, // Sent emails are considered "read"
         account_id,
-        team_id: user_id
+        team_id: user_id,
+        message_id: `sent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       })
 
     if (insertError) {
-      throw insertError
+      console.error('Database insert error:', insertError)
+      // Don't throw here - email was sent successfully, just log the DB error
     }
 
-    // TODO: Implement actual SMTP sending using nodemailer or similar
-    // const nodemailer = require('nodemailer');
-    // const transporter = nodemailer.createTransporter({
-    //   host: account.smtp_host,
-    //   port: account.smtp_port,
-    //   secure: account.smtp_port === 465,
-    //   auth: {
-    //     user: account.smtp_username,
-    //     pass: account.smtp_password,
-    //   },
-    // });
-    // 
-    // await transporter.sendMail({
-    //   from: account.email,
-    //   to,
-    //   subject,
-    //   text: body,
-    // });
-
     return new Response(
-      JSON.stringify({ success: true, message: 'Email sent successfully' }),
+      JSON.stringify({ success: true, message: 'Email sent successfully via SMTP' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 

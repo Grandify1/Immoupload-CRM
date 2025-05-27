@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -142,26 +141,40 @@ export const EmailView: React.FC = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.functions.invoke('send-email', {
+      const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           ...composeForm,
           user_id: user?.id
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('SMTP Error:', error);
+        throw new Error(error.message || 'Unbekannter SMTP-Fehler');
+      }
 
-      toast.success('Email erfolgreich gesendet');
+      console.log('Email sent successfully:', data);
+      toast.success('Email erfolgreich über SMTP versendet!');
+      setComposeForm({ to: '', subject: '', body: '', account_id: '' });
       setShowComposeForm(false);
-      setComposeForm({
-        to: '',
-        subject: '',
-        body: '',
-        account_id: ''
-      });
+      loadEmails();
     } catch (error) {
       console.error('Error sending email:', error);
-      toast.error('Fehler beim Senden der Email');
+
+      // Show specific error messages
+      if (error.message.includes('SMTP')) {
+        toast.error(`SMTP-Fehler: ${error.message}`, {
+          description: 'Überprüfen Sie Ihre SMTP-Einstellungen'
+        });
+      } else if (error.message.includes('authentication') || error.message.includes('login')) {
+        toast.error('Authentifizierung fehlgeschlagen', {
+          description: 'Überprüfen Sie Benutzername und Passwort'
+        });
+      } else {
+        toast.error('Fehler beim Versenden der Email', {
+          description: error.message
+        });
+      }
     } finally {
       setLoading(false);
     }
