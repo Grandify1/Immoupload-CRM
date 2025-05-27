@@ -1,0 +1,97 @@
+Email Löschfunktionalität Debug und Fix
+Problem
+Emails werden scheinbar gelöscht (Toast-Nachricht erscheint), aber tatsächlich nicht wirklich aus dem IMAP-Postfach entfernt. Das ist ein häufiges Problem bei IMAP-Implementierungen.
+Root Cause Analysis
+IMAP Löschen ist zweistufig
+IMAP-Emails werden nicht direkt gelöscht, sondern:
+
+MARKIERT für Löschung (DELETED Flag)
+EXPUNGED (physisch entfernt)
+
+Häufige Probleme bei Email-Löschung
+
+Email wird nur als gelöscht markiert, aber nicht expunged
+IMAP-Verbindung wird geschlossen bevor expunge ausgeführt wird
+Insufficient permissions auf dem IMAP-Server
+Email ist in READ-ONLY Modus geöffnet
+
+Debugging-Aufgaben
+1. Email-Löschfunktion analysieren
+Finde die bestehende Email-Löschfunktion und analysiere:
+
+Welche IMAP-Library wird verwendet
+Wie wird die Löschung implementiert
+Wird nach dem DELETED-Flag auch EXPUNGE aufgerufen
+Werden Fehler korrekt behandelt und geloggt
+Ist die IMAP-Verbindung im READ-WRITE Modus
+
+2. IMAP-Integration prüfen
+Untersuche die IMAP-Implementierung:
+
+Welche npm-Packages werden für IMAP verwendet
+Wie wird die IMAP-Verbindung aufgebaut
+Werden die richtigen IMAP-Flags gesetzt
+Ist die Mailbox im richtigen Modus geöffnet
+
+3. Backend API analysieren
+Prüfe die Backend-Endpunkte für Email-Löschung:
+
+Welcher API-Endpunkt wird für delete aufgerufen
+Was passiert genau in der Delete-Route
+Werden IMAP-Operationen korrekt ausgeführt
+Gibt es Error-Logging im Backend
+
+4. Fehlerbehandlung verbessern
+Implementiere besseres Error-Handling:
+
+Logge alle IMAP-Operationen ausführlich
+Prüfe IMAP-Response-Codes
+Validiere ob Email wirklich gelöscht wurde
+Zeige echte Fehlermeldungen statt immer "erfolgreich"
+
+Spezifische Fix-Implementierung
+Frontend Toast-Fix
+Der Toast soll nur erscheinen wenn die Email WIRKLICH gelöscht wurde:
+
+Warte auf Backend-Response
+Prüfe Response-Status genau
+Zeige Toast nur bei echtem Erfolg
+Bei Fehlern zeige spezifische Fehlermeldung
+
+IMAP Delete-Sequence
+Stelle sicher dass die richtige IMAP-Sequenz verwendet wird:
+
+Mailbox im READ-WRITE Modus öffnen
+Email mit DELETED Flag markieren
+EXPUNGE ausführen um physisch zu löschen
+Erfolg validieren
+Mailbox-Liste aktualisieren
+
+Error-Logging erweitern
+Erweitere das Logging um zu verstehen was schiefgeht:
+
+IMAP-Verbindungsstatus loggen
+Jede IMAP-Operation einzeln loggen
+Response-Codes und Fehler detailliert loggen
+Email-UID und Mailbox-Info loggen
+
+Testing-Schritte
+1. IMAP-Verbindung testen
+Teste ob IMAP-Verbindung korrekt funktioniert und im richtigen Modus ist.
+2. Delete-Operation step-by-step debuggen
+Logge jeden Schritt der Delete-Operation ausführlich.
+3. Email-Liste vor/nach Löschung vergleichen
+Prüfe ob Email wirklich aus der Server-Liste verschwindet.
+4. Verschiedene Email-Clients testen
+Teste ob Email auch in anderen Email-Clients (Outlook, Gmail) verschwindet.
+Erfolgskriterien
+
+Email verschwindet wirklich aus dem IMAP-Postfach
+Toast erscheint nur bei echtem Erfolg
+Fehlermeldungen sind spezifisch und hilfreich
+Email-Liste wird korrekt aktualisiert
+Löschung funktioniert in anderen Email-Clients sichtbar
+
+Backend-Integration
+Falls Backend-Änderungen nötig sind für korrekte IMAP-Löschung, melde diese konkret. Das IMAP-Delete muss möglicherweise auf Server-Seite repariert werden.
+Analysiere die bestehende Email-Delete-Implementierung und identifiziere warum die IMAP-Löschung nicht funktioniert. Das Problem liegt wahrscheinlich daran, dass EXPUNGE nicht korrekt ausgeführt wird.
