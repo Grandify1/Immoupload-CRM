@@ -472,24 +472,39 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   const handleImport = async () => {
     try {
+      console.log('=== STARTING IMPORT PROCESS ===');
       setStep('importing');
       setImportProgress(0);
+      setError(null); // Clear any previous errors
+
+      // Check if we have any leads to import
+      if (!csvData || csvData.length === 0) {
+        setError('Keine Daten zum Importieren gefunden.');
+        setStep('preview');
+        return;
+      }
+
+      console.log('CSV data rows:', csvData.length);
+      console.log('Mappings:', mappings);
 
       const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
+      console.log('Custom fields to create:', customFieldMappings);
 
       // Create new custom fields first
       for (const mapping of customFieldMappings) {
         if (mapping.fieldName) {
           try {
+            console.log('Creating custom field:', mapping.fieldName);
             await onAddCustomField(mapping.fieldName, mapping.customFieldType);
+            console.log('✅ Custom field created:', mapping.fieldName);
           } catch (error) {
-            console.log('Custom field might already exist:', mapping.fieldName);
+            console.log('Custom field might already exist:', mapping.fieldName, error);
           }
         }
       }
 
+      console.log('=== PROCESSING CSV DATA ===');
       const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = [];
-      const duplicateNames: string[] = [];
 
       for (let i = 0; i < csvData.length; i++) {
         const row = csvData[i];
@@ -526,218 +541,195 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
         }
 
-        // Update progress
-        setImportProgress(Math.round(((i + 1) / csvData.length) * 90));
+        // Update progress for data processing
+        setImportProgress(Math.round(((i + 1) / csvData.length) * 20)); // 20% for data processing
       }
 
-      console.log('Prepared leads for import:', leads.length);
+      console.log('✅ Processed CSV data, prepared leads:', leads.length);
+      if (leads.length === 0) {
+        setError('Keine gültigen Leads gefunden. Überprüfen Sie Ihre Feldzuordnung.');
+        setStep('preview');
+        return;
+      }
+
       console.log('Sample lead:', leads[0]);
+      setImportProgress(25);
+
+      // Get current user info for import job
+      console.log('=== GETTING USER INFO ===');
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('❌ Error getting user:', userError);
+        setError(`Authentifizierungsfehler: ${userError.message}`);
+        setStep('preview');
+        return;
+      }
+
+      if (!user?.id) {
+        console.error('❌ No user found');
+        setError('Benutzer nicht gefunden. Bitte loggen Sie sich erneut ein.');
+        setStep('preview');
+        return;
+      }
+
+      console.log('✅ User found:', user.id);
+      setImportProgress(30);
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('team_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('❌ Error getting profile:', profileError);
+        setError(`Profil-Fehler: ${profileError.message}`);
+        setStep('preview');
+        return;
+      }
+
+      if (!profile?.team_id) {
+        console.error('❌ No team found for user');
+        setError('Team-Information nicht gefunden. Bitte kontaktieren Sie den Support.');
+        setStep('preview');
+        return;
+      }
+
+      console.log('✅ Profile found, team_id:', profile.team_id);
+      setImportProgress(35);
+
+      // Create import job record BEFORE importing
+      console.log('=== CREATING IMPORT JOB ===');
+      const importJobData = {
+        file_name: file?.name || 'unknown.csv',
+        total_records: leads.length,
+        processed_records: 0,
+        failed_records: 0,
+        status: 'processing' as const,
+        error_details: null,
+        team_id: profile.team_id,
+        created_by: user.id,
+        undo_status: 'active' as const
+      };
+
+      console.log('Import job data:', importJobData);
+
+      const { data: importJob, error: jobError } = await supabase
+        .from('import_jobs')
+        .insert([importJobData])
+        .select()
+        .single();
+
+      if (jobError) {
+        console.error('❌ CRITICAL: Failed to create import job:', jobError);
+        setError(`Import-Job Fehler: ${jobError.message}`);
+        setStep('preview');
+        return;
+      }
+
+      if (!importJob) {
+        console.error('❌ CRITICAL: No import job returned');
+        setError('Import-Job konnte nicht erstellt werden.');
+        setStep('preview');
+        return;
+      }
+
+      console.log('✅ Import job created with ID:', importJob.id);
+      setImportProgress(40);
+
+      // Now perform the actual import
+      console.log('=== STARTING LEAD IMPORT ===');
+      let processedCount = 0;
+      let failedCount = 0;
+      const failedLeads: any[] = [];
 
       try {
-        // Get current user info for import job - with proper error handling
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user?.id) {
-          console.error('Error getting user:', userError);
-          setError('Fehler: Benutzer nicht gefunden. Bitte loggen Sie sich erneut ein.');
-          setStep('preview');
-          return;
-        }
-
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('team_id')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError || !profile?.team_id) {
-          console.error('Error getting profile:', profileError);
-          setError('Fehler: Team-Information nicht gefunden. Bitte kontaktieren Sie den Support.');
-          setStep('preview');
-          return;
-        }
-
-        console.log('=== IMPORT JOB CREATION START ===');
-        console.log('User ID:', user.id);
-        console.log('Team ID:', profile.team_id);
-        console.log('File name:', file?.name);
-        console.log('Total leads to import:', leads.length);
-
-        // Create import job record BEFORE importing - this is critical for tracking
-        const importJobData = {
-          file_name: file?.name || 'unknown.csv',
-          total_records: leads.length,
-          processed_records: 0,
-          failed_records: 0,
-          status: 'processing',
-          error_details: null,
-          team_id: profile.team_id,
-          created_by: user.id,
-          undo_status: 'active'
-        };
-
-        console.log('Creating import job with data:', importJobData);
-
-        // Create import job - MUST succeed for proper tracking
-        const { data: importJob, error: jobError } = await supabase
-          .from('import_jobs')
-          .insert([importJobData])
-          .select()
-          .single();
-
-        if (jobError || !importJob) {
-          console.error('CRITICAL: Failed to create import job:', jobError);
-          console.error('Job error details:', jobError?.details);
-          console.error('Job error hint:', jobError?.hint);
-          console.error('Job error code:', jobError?.code);
-          setError(`Kritischer Fehler: Import-Job konnte nicht erstellt werden. ${jobError?.message || 'Unbekannter Fehler'}`);
-          setStep('preview');
-          return;
-        }
-
-        console.log('✅ Import job created successfully with ID:', importJob.id);
-        console.log('Import job details:', importJob);
-        console.log('=== IMPORT JOB CREATION SUCCESS ===')
-
-        // Import all leads in batches to improve performance - silently in background
-        let processedCount = 0;
-        let failedCount = 0;
-        const failedLeads: any[] = [];
-        const batchSize = 100; // Larger batches for faster processing
-
-        // Import all leads without showing individual toast messages
-        const allLeadsToImport: typeof leads = [];
-
-        for (let i = 0; i < leads.length; i += batchSize) {
-          const batch = leads.slice(i, i + batchSize);
-
+        console.log('Calling onImport with', leads.length, 'leads');
+        await onImport(leads);
+        processedCount = leads.length;
+        failedCount = 0;
+        console.log('✅ All leads imported successfully');
+      } catch (importError: any) {
+        console.error('❌ Batch import failed, trying individual imports:', importError);
+        
+        // Fallback: try importing leads individually
+        for (let i = 0; i < leads.length; i++) {
+          const lead = leads[i];
           try {
-            // Collect leads for batch import without immediate UI updates
-            allLeadsToImport.push(...batch);
-            processedCount += batch.length;
-          } catch (batchError: any) {
-            console.error(`Failed to prepare batch ${Math.floor(i/batchSize) + 1}:`, batchError);
-            failedCount += batch.length;
-          }
-
-          // Update progress
-          const progress = Math.round(((i + batch.length) / leads.length) * 90);
-          setImportProgress(progress);
-        }
-
-        // Now do the actual import in one go
-        try {
-          await onImport(allLeadsToImport);
-          processedCount = allLeadsToImport.length;
-          failedCount = 0;
-        } catch (importError: any) {
-          console.error('Batch import failed:', importError);
-          // Try individual imports as fallback
-          processedCount = 0;
-          failedCount = 0;
-
-          for (const lead of allLeadsToImport) {
-            try {
-              await onImport([lead]);
-              processedCount++;
-            } catch (leadError: any) {
-              failedCount++;
-              if (!leadError?.message?.includes('duplicate key')) {
-                failedLeads.push({ 
-                  lead: lead, 
-                  error: leadError.message || 'Unknown error' 
-                });
-              }
+            await onImport([lead]);
+            processedCount++;
+            console.log(`✅ Lead ${i + 1} imported successfully`);
+          } catch (leadError: any) {
+            failedCount++;
+            console.error(`❌ Lead ${i + 1} failed:`, leadError);
+            
+            if (!leadError?.message?.includes('duplicate key')) {
+              failedLeads.push({ 
+                lead: lead, 
+                error: leadError.message || 'Unknown error' 
+              });
             }
           }
+          
+          // Update progress during individual imports
+          setImportProgress(40 + Math.round(((i + 1) / leads.length) * 50));
         }
-
-        // Update import job status - CRITICAL for import history
-        console.log('=== UPDATING IMPORT JOB STATUS ===');
-        console.log('Import job ID to update:', importJob.id);
-        console.log('Processed records:', processedCount);
-        console.log('Failed records:', failedCount);
-
-        const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
-        const updateData = {
-          processed_records: processedCount,
-          failed_records: failedCount,
-          status: finalStatus,
-          error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
-          updated_at: new Date().toISOString()
-        };
-
-        console.log('Updating import job with:', updateData);
-
-        const { error: updateError } = await supabase
-          .from('import_jobs')
-          .update(updateData)
-          .eq('id', importJob.id);
-
-        if (updateError) {
-          console.error('CRITICAL: Failed to update import job status:', updateError);
-          console.error('Update error details:', updateError.details);
-          // Don't fail the import, but log the critical error
-        } else {
-          console.log('✅ Import job status updated successfully');
-          console.log('Final import job status:', finalStatus);
-          console.log('Import job ID:', importJob.id);
-        }
-
-        // Verify the import job was actually created and updated
-        console.log('=== VERIFYING IMPORT JOB IN DATABASE ===');
-        const { data: verifyJob, error: verifyError } = await supabase
-          .from('import_jobs')
-          .select('*')
-          .eq('id', importJob.id)
-          .single();
-
-        if (verifyError) {
-          console.error('ERROR: Could not verify import job in database:', verifyError);
-        } else {
-          console.log('✅ Import job verified in database:', verifyJob);
-        }
-        console.log('=== IMPORT JOB VERIFICATION COMPLETE ===')
-
-        setImportProgress(100);
-
-        // Show final import summary without toast notifications
-        const totalLeads = processedCount + failedCount;
-        let summaryMessage = '';
-
-        if (failedCount === 0) {
-          summaryMessage = `✅ Import erfolgreich abgeschlossen: ${processedCount} Leads wurden importiert.`;
-        } else if (processedCount === 0) {
-          summaryMessage = `❌ Import fehlgeschlagen: ${failedCount} Leads konnten nicht importiert werden.`;
-        } else {
-          summaryMessage = `⚠️ Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen.`;
-        }
-
-        // Show result and close after delay
-        setError(summaryMessage);
-
-        setTimeout(() => {
-          resetState();
-          onClose();
-        }, 4000); // Show result for 4 seconds to read the message
-
-      } catch (importError: any) {
-        console.error('Error importing leads:', importError);
-
-        if (importError?.message?.includes('duplicate key')) {
-          const duplicateName = importError.details?.match(/Key \(name\)=\((.*?)\)/)?.[1];
-          if (duplicateName) {
-            setError(`Ein Lead mit dem Namen "${duplicateName}" existiert bereits. Bitte entfernen Sie Duplikate aus Ihrer CSV-Datei oder verwenden Sie eine andere Namenskonvention.`);
-          } else {
-            setError('Einige Leads existieren bereits. Bitte überprüfen Sie Ihre CSV-Datei auf Duplikate.');
-          }
-        } else {
-          setError(`Import-Fehler: ${importError?.message || 'Unbekannter Fehler beim Importieren der Leads.'}`);
-        }
-        setStep('preview');
       }
-    } catch (error) {
-      console.error('General error during import:', error);
-      setError('Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.');
+
+      setImportProgress(90);
+
+      // Update import job status
+      console.log('=== UPDATING IMPORT JOB STATUS ===');
+      const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
+      const updateData = {
+        processed_records: processedCount,
+        failed_records: failedCount,
+        status: finalStatus,
+        error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Updating import job with:', updateData);
+
+      const { error: updateError } = await supabase
+        .from('import_jobs')
+        .update(updateData)
+        .eq('id', importJob.id);
+
+      if (updateError) {
+        console.error('❌ Failed to update import job status:', updateError);
+        // Don't fail the import, just log the error
+      } else {
+        console.log('✅ Import job status updated successfully');
+      }
+
+      setImportProgress(100);
+
+      // Show final result
+      let summaryMessage = '';
+      if (failedCount === 0) {
+        summaryMessage = `✅ Import erfolgreich: ${processedCount} Leads importiert.`;
+      } else if (processedCount === 0) {
+        summaryMessage = `❌ Import fehlgeschlagen: ${failedCount} Leads konnten nicht importiert werden.`;
+      } else {
+        summaryMessage = `⚠️ Import abgeschlossen: ${processedCount} erfolgreich, ${failedCount} fehlgeschlagen.`;
+      }
+
+      console.log('=== IMPORT COMPLETE ===');
+      console.log('Final result:', summaryMessage);
+
+      // Show success message instead of error
+      setError(summaryMessage);
+
+      // Close dialog after delay
+      setTimeout(() => {
+        resetState();
+        onClose();
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('❌ CRITICAL ERROR during import:', error);
+      setError(`Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`);
       setStep('preview');
     }
   };
