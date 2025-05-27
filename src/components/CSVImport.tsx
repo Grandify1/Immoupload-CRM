@@ -167,27 +167,58 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       try {
         const text = e.target?.result as string;
 
-        // Verbessertes CSV-Parsing für mehrzeilige Felder
+        // Universelles CSV-Parsing für verschiedene Formate
         const parseCSVContent = (csvText: string): { headers: string[], data: string[][] } => {
+          // Automatische Erkennung des Trennzeichens
+          const detectDelimiter = (text: string): string => {
+            const sample = text.split('\n').slice(0, 5).join('\n'); // Erste 5 Zeilen analysieren
+            const delimiters = [';', ',', '\t', '|'];
+            const counts = delimiters.map(delimiter => ({
+              delimiter,
+              count: (sample.match(new RegExp(`\\${delimiter}`, 'g')) || []).length
+            }));
+            
+            // Wähle das Trennzeichen mit den meisten Vorkommen
+            const bestDelimiter = counts.reduce((prev, current) => 
+              current.count > prev.count ? current : prev
+            );
+            
+            console.log('CSV delimiter detection:', counts, 'Selected:', bestDelimiter.delimiter);
+            return bestDelimiter.delimiter;
+          };
+
+          const delimiter = detectDelimiter(csvText);
           const result: string[][] = [];
           let current = '';
           let inQuotes = false;
           let row: string[] = [];
+          let quoteChar = '"';
+
+          // Erweiterte Anführungszeichen-Erkennung
+          const detectQuoteChar = (text: string): string => {
+            const firstLine = text.split('\n')[0];
+            if (firstLine.includes('"')) return '"';
+            if (firstLine.includes("'")) return "'";
+            return '"'; // Standard
+          };
+
+          quoteChar = detectQuoteChar(csvText);
+          console.log('CSV quote character detected:', quoteChar);
 
           for (let i = 0; i < csvText.length; i++) {
             const char = csvText[i];
             const nextChar = csvText[i + 1];
 
-            if (char === '"') {
-              if (inQuotes && nextChar === '"') {
+            if (char === quoteChar) {
+              if (inQuotes && nextChar === quoteChar) {
                 // Escaped quote
-                current += '"';
+                current += quoteChar;
                 i++; // Skip next quote
               } else {
                 // Toggle quote state
                 inQuotes = !inQuotes;
               }
-            } else if (char === ',' && !inQuotes) {
+            } else if (char === delimiter && !inQuotes) {
               // Field separator
               row.push(current.trim());
               current = '';
@@ -196,7 +227,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               if (current.trim() !== '' || row.length > 0) {
                 row.push(current.trim());
                 if (row.some(field => field !== '')) { // Only add rows with content
-                  result.push(row);
+                  result.push([...row]); // Create copy of row
                 }
                 row = [];
                 current = '';
@@ -214,7 +245,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           if (current.trim() !== '' || row.length > 0) {
             row.push(current.trim());
             if (row.some(field => field !== '')) {
-              result.push(row);
+              result.push([...row]);
             }
           }
 
@@ -222,13 +253,66 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             throw new Error('Keine gültigen Zeilen gefunden');
           }
 
-          const headers = result[0].map(h => h.replace(/^"|"$/g, '').trim());
-          const data = result.slice(1);
+          // Clean headers - remove quotes and normalize
+          const headers = result[0].map(h => {
+            let cleanHeader = h.replace(/^["']|["']$/g, '').trim();
+            
+            // Normalisiere deutsche Umlaute und Sonderzeichen für bessere Zuordnung
+            const normalizeGermanText = (text: string): string => {
+              return text
+                .toLowerCase()
+                .replace(/ä/g, 'ae')
+                .replace(/ö/g, 'oe')
+                .replace(/ü/g, 'ue')
+                .replace(/ß/g, 'ss')
+                .replace(/[^a-z0-9]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+            };
 
-          return { headers, data };
+            // Speichere sowohl Original als auch normalisierte Version
+            return {
+              original: cleanHeader,
+              normalized: normalizeGermanText(cleanHeader),
+              display: cleanHeader
+            };
+          });
+
+          // Clean data rows
+          const data = result.slice(1).map(row => {
+            // Ensure consistent column count
+            const cleanRow = [...row];
+            while (cleanRow.length < headers.length) {
+              cleanRow.push('');
+            }
+            if (cleanRow.length > headers.length) {
+              cleanRow.splice(headers.length);
+            }
+            
+            return cleanRow.map(cell => {
+              // Remove quotes and clean cell content
+              let cleanCell = cell.replace(/^["']|["']$/g, '').trim();
+              
+              // Handle multiline content in cells
+              cleanCell = cleanCell.replace(/\r\n|\r|\n/g, ' ').trim();
+              
+              return cleanCell;
+            });
+          });
+
+          console.log(`CSV parsing completed: ${data.length} rows, ${headers.length} columns`);
+          console.log('Headers detected:', headers.map(h => h.display));
+
+          return { 
+            headers: headers.map(h => h.display), 
+            data,
+            headersMetadata: headers // Zusätzliche Metadaten für bessere Zuordnung
+          };
         };
 
-        const { headers, data } = parseCSVContent(text);
+        const parseResult = parseCSVContent(text);
+        const { headers, data } = parseResult;
+        const headersMetadata = parseResult.headersMetadata || headers.map(h => ({ original: h, normalized: h, display: h }));
 
         if (headers.some(header => header === '')) {
           setError('CSV-Datei enthält leere Spaltenüberschriften.');
@@ -238,14 +322,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         // Filtere und validiere Datenzeilen
         const validData = data.filter(row => {
-          // Normalisiere Spaltenzahl
-          while (row.length < headers.length) {
-            row.push('');
-          }
-          if (row.length > headers.length) {
-            row.splice(headers.length);
-          }
-
           // Prüfe ob Zeile mindestens ein nicht-leeres Feld hat
           return row.some(value => value && value.length > 0);
         });
@@ -261,20 +337,85 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         setHeaders(headers);
         setCSVData(validData);
 
-        const initialMappings: MappingType[] = headers.map(header => {
-          const matchedField = allAvailableFields.find(field => 
-            field.label.toLowerCase() === header.toLowerCase() || 
-            field.name.toLowerCase() === header.toLowerCase() ||
-            (field.originalName && field.originalName.toLowerCase() === header.toLowerCase())
+        // Erweiterte automatische Feldzuordnung
+        const createFieldMapping = (header: string, headerMeta: any): MappingType => {
+          const headerLower = header.toLowerCase();
+          const headerNormalized = headerMeta.normalized || header.toLowerCase();
+          
+          // Erweiterte Zuordnungsregeln für verschiedene Sprachen und Formate
+          const fieldMappings = {
+            // Standard Lead Felder - Deutsch
+            'name': ['name', 'namen', 'firmenname', 'firma', 'unternehmen', 'company', 'business_name'],
+            'email': ['email', 'e_mail', 'e-mail', 'mail', 'kontakt_email'],
+            'phone': ['phone', 'telefon', 'tel', 'telephone', 'handy', 'mobile', 'contact_phone'],
+            'website': ['website', 'webseite', 'homepage', 'url', 'web', 'link', 'site'],
+            'address': ['address', 'adresse', 'anschrift', 'standort', 'ort', 'location'],
+            'description': ['description', 'beschreibung', 'info', 'information', 'details', 'kommentar'],
+            'status': ['status', 'zustand', 'state', 'stage'],
+            
+            // Spezielle Felder aus Google Maps Daten
+            'reviews': ['reviews', 'bewertungen', 'anzahl_bewertungen', 'review_count'],
+            'rating': ['rating', 'bewertung', 'sterne', 'stars', 'durchschnitt'],
+            'category': ['category', 'kategorie', 'main_category', 'hauptkategorie', 'branche'],
+            'competitors': ['competitors', 'konkurrenz', 'wettbewerber'],
+            'opening_hours': ['opening_hours', 'oeffnungszeiten', 'workday_timing', 'arbeitszeiten'],
+            'owner': ['owner', 'besitzer', 'eigentumer', 'owner_name', 'inhaber'],
+            'place_id': ['place_id', 'id', 'google_place_id'],
+            'featured_image': ['featured_image', 'image', 'bild', 'foto'],
+            'can_claim': ['can_claim', 'beanspruchbar'],
+            'is_closed': ['is_closed', 'geschlossen', 'is_temporarily_closed'],
+            'keywords': ['keywords', 'schlusselworter', 'review_keywords', 'suchbegriffe']
+          };
+
+          // Suche nach passenden Feldern
+          for (const [fieldName, patterns] of Object.entries(fieldMappings)) {
+            for (const pattern of patterns) {
+              if (headerLower.includes(pattern) || headerNormalized.includes(pattern.replace(/[^a-z0-9]/g, '_'))) {
+                // Prüfe ob das Feld in verfügbaren Feldern existiert
+                const matchedField = allAvailableFields.find(f => f.name === fieldName);
+                if (matchedField) {
+                  console.log(`Auto-mapped "${header}" to "${fieldName}"`);
+                  return {
+                    csvHeader: header,
+                    fieldName: fieldName,
+                    createCustomField: false,
+                    customFieldType: 'text'
+                  };
+                }
+              }
+            }
+          }
+
+          // Fallback: Exakte Übereinstimmung mit verfügbaren Feldern
+          const exactMatch = allAvailableFields.find(field => 
+            field.label.toLowerCase() === headerLower || 
+            field.name.toLowerCase() === headerLower ||
+            (field.originalName && field.originalName.toLowerCase() === headerLower)
           );
 
+          if (exactMatch) {
+            console.log(`Exact match found for "${header}" -> "${exactMatch.name}"`);
+            return {
+              csvHeader: header,
+              fieldName: exactMatch.name,
+              createCustomField: false,
+              customFieldType: 'text'
+            };
+          }
+
+          // Kein Match gefunden
+          console.log(`No auto-mapping found for "${header}"`);
           return {
             csvHeader: header,
-            fieldName: matchedField ? matchedField.name : null,
+            fieldName: null,
             createCustomField: false,
             customFieldType: 'text'
           };
-        });
+        };
+
+        const initialMappings: MappingType[] = headers.map((header, index) => 
+          createFieldMapping(header, headersMetadata[index] || { normalized: header })
+        );
 
         setMappings(initialMappings);
         setStep('map');
