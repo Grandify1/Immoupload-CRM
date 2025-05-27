@@ -657,20 +657,20 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                             </div>
                             <div className="ml-10">
                               {activity.type === 'custom' && activity.template_data?.responses ? (
-                                <div className="space-y-3">
-                                  {Object.entries(activity.template_data.responses).map(([questionId, answer]) => {
-                                    const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
-                                    return (
-                                      <div key={questionId} className="text-sm">
-                                        <div className="font-bold text-gray-900 mb-1">
-                                          {question?.text || 'Question'}
-                                        </div>
-                                        <div className="text-gray-700 pl-2">
-                                          {String(answer)}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
+                                <div className="prose prose-sm max-w-none">
+                                  <div 
+                                    className="text-sm text-gray-800"
+                                    dangerouslySetInnerHTML={{
+                                      __html: Object.entries(activity.template_data.responses)
+                                        .map(([questionId, answer]) => {
+                                          const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
+                                          const questionText = question?.text || 'Question';
+                                          const answerText = String(answer);
+                                          return `<p><strong>${questionText}</strong><br/>${answerText}</p>`;
+                                        })
+                                        .join('')
+                                    }}
+                                  />
                                 </div>
                               ) : (
                                 <p className="text-sm text-gray-800">{activity.content}</p>
