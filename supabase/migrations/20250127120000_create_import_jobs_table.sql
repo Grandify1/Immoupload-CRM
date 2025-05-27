@@ -14,10 +14,14 @@ CREATE TABLE IF NOT EXISTS public.import_jobs (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add foreign key constraints after table is created
+-- Only add constraints if table was actually created and columns exist
 DO $$ 
 BEGIN
-    IF NOT EXISTS (
+    -- Check if team_id column exists before adding foreign key
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'import_jobs' AND column_name = 'team_id'
+    ) AND NOT EXISTS (
         SELECT 1 FROM information_schema.table_constraints 
         WHERE constraint_name = 'import_jobs_team_id_fkey'
     ) THEN
@@ -26,7 +30,11 @@ BEGIN
         FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
     END IF;
     
-    IF NOT EXISTS (
+    -- Check if created_by column exists before adding foreign key
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'import_jobs' AND column_name = 'created_by'
+    ) AND NOT EXISTS (
         SELECT 1 FROM information_schema.table_constraints 
         WHERE constraint_name = 'import_jobs_created_by_fkey'
     ) THEN
