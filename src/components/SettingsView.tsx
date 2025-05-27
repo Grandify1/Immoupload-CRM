@@ -231,6 +231,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="activity-templates">Activity Templates</TabsTrigger>
           <TabsTrigger value="sales-pipeline">Sales Pipeline</TabsTrigger>
+          <TabsTrigger value="import">Import</TabsTrigger>
           <TabsTrigger value="general">General Settings</TabsTrigger>
         </TabsList>
         
@@ -645,6 +646,67 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         {/* Sales Pipeline Tab */}
         <TabsContent value="sales-pipeline">
           <SalesPipelineSettings />
+        </TabsContent>
+        
+        {/* Import Tab */}
+        <TabsContent value="import">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Import Leads</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Import leads from CSV files. Make sure your CSV includes columns for name, email, phone, and status.
+                  </p>
+                  <Button className="w-full">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Import Leads from CSV
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Import Opportunities</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Import opportunities/deals from CSV files. Include columns for title, value, stage, and associated lead.
+                  </p>
+                  <Button className="w-full">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Import Opportunities from CSV
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Import Guidelines</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-sm">For Leads:</h4>
+                  <p className="text-xs text-gray-600">Required columns: name, email. Optional: phone, status, custom fields</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm">For Opportunities:</h4>
+                  <p className="text-xs text-gray-600">Required columns: title, value. Optional: stage, lead_id, custom fields</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm">File Format:</h4>
+                  <p className="text-xs text-gray-600">CSV files with UTF-8 encoding. First row should contain column headers.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* General Settings Tab */}
