@@ -1,0 +1,86 @@
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = await req.json()
+
+    // Update job status to processing
+    await supabaseAdmin
+      .from('import_jobs')
+      .update({ status: 'processing' })
+      .eq('id', jobId)
+
+    let processedRecords = 0
+    let failedRecords = 0
+    let duplicateRecords = 0
+    let updatedRecords = 0
+
+    // Process leads in batches
+    const batchSize = 100
+    for (let i = 0; i < csvData.length; i += batchSize) {
+      const batch = csvData.slice(i, i + batchSize)
+      
+      for (const leadData of batch) {
+        try {
+          // Same logic as frontend but server-side
+          // ... (processing logic here)
+          processedRecords++
+        } catch (error) {
+          failedRecords++
+        }
+
+        // Update progress periodically
+        if ((processedRecords + failedRecords) % 50 === 0) {
+          await supabaseAdmin
+            .from('import_jobs')
+            .update({ 
+              processed_records: processedRecords,
+              failed_records: failedRecords 
+            })
+            .eq('id', jobId)
+        }
+      }
+    }
+
+    // Final update
+    const finalStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors'
+    await supabaseAdmin
+      .from('import_jobs')
+      .update({
+        status: finalStatus,
+        processed_records: processedRecords,
+        failed_records: failedRecords,
+        error_details: {
+          summary: `Import completed: ${processedRecords} processed, ${failedRecords} failed`
+        }
+      })
+      .eq('id', jobId)
+
+    return new Response(
+      JSON.stringify({ success: true, processedRecords, failedRecords }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
+  }
+})

@@ -11,18 +11,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ImportStatusBar from './ImportStatusBar';
 
 const CRMLayout = () => {
   const { team } = useProfile();
   const { toast } = useToast();
-  
+
   const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings'>('leads');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [leadsView, setLeadsView] = useState<'table' | 'kanban'>('table');
   const [opportunitiesView, setOpportunitiesView] = useState<'table' | 'kanban'>('kanban');
   const [currentFilters, setCurrentFilters] = useState<Record<string, any>>({});
-  
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
@@ -50,7 +51,7 @@ const CRMLayout = () => {
       console.log('fetchData: Already fetching, skipping duplicate call');
       return;
     }
-    
+
     console.log('fetchData: Starting data fetch...');
     setIsFetching(true);
     setLoading(true);
@@ -131,7 +132,7 @@ const CRMLayout = () => {
       console.log('fetchDeals: No team available, returning.');
       return;
     }
-    
+
     console.log('fetchDeals: Starting deals fetch...');
     setLoading(true);
     const { data, error } = await supabase
@@ -154,7 +155,7 @@ const CRMLayout = () => {
       console.log('fetchSavedFilters: No team available, returning.');
       return;
     }
-    
+
     const { data, error } = await supabase
       .from('saved_filters')
       .select('*')
@@ -169,10 +170,10 @@ const CRMLayout = () => {
     // Cast the data to proper SavedFilter type
     setSavedFilters((data || []) as SavedFilter[]);
   };
-  
+
   const fetchCustomFields = async () => {
     if (!team) return;
-    
+
     const { data, error } = await supabase
       .from('custom_fields')
       .select('*')
@@ -187,10 +188,10 @@ const CRMLayout = () => {
     // Cast the data to proper CustomField type
     setCustomFields((data || []) as CustomField[]);
   };
-  
+
   const fetchActivityTemplates = async () => {
     if (!team) return;
-    
+
     const { data, error } = await supabase
       .from('activity_templates')
       .select('*')
@@ -208,7 +209,7 @@ const CRMLayout = () => {
 
   const addActivity = async (entityType: 'lead' | 'deal', entityId: string, activity: Omit<Activity, 'id' | 'team_id' | 'created_at'>) => {
     if (!team) return null;
-    
+
     try {
       // Füge die Aktivität mit der übergebenen author_id hinzu
       const { data, error } = await supabase
@@ -233,7 +234,7 @@ const CRMLayout = () => {
         });
         return null;
       }
-      
+
       // Aktualisiere die lokalen Daten, wenn die Aktivität erfolgreich hinzugefügt wurde
       if (entityType === 'lead' && data) {
         const leadIndex = leads.findIndex(l => l.id === entityId);
@@ -245,7 +246,7 @@ const CRMLayout = () => {
           // Sortiere Aktivitäten nach Erstellungsdatum (neueste zuerst) nach dem Hinzufügen
           updatedLead.activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           setLeads(prev => prev.map(l => l.id === entityId ? updatedLead : l));
-          
+
           if (selectedLead && selectedLead.id === entityId) {
             setSelectedLead(updatedLead);
           }
@@ -260,18 +261,18 @@ const CRMLayout = () => {
           // Sortiere Aktivitäten nach Erstellungsdatum (neueste zuerst) nach dem Hinzufügen
           updatedDeal.activities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
           setDeals(prev => prev.map(d => d.id === entityId ? updatedDeal : d));
-          
+
           if (selectedDeal && selectedDeal.id === entityId) {
             setSelectedDeal(updatedDeal);
           }
         }
       }
-      
+
       toast({
         title: "Success",
         description: "Activity added successfully",
       });
-      
+
       return data as Activity;
     } catch (error) {
       console.error('Error in addActivity:', error);
@@ -286,7 +287,7 @@ const CRMLayout = () => {
 
   const deleteActivity = async (activityId: string, entityType: 'lead' | 'deal', entityId: string) => {
     if (!team) return;
-    
+
     try {
       const { error } = await supabase
         .from('activities')
@@ -303,7 +304,7 @@ const CRMLayout = () => {
         });
         return;
       }
-      
+
       // Aktualisiere die lokalen Daten
       if (entityType === 'lead') {
         const leadIndex = leads.findIndex(l => l.id === entityId);
@@ -311,7 +312,7 @@ const CRMLayout = () => {
           const updatedLead = { ...leads[leadIndex] };
           updatedLead.activities = updatedLead.activities?.filter(a => a.id !== activityId) || [];
           setLeads(prev => prev.map(l => l.id === entityId ? updatedLead : l));
-          
+
           if (selectedLead && selectedLead.id === entityId) {
             setSelectedLead(updatedLead);
           }
@@ -322,13 +323,13 @@ const CRMLayout = () => {
           const updatedDeal = { ...deals[dealIndex] };
           updatedDeal.activities = updatedDeal.activities?.filter(a => a.id !== activityId) || [];
           setDeals(prev => prev.map(d => d.id === entityId ? updatedDeal : d));
-          
+
           if (selectedDeal && selectedDeal.id === entityId) {
             setSelectedDeal(updatedDeal);
           }
         }
       }
-      
+
       toast({
         title: "Erfolg",
         description: "Aktivität wurde erfolgreich gelöscht",
@@ -409,7 +410,7 @@ const CRMLayout = () => {
       }
 
       const importedLeads = data as Lead[];
-      
+
       // Update leads state silently - no toast notifications during import
       setLeads(prev => [...importedLeads, ...prev]);
 
@@ -484,7 +485,7 @@ const CRMLayout = () => {
       });
     }
   };
-  
+
   const updateCustomField = async (id: string, updates: Partial<CustomField>) => {
     if (!team) return;
 
@@ -526,7 +527,7 @@ const CRMLayout = () => {
       });
     }
   };
-  
+
   const deleteCustomField = async (id: string) => {
     if (!team) return;
 
@@ -563,7 +564,7 @@ const CRMLayout = () => {
       });
     }
   };
-  
+
   const reorderCustomFields = async (fields: CustomField[]) => {
     if (!team) return;
 
@@ -604,7 +605,7 @@ const CRMLayout = () => {
       });
     }
   };
-  
+
   const addActivityTemplate = async (template: Omit<ActivityTemplate, 'id' | 'team_id' | 'created_at'>) => {
     if (!team) return;
 
@@ -646,7 +647,7 @@ const CRMLayout = () => {
       return null;
     }
   };
-  
+
   const updateActivityTemplate = async (id: string, updates: Partial<ActivityTemplate>) => {
     if (!team) return;
 
@@ -688,7 +689,7 @@ const CRMLayout = () => {
       });
     }
   };
-  
+
   const deleteActivityTemplate = async (id: string) => {
     if (!team) return;
 
@@ -909,7 +910,7 @@ const CRMLayout = () => {
       // Aktualisiere den lokalen Zustand für Deals und füge die kopierten Aktivitäten hinzu
       const newDeal = { ...dealData, activities: lead.activities || [] } as Deal;
       setDeals(prev => [newDeal, ...prev]);
-      
+
       // Aktualisiere den Lead im lokalen Zustand
       const updatedLead: Lead = {
         ...lead,
@@ -922,7 +923,7 @@ const CRMLayout = () => {
         }
       };
       setLeads(prev => prev.map(l => l.id === lead.id ? updatedLead : l));
-      
+
       // Schließe den Lead-Detail-Bereich und öffne den Deal-Detail-Bereich
       setSelectedLead(null);
       setSelectedDeal(newDeal);
@@ -932,7 +933,7 @@ const CRMLayout = () => {
         title: "Erfolg",
         description: `Lead "${lead.name}" wurde erfolgreich in einen Deal konvertiert`,
       });
-      
+
       return newDeal;
     } catch (error) {
       console.error('Error converting lead to deal:', error);
@@ -992,6 +993,7 @@ const CRMLayout = () => {
 
     switch (activeSection) {
       case 'leads':
+```text
         return (
           <LeadsView
             leads={leads}
@@ -1051,10 +1053,10 @@ const CRMLayout = () => {
         currentFilters={currentFilters}
         onFilterSelect={(filters) => setCurrentFilters(filters)}
       />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         {renderContent()}
-        
+
         <Dialog open={!!selectedDeal} onOpenChange={(open) => {!open && setSelectedDeal(null)}}>
           {selectedDeal && (
             <DealDetail
@@ -1096,6 +1098,7 @@ const CRMLayout = () => {
           />
         )}
       </div>
+      <ImportStatusBar />
     </div>
   );
 };
