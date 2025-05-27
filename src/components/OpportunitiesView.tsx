@@ -718,33 +718,8 @@ export const OpportunitiesView = ({
     setSelectedMultiSelectValues([value]);
   };
 
-  const renderTableView = () => (
-    <TableView
-      deals={filteredDeals}
-      visibleColumns={visibleColumns}
-      onDealSelect={onDealSelect}
-      formatCurrency={formatCurrency}
-      formatDate={formatDate}
-      onDealUpdate={onDealUpdate}
-      statusLabels={statusLabels}
-      statusColors={statusColors}
-      allowedStatuses={allowedStatuses}
-    />
-  );
-
-  const renderKanbanView = () => (
-    <KanbanView
-      deals={filteredDeals}
-      onDealSelect={onDealSelect}
-      onDealUpdate={onDealUpdate}
-      statusLabels={statusLabels}
-      statusColors={statusColors}
-      allowedStatuses={allowedStatuses}
-    />
-  );
-
   return (
-    <div className="flex-1 p-6 h-full overflow-y-auto relative">
+    <div className="flex-1 p-6 overflow-hidden relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-6 sticky top-0 z-10 bg-white p-6 -mx-6">
         <h1 className="text-2xl font-bold">Sales Pipeline</h1>
@@ -1078,7 +1053,7 @@ export const OpportunitiesView = ({
         </div>
 
       {/* Views Container */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-x-auto">
         {view === 'table' ? (
           <TableView
             deals={filteredDeals}
@@ -1276,7 +1251,7 @@ export const OpportunitiesView = ({
                 options: type === 'select' ? [] : undefined, // Optionen nur für Select-Typ
                 sort_order: 0, // Standard-Sortierreihenfolge
               } as Omit<CustomField, 'id' | 'team_id' | 'created_at'>;
-
+              
               // Rufe die ursprüngliche onAddCustomField Prop auf
               return await onAddCustomField(newField); // Ergebnis zurückgeben
             }}
