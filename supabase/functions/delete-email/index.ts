@@ -26,7 +26,8 @@ class IMAPDeleteClient {
   }) {}
 
   private generateTag(): string {
-    return `A${++this.tagCounter.toString().padStart(4, '0')}`;
+    this.tagCounter++;
+    return `A${this.tagCounter.toString().padStart(4, '0')}`;
   }
 
   private async readResponse(tag: string, timeout = 30000): Promise<string> {
