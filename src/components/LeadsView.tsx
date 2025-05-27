@@ -834,9 +834,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
               <Button
-                variant={view === 'table' ? 'default' : 'ghost'}
-                ```text
-              size="sm"
+                variant={view === 'table' ? 'default' : 'ghost'}                size="sm"
               onClick={() => onViewChange('table')}
             >
               <List className="w-4 h-4" />
