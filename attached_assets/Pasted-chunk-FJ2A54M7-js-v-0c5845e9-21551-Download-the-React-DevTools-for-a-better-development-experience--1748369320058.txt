@@ -1,0 +1,46 @@
+chunk-FJ2A54M7.js?v=0c5845e9:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:39 CRMLayout: Initial fetchData call
+CRMLayout.tsx:56 fetchData: Starting data fetch...
+CRMLayout.tsx:137 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:125 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx:110 Loading emails from database...
+2EmailView.tsx:104 Skipping email load - too recent
+EmailView.tsx:126 Loaded 37 emails from database (37 total)
+EmailView.tsx:242 Starting email deletion: 8ac5090b-7421-4c4f-b259-e7386d9b3daa, permanent: false
+EmailView.tsx:257 Email deletion result: Object
+EmailView.tsx:304 Marked email 8ac5090b-7421-4c4f-b259-e7386d9b3daa as deleted. Updated emails: Array(1)
+EmailView.tsx:316 Refreshing email list after deletion...
+EmailView.tsx:110 Loading emails from database...
+EmailView.tsx:104 Skipping email load - too recent
+EmailView.tsx:126 Loaded 37 emails from database (37 total)
+EmailView.tsx:242 Starting email deletion: 966023c1-2e43-4515-a2f1-9f64b675deac, permanent: false
+EmailView.tsx:257 Email deletion result: Object
+EmailView.tsx:304 Marked email 966023c1-2e43-4515-a2f1-9f64b675deac as deleted. Updated emails: Array(1)
+EmailView.tsx:316 Refreshing email list after deletion...
+EmailView.tsx:110 Loading emails from database...
+EmailView.tsx:104 Skipping email load - too recent
+EmailView.tsx:126 Loaded 37 emails from database (37 total)
+EmailView.tsx:242 Starting email deletion: 17d1e8d5-0a5f-44d5-9f20-366171b91ebd, permanent: false
+EmailView.tsx:257 Email deletion result: Object
+EmailView.tsx:304 Marked email 17d1e8d5-0a5f-44d5-9f20-366171b91ebd as deleted. Updated emails: Array(1)
+EmailView.tsx:316 Refreshing email list after deletion...
+EmailView.tsx:110 Loading emails from database...
+EmailView.tsx:104 Skipping email load - too recent
+EmailView.tsx:126 Loaded 37 emails from database (37 total)
+EmailView.tsx:242 Starting email deletion: 81ff68af-f41f-4d80-ace8-a89ce3cd9e26, permanent: false
+EmailView.tsx:257 Email deletion result: Object
+EmailView.tsx:304 Marked email 81ff68af-f41f-4d80-ace8-a89ce3cd9e26 as deleted. Updated emails: Array(1)
+EmailView.tsx:316 Refreshing email list after deletion...
+EmailView.tsx:110 Loading emails from database...
+EmailView.tsx:104 Skipping email load - too recent
+EmailView.tsx:126 Loaded 37 emails from database (37 total)
+EmailView.tsx:110 Loading emails from database...
+EmailView.tsx:104 Skipping email load - too recent
+EmailView.tsx:126 Loaded 39 emails from database (39 total)
