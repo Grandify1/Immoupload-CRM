@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Upload, X, AlertCircle, Check, Plus } from 'lucide-react';
 import { Lead, CustomField } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CSVImportProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ type MappingType = {
 
 const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields }) => {
   
-  // Debug logging
+  // Debug logging and load custom fields if not provided
   React.useEffect(() => {
     console.log('=== CSVImport Custom Fields Debug ===');
     console.log('All customFields received:', customFields);
@@ -47,7 +48,28 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         });
       });
     } else {
-      console.log('No custom fields available or empty array');
+      console.log('No custom fields provided, attempting to load from database...');
+      
+      // If no custom fields provided, try to load them directly
+      const loadCustomFields = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('custom_fields')
+            .select('*')
+            .eq('entity_type', 'lead')
+            .order('sort_order');
+          
+          if (error) {
+            console.error('Error loading custom fields:', error);
+          } else {
+            console.log('Loaded custom fields from database:', data);
+          }
+        } catch (err) {
+          console.error('Failed to load custom fields:', err);
+        }
+      };
+      
+      loadCustomFields();
     }
     console.log('=== End Custom Fields Debug ===');
   }, [customFields]);
@@ -381,53 +403,67 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         
         console.log('Creating import job:', importJobData);
         
-        const { data: importJob, error: jobError } = await supabase
-          .from('import_jobs')
-          .insert(importJobData)
-          .select()
-          .single();
-          
-        if (jobError) {
-          console.error('Error creating import job:', jobError);
-          // Continue with import even if job creation fails
+        let importJob: any = null;
+        try {
+          const { data, error: jobError } = await supabase
+            .from('import_jobs')
+            .insert(importJobData)
+            .select()
+            .single();
+            
+          if (jobError) {
+            console.error('Error creating import job:', jobError);
+          } else {
+            importJob = data;
+            console.log('Import job created:', importJob);
+          }
+        } catch (err) {
+          console.error('Failed to create import job:', err);
         }
         
-        console.log('Import job created:', importJob);
-        
-        // Process leads in batches to handle duplicates better
-        const batchSize = 50;
+        // Process leads individually to handle duplicates better
         let processedCount = 0;
         let failedCount = 0;
         const failedLeads: any[] = [];
         
-        for (let i = 0; i < leads.length; i += batchSize) {
-          const batch = leads.slice(i, i + batchSize);
-          
+        for (let i = 0; i < leads.length; i++) {
           try {
-            await onImport(batch);
-            processedCount += batch.length;
-          } catch (batchError: any) {
-            console.error('Batch import error:', batchError);
-            failedCount += batch.length;
-            failedLeads.push(...batch.map(lead => ({ lead, error: batchError.message })));
+            // Import single lead
+            await onImport([leads[i]]);
+            processedCount++;
+          } catch (leadError: any) {
+            console.error(`Failed to import lead ${i + 1}:`, leadError);
+            failedCount++;
+            
+            // Skip duplicate errors - they're expected
+            if (!leadError?.message?.includes('duplicate key')) {
+              failedLeads.push({ 
+                lead: leads[i], 
+                error: leadError.message || 'Unknown error' 
+              });
+            }
           }
           
           // Update progress
-          const progress = Math.round(((i + batch.length) / leads.length) * 90);
+          const progress = Math.round(((i + 1) / leads.length) * 90);
           setImportProgress(progress);
         }
         
         // Update import job status
         if (importJob?.id) {
-          await supabase
-            .from('import_jobs')
-            .update({
-              processed_records: processedCount,
-              failed_records: failedCount,
-              status: failedCount > 0 ? 'completed_with_errors' : 'completed',
-              error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null
-            })
-            .eq('id', importJob.id);
+          try {
+            await supabase
+              .from('import_jobs')
+              .update({
+                processed_records: processedCount,
+                failed_records: failedCount,
+                status: failedCount > 0 ? 'completed_with_errors' : 'completed',
+                error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null
+              })
+              .eq('id', importJob.id);
+          } catch (updateError) {
+            console.error('Failed to update import job:', updateError);
+          }
         }
         
         setImportProgress(100);

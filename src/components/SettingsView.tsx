@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Save, MoveVertical, Edit, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { CustomField, ActivityTemplate } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';

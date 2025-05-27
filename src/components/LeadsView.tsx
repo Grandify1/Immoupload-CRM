@@ -1143,6 +1143,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             // Rufe die ursprüngliche onAddCustomField Prop auf
             return await onAddCustomField(newField);
           }}
+          customFields={customFields}
         />
       )}
 
