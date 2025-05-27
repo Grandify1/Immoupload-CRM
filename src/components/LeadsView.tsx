@@ -834,30 +834,30 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
               <Button
-                variant={view === 'table' ? 'default' : 'ghost'
-                size="sm"
-                onClick={() => onViewChange('table')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={view === 'kanban' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => onViewChange('kanban')}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button onClick={() => setShowNewLeadForm(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                New Lead
-              </Button>
-              <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-                <Upload className="w-4 h-4 mr-2" />
-                Import
-              </Button>
-            </div>
+                variant={view === 'table' ? 'default' : 'ghost'}
+                ```text
+              size="sm"
+              onClick={() => onViewChange('table')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={view === 'kanban' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onViewChange('kanban')}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button onClick={() => setShowNewLeadForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Lead
+            </Button>
+            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Import
+            </Button>
           </div>
         </div>
 
