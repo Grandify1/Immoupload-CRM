@@ -488,15 +488,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     useEffect(() => {
         const fetchTeam = async () => {
             try {
-                // Assuming you have a way to identify the current team
-                // For example, from local storage or a context
-                const teamId = localStorage.getItem('currentTeamId');
+                // Get current user's session
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.user) return;
 
-                if (teamId) {
+                // Get user's profile to find their team
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('team_id')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profileError) {
+                    console.error('Error fetching profile:', profileError);
+                    return;
+                }
+
+                if (profile?.team_id) {
                     const { data: teamData, error: teamError } = await supabase
                         .from('teams')
                         .select('*')
-                        .eq('id', teamId)
+                        .eq('id', profile.team_id)
                         .single();
 
                     if (teamError) {
@@ -1128,7 +1140,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
 
             {/* Import Jobs History */}
-            {team && <ImportJobsHistory teamId={team.id} />}
+            {team ? (
+              <ImportJobsHistory teamId={team.id} />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Import History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Loading team information...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <Card className="mt-6">
