@@ -48,8 +48,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   const allAvailableFields = [
     ...standardFields,
     ...(customFields || []).filter(field => field.entity_type === 'lead').map(field => ({
-        name: field.name.toLowerCase().replace(/\s+/g, '_'),
-        label: field.name,
+        name: `custom_${field.name.toLowerCase().replace(/\s+/g, '_')}`,
+        label: `${field.name} (Custom)`,
+        isCustom: true
     }))
   ];
 
@@ -83,7 +84,36 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           return;
         }
 
-        const headers = lines[0].split(',').map(h => h.trim());
+        // Bessere CSV-Parsing-Funktion die mit Anführungszeichen umgeht
+        const parseCSVLine = (line: string): string[] => {
+          const result: string[] = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                current += '"';
+                i++; // Skip next quote
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === ',' && !inQuotes) {
+              result.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          
+          result.push(current.trim());
+          return result;
+        };
+
+        const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').trim());
 
         if (headers.some(header => header === '')) {
           setError('CSV-Datei enthält leere Spaltenüberschriften.');
@@ -94,12 +124,19 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         const data: string[][] = [];
         for (let i = 1; i < lines.length; i++) {
           if (lines[i].trim() === '') continue;
-          const values = lines[i].split(',').map(v => v.trim());
+          const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, '').trim());
           
-          if (values.length !== headers.length) {
-             console.warn(`Skipping row ${i + 1} due to incorrect number of columns.`);
-             continue;
+          // Flexiblere Spaltenanzahl-Prüfung
+          if (values.length < headers.length) {
+             // Fehlende Spalten mit leeren Strings auffüllen
+             while (values.length < headers.length) {
+               values.push('');
+             }
+          } else if (values.length > headers.length) {
+             // Überschüssige Spalten abschneiden
+             values.splice(headers.length);
           }
+          
           data.push(values);
         }
 
@@ -209,10 +246,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                } else {
                  lead[targetField.name] = value;
                }
-            } else if (mapping.createCustomField) {
+            } else if (mapping.createCustomField && mapping.fieldName) {
               lead.custom_fields[mapping.fieldName] = value;
-            } else if (targetField) {
-              lead.custom_fields[targetField.name] = value;
+            } else if (targetField && targetField.isCustom) {
+              // Entferne das "custom_" Präfix für das Custom Field
+              const customFieldName = targetField.name.replace('custom_', '');
+              lead.custom_fields[customFieldName] = value;
             }
           }
         });
@@ -384,38 +423,40 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               Preview of the first 5 leads to be imported. Total: {csvData.length} leads.
             </p>
             
-            <div className="max-h-96 overflow-y-auto border rounded-md">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left">
-                  <tr>
-                    {mappings
-                      .filter(m => m.fieldName || m.createCustomField)
-                      .map((mapping, index) => (
-                        <th key={index} className="px-3 py-2 font-medium text-gray-600">
-                          {mapping.createCustomField 
-                            ? `${mapping.fieldName} (Custom)` 
-                            : allAvailableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}
-                        </th>
-                      ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {csvData.slice(0, 5).map((row, rowIndex) => (
-                    <tr key={rowIndex} className="hover:bg-gray-50">
+            <div className="max-h-96 overflow-auto border rounded-md">
+              <div className="min-w-max">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-left sticky top-0">
+                    <tr>
                       {mappings
                         .filter(m => m.fieldName || m.createCustomField)
-                        .map((mapping, colIndex) => {
-                          const mappingIndex = mappings.findIndex(m => m.csvHeader === mapping.csvHeader);
-                          return (
-                            <td key={colIndex} className="px-3 py-2 text-gray-600">
-                              {row[mappingIndex] || '-'}
-                            </td>
-                          );
-                        })}
+                        .map((mapping, index) => (
+                          <th key={index} className="px-3 py-2 font-medium text-gray-600 whitespace-nowrap min-w-32">
+                            {mapping.createCustomField 
+                              ? `${mapping.fieldName} (Custom)` 
+                              : allAvailableFields.find(f => f.name === mapping.fieldName)?.label || mapping.fieldName}
+                          </th>
+                        ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {csvData.slice(0, 5).map((row, rowIndex) => (
+                      <tr key={rowIndex} className="hover:bg-gray-50">
+                        {mappings
+                          .filter(m => m.fieldName || m.createCustomField)
+                          .map((mapping, colIndex) => {
+                            const mappingIndex = mappings.findIndex(m => m.csvHeader === mapping.csvHeader);
+                            return (
+                              <td key={colIndex} className="px-3 py-2 text-gray-600 whitespace-nowrap min-w-32">
+                                {row[mappingIndex] || '-'}
+                              </td>
+                            );
+                          })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
