@@ -22,6 +22,7 @@ interface ImportJobsHistoryProps {
 const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
   const [importJobs, setImportJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   const fetchImportJobs = async () => {
     try {
@@ -34,11 +35,21 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
       if (error) {
         console.error('Error fetching import jobs:', error);
+        toast({
+          title: "Fehler",
+          description: "Import-Jobs konnten nicht geladen werden.",
+          variant: "destructive"
+        });
       } else {
         setImportJobs(data || []);
       }
     } catch (error) {
       console.error('Error fetching import jobs:', error);
+      toast({
+        title: "Fehler",
+        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +99,41 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
         return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+    }
+  };
+
+  const handleDeleteImportJob = async (jobId: string) => {
+    if (!confirm('Möchten Sie diesen Import-Job wirklich löschen? Dies kann nicht rückgängig gemacht werden.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('import_jobs')
+        .delete()
+        .eq('id', jobId);
+
+      if (error) {
+        console.error('Error deleting import job:', error);
+        toast({
+          title: "Fehler",
+          description: "Import-Job konnte nicht gelöscht werden.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Erfolg",
+          description: "Import-Job wurde gelöscht.",
+        });
+        fetchImportJobs(); // Refresh the list
+      }
+    } catch (error) {
+      console.error('Error deleting import job:', error);
+      toast({
+        title: "Fehler",
+        description: "Ein unerwarteter Fehler ist aufgetreten.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -156,6 +202,14 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
                   <div className="text-lg font-semibold">{job.total_records}</div>
                   <div className="text-xs text-gray-500">total records</div>
                 </div>
+                <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteImportJob(job.id)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
               </div>
             ))}
           </div>
@@ -875,8 +929,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Import Guidelines</CardTitle>
-            </CardHeader>
+              <CardTitle>Import Guidelines</CardTitle</CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
