@@ -1,0 +1,92 @@
+Vollständiges Import Management System - Frontend Implementierung
+Ziel
+Du sollst ein komplettes Import-Management-System erstellen, das alle CSV-Imports trackt und vollständige Rollback-Funktionalität bietet. Nutzer sollen in den Settings unter einem neuen "Import" Tab alle ihre Import-Jobs sehen und diese auch wieder rückgängig machen können.
+WICHTIG: Backend bereits komplett vorhanden
+Das Supabase Backend mit der import_jobs Tabelle und allen notwendigen RLS Policies ist bereits vollständig implementiert. Du sollst KEINE Änderungen am Backend/Supabase vornehmen. Die import_jobs Tabelle existiert bereits - durchsuche den Code um zu verstehen wie sie strukturiert ist und verwende die bestehende Implementierung.
+Was zu implementieren ist
+1. Bestehende Backend-Struktur analysieren
+Durchsuche ALLE bestehenden Dateien nach:
+
+Der bereits vorhandenen import_jobs Tabelle und ihrer Struktur
+Bestehenden API-Calls für Import-Jobs
+Wie Leads bereits mit Import-Jobs verknüpft werden
+Vorhandene TypeScript-Interfaces für Import-Jobs
+Bestehende Rollback-Funktionen
+
+2. Settings View erweitern
+Öffne die SettingsView Komponente und füge einen neuen Tab "Import" zu den bestehenden Tabs hinzu. Dieser Tab soll eine neue Komponente ImportManagement rendern die du erstellen musst.
+3. ImportManagement Komponente erstellen
+Diese Komponente ist das Herzstück und soll enthalten:
+
+Statistik-Übersicht mit Karten die zeigen wie viele Imports insgesamt, erfolgreich, fehlgeschlagen und wie viele Leads importiert wurden
+Import-Jobs Tabelle mit allen Import-Jobs und Spalten für Filename, Status, Anzahl Leads, Benutzer der importiert hat, Datum und Zeit
+Rollback-Funktionalität mit Button bei jedem Import-Job um nur diesen Import rückgängig zu machen
+Globaler "Alle Imports zurücksetzen" Button
+Bestätigungs-Dialoge die warnen dass Leads unwiderruflich gelöscht werden
+Status-Anzeige mit Badges die den Status anzeigen
+Benutzer-Information wer wann welche Datei importiert hat
+
+4. CSV Import erweitern
+Finde die bestehende CSV-Import-Komponente und erweitere sie um Import-Job-Tracking basierend auf der bereits vorhandenen Backend-Implementierung:
+
+Vor dem Import einen neuen Import-Job in der bestehenden Tabelle erstellen
+Alle importierten Leads mit der Import-Job-ID verknüpfen wie bereits implementiert
+Nach erfolgreichem Import den Job als abgeschlossen markieren
+Bei Fehlern den Job entsprechend markieren
+
+5. Bestehende API-Integration nutzen
+Verwende die bereits vorhandenen API-Strukturen und erweitere sie falls nötig. Wenn neue API-Endpunkte benötigt werden, melde diese konkret.
+6. Frontend Rollback-Funktionalität
+Implementiere die Frontend-Logik für Rollback-Operationen basierend auf der bestehenden Backend-Struktur:
+
+Einzelne Imports zurücksetzen
+Alle Imports auf einmal zurücksetzen
+Bestätigungs-Dialoge mit Warnungen
+Status-Updates nach Operationen
+Fehlerbehandlung mit benutzerfreundlichen Meldungen
+
+Wichtige Anforderungen
+User Experience
+
+Klare Warndialoge vor Rollback-Operationen
+Ladezustände während Operationen anzeigen
+Erfolgs- und Fehlermeldungen
+Automatische Aktualisierung der Listen nach Operationen
+
+Integration mit bestehendem System
+
+Verwende die bereits vorhandene import_jobs Tabelle
+Nutze bestehende TypeScript-Interfaces
+Folge etablierten Patterns im Codebase
+Verwende bestehende UI-Komponenten
+
+Performance und Stabilität
+
+Effiziente State-Management
+Optimistische Updates wo sinnvoll
+Proper Error Handling
+Loading States während API-Operationen
+
+Implementierungsreihenfolge
+
+Durchsuche den gesamten Codebase nach bestehenden Import-Job-Implementierungen
+Verstehe die Struktur der bereits vorhandenen import_jobs Tabelle
+Analysiere bestehende API-Calls für Import-Jobs
+Erstelle ImportManagement Komponente basierend auf vorhandener Struktur
+Erweitere Settings View um Import Tab
+Integriere Import-Job-Tracking in bestehende CSV Import Komponente
+Teste alle Funktionen gründlich
+
+Erfolgskriterien
+Das System funktioniert wenn:
+
+In Settings der neue Import Tab erscheint und funktioniert
+Alle Import-Jobs aus der bestehenden Tabelle korrekt angezeigt werden
+Einzelne Imports rückgängig gemacht werden können
+Alle Imports auf einmal zurückgesetzt werden können
+CSV-Imports automatisch als Jobs in der bestehenden Tabelle getrackt werden
+Alle Operationen mit entsprechendem User-Feedback ablaufen
+
+Backend-Kommunikation
+Falls zusätzliche API-Endpunkte oder Backend-Anpassungen nötig sind, melde diese konkret. Alle Supabase-Änderungen werden separat implementiert.
+Nutze die bereits vorhandene import_jobs Implementierung und baue darauf auf. Das System muss vollständig funktionsfähig sein ohne Platzhalter oder TODOs.RetryClaude can make mistakes. Please double-check responses.
