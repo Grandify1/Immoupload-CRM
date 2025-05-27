@@ -25,6 +25,11 @@ type MappingType = {
   customFieldType: 'text' | 'number' | 'date' | 'select';
 };
 
+type DuplicateHandlingConfig = {
+  duplicateDetectionField: 'name' | 'email' | 'phone' | 'none';
+  duplicateAction: 'skip' | 'update' | 'create_new';
+};
+
 const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields }) => {
 
   // Debug logging and load custom fields if not provided
@@ -79,9 +84,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappings, setMappings] = useState<MappingType[]>([]);
   const [csvData, setCSVData] = useState<string[][]>([]);
-  const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'importing'>('upload');
+  const [step, setStep] = useState<'upload' | 'map' | 'duplicates' | 'preview' | 'importing'>('upload');
   const [importProgress, setImportProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [duplicateConfig, setDuplicateConfig] = useState<DuplicateHandlingConfig>({
+    duplicateDetectionField: 'name',
+    duplicateAction: 'update'
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +139,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     setStep('upload');
     setImportProgress(0);
     setError(null);
+    setDuplicateConfig({
+      duplicateDetectionField: 'name',
+      duplicateAction: 'update'
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -437,7 +450,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     setMappings(newMappings);
   };
 
-  const handleContinueToPreview = () => {
+  const handleContinueToDuplicates = () => {
     const hasNameMapping = mappings.some(m => m.fieldName === 'name');
 
     if (!hasNameMapping) {
@@ -445,6 +458,11 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       return;
     }
 
+    setError(null);
+    setStep('duplicates');
+  };
+
+  const handleContinueToPreview = () => {
     setError(null);
     setStep('preview');
   };
@@ -649,13 +667,34 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         // Process each lead individually to handle duplicates properly
         for (const lead of batch) {
           try {
-            // First, check if a lead with this name already exists
-            const { data: existingLead, error: checkError } = await supabase
-              .from('leads')
-              .select('id, name, email, phone')
-              .eq('team_id', profile.team_id)
-              .eq('name', lead.name)
-              .single();
+            let existingLead = null;
+            let checkError = null;
+
+            // Check for duplicates based on user configuration
+            if (duplicateConfig.duplicateDetectionField !== 'none') {
+              const detectionField = duplicateConfig.duplicateDetectionField;
+              const detectionValue = lead[detectionField];
+
+              if (detectionValue && detectionValue.trim()) {
+                const query = supabase
+                  .from('leads')
+                  .select('id, name, email, phone, website, address, description, status, custom_fields')
+                  .eq('team_id', profile.team_id);
+
+                // Add the appropriate filter based on detection field
+                if (detectionField === 'name') {
+                  query.eq('name', detectionValue);
+                } else if (detectionField === 'email') {
+                  query.eq('email', detectionValue);
+                } else if (detectionField === 'phone') {
+                  query.eq('phone', detectionValue);
+                }
+
+                const result = await query.single();
+                existingLead = result.data;
+                checkError = result.error;
+              }
+            }
 
             if (checkError && checkError.code !== 'PGRST116') {
               // PGRST116 is "no rows found" - that's what we want for new leads
@@ -665,39 +704,70 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             }
 
             if (existingLead) {
-              // Lead with this name already exists - update instead of insert
-              console.log(`🔄 Updating existing lead: ${lead.name}`);
+              // Duplicate found - handle based on user configuration
+              const detectionField = duplicateConfig.duplicateDetectionField;
+              const detectionValue = lead[detectionField];
               
-              // Merge data intelligently: only update fields that have values and are different
-              const updateData: any = {
-                updated_at: new Date().toISOString()
-              };
+              if (duplicateConfig.duplicateAction === 'skip') {
+                console.log(`⏭️ Skipping duplicate lead (${detectionField}: ${detectionValue})`);
+                duplicateRecords++;
+                continue;
+              } else if (duplicateConfig.duplicateAction === 'update') {
+                console.log(`🔄 Updating existing lead (${detectionField}: ${detectionValue})`);
+                
+                // Merge data intelligently: only update fields that have values and are different
+                const updateData: any = {
+                  updated_at: new Date().toISOString()
+                };
 
-              // Update standard fields if they have values and are different
-              if (lead.email && lead.email !== existingLead.email) updateData.email = lead.email;
-              if (lead.phone && lead.phone !== existingLead.phone) updateData.phone = lead.phone;
-              if (lead.website) updateData.website = lead.website;
-              if (lead.address) updateData.address = lead.address;
-              if (lead.description) updateData.description = lead.description;
-              if (lead.status) updateData.status = lead.status;
+                // Update standard fields if they have values and are different
+                if (lead.name && lead.name !== existingLead.name) updateData.name = lead.name;
+                if (lead.email && lead.email !== existingLead.email) updateData.email = lead.email;
+                if (lead.phone && lead.phone !== existingLead.phone) updateData.phone = lead.phone;
+                if (lead.website && lead.website !== existingLead.website) updateData.website = lead.website;
+                if (lead.address && lead.address !== existingLead.address) updateData.address = lead.address;
+                if (lead.description && lead.description !== existingLead.description) updateData.description = lead.description;
+                if (lead.status && lead.status !== existingLead.status) updateData.status = lead.status;
 
-              // Merge custom fields
-              if (lead.custom_fields && Object.keys(lead.custom_fields).length > 0) {
-                updateData.custom_fields = lead.custom_fields;
-              }
+                // Merge custom fields intelligently
+                if (lead.custom_fields && Object.keys(lead.custom_fields).length > 0) {
+                  const existingCustomFields = existingLead.custom_fields || {};
+                  updateData.custom_fields = {
+                    ...existingCustomFields,
+                    ...lead.custom_fields
+                  };
+                }
 
-              const { error: updateError } = await supabase
-                .from('leads')
-                .update(updateData)
-                .eq('id', existingLead.id);
+                const { error: updateError } = await supabase
+                  .from('leads')
+                  .update(updateData)
+                  .eq('id', existingLead.id);
 
-              if (updateError) {
-                console.error(`❌ Error updating lead ${lead.name}:`, updateError);
-                failedRecords++;
-              } else {
-                console.log(`✅ Successfully updated lead: ${lead.name}`);
-                updatedRecords++;
-                processedRecords++;
+                if (updateError) {
+                  console.error(`❌ Error updating lead (${detectionField}: ${detectionValue}):`, updateError);
+                  failedRecords++;
+                } else {
+                  console.log(`✅ Successfully updated lead (${detectionField}: ${detectionValue})`);
+                  updatedRecords++;
+                  processedRecords++;
+                }
+              } else if (duplicateConfig.duplicateAction === 'create_new') {
+                console.log(`📝 Creating new lead despite duplicate (${detectionField}: ${detectionValue})`);
+                
+                // Insert new lead even though duplicate exists
+                const { data: insertedLead, error: insertError } = await supabase
+                  .from('leads')
+                  .insert([lead])
+                  .select('id')
+                  .single();
+
+                if (insertError) {
+                  console.error(`❌ Error inserting duplicate lead (${detectionField}: ${detectionValue}):`, insertError);
+                  failedRecords++;
+                } else {
+                  console.log(`✅ Successfully inserted duplicate lead (${detectionField}: ${detectionValue})`);
+                  processedRecords++;
+                }
               }
 
             } else {
@@ -960,6 +1030,206 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           </div>
         )}
 
+        {step === 'duplicates' && (
+          <div className="py-4 space-y-6">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Duplicate Handling Configuration</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Configure how to handle duplicate leads during import. Duplicates are detected based on the field you choose below.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Duplicate Detection Field */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Duplicate Detection Field</CardTitle>
+                  <p className="text-sm text-gray-600">Choose which field to use for detecting duplicates</p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="detect-name"
+                        name="duplicateDetection"
+                        value="name"
+                        checked={duplicateConfig.duplicateDetectionField === 'name'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateDetectionField: e.target.value as 'name' | 'email' | 'phone' | 'none'
+                        }))}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor="detect-name" className="text-sm font-medium">
+                        Name
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="detect-email"
+                        name="duplicateDetection"
+                        value="email"
+                        checked={duplicateConfig.duplicateDetectionField === 'email'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateDetectionField: e.target.value as 'name' | 'email' | 'phone' | 'none'
+                        }))}
+                        className="h-4 w-4"
+                        disabled={!mappings.some(m => m.fieldName === 'email')}
+                      />
+                      <Label htmlFor="detect-email" className={cn(
+                        "text-sm font-medium",
+                        !mappings.some(m => m.fieldName === 'email') && "text-gray-400"
+                      )}>
+                        Email {!mappings.some(m => m.fieldName === 'email') && "(nicht gemappt)"}
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="detect-phone"
+                        name="duplicateDetection"
+                        value="phone"
+                        checked={duplicateConfig.duplicateDetectionField === 'phone'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateDetectionField: e.target.value as 'name' | 'email' | 'phone' | 'none'
+                        }))}
+                        className="h-4 w-4"
+                        disabled={!mappings.some(m => m.fieldName === 'phone')}
+                      />
+                      <Label htmlFor="detect-phone" className={cn(
+                        "text-sm font-medium",
+                        !mappings.some(m => m.fieldName === 'phone') && "text-gray-400"
+                      )}>
+                        Phone {!mappings.some(m => m.fieldName === 'phone') && "(nicht gemappt)"}
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="detect-none"
+                        name="duplicateDetection"
+                        value="none"
+                        checked={duplicateConfig.duplicateDetectionField === 'none'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateDetectionField: e.target.value as 'name' | 'email' | 'phone' | 'none'
+                        }))}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor="detect-none" className="text-sm font-medium">
+                        No duplicate detection
+                      </Label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Duplicate Action */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Action for Duplicates</CardTitle>
+                  <p className="text-sm text-gray-600">Choose what to do when a duplicate is found</p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="action-skip"
+                        name="duplicateAction"
+                        value="skip"
+                        checked={duplicateConfig.duplicateAction === 'skip'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateAction: e.target.value as 'skip' | 'update' | 'create_new'
+                        }))}
+                        className="h-4 w-4"
+                        disabled={duplicateConfig.duplicateDetectionField === 'none'}
+                      />
+                      <Label htmlFor="action-skip" className={cn(
+                        "text-sm font-medium",
+                        duplicateConfig.duplicateDetectionField === 'none' && "text-gray-400"
+                      )}>
+                        Skip duplicate
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="action-update"
+                        name="duplicateAction"
+                        value="update"
+                        checked={duplicateConfig.duplicateAction === 'update'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateAction: e.target.value as 'skip' | 'update' | 'create_new'
+                        }))}
+                        className="h-4 w-4"
+                        disabled={duplicateConfig.duplicateDetectionField === 'none'}
+                      />
+                      <Label htmlFor="action-update" className={cn(
+                        "text-sm font-medium",
+                        duplicateConfig.duplicateDetectionField === 'none' && "text-gray-400"
+                      )}>
+                        Update existing lead
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="action-create"
+                        name="duplicateAction"
+                        value="create_new"
+                        checked={duplicateConfig.duplicateAction === 'create_new'}
+                        onChange={(e) => setDuplicateConfig(prev => ({
+                          ...prev,
+                          duplicateAction: e.target.value as 'skip' | 'update' | 'create_new'
+                        }))}
+                        className="h-4 w-4"
+                        disabled={duplicateConfig.duplicateDetectionField === 'none'}
+                      />
+                      <Label htmlFor="action-create" className={cn(
+                        "text-sm font-medium",
+                        duplicateConfig.duplicateDetectionField === 'none' && "text-gray-400"
+                      )}>
+                        Create new lead anyway
+                      </Label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Summary of Configuration */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">Configuration Summary</h4>
+              <p className="text-sm text-blue-700">
+                {duplicateConfig.duplicateDetectionField === 'none' 
+                  ? "No duplicate detection will be performed. All leads will be imported as new entries."
+                  : `Duplicates will be detected by comparing the "${duplicateConfig.duplicateDetectionField}" field. When a duplicate is found, the system will ${
+                      duplicateConfig.duplicateAction === 'skip' 
+                        ? 'skip the duplicate and continue with the next lead.'
+                        : duplicateConfig.duplicateAction === 'update'
+                        ? 'update the existing lead with new data from the CSV.'
+                        : 'create a new lead despite the duplicate existing.'
+                    }`
+                }
+              </p>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 text-red-700 rounded-md flex items-start">
+                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {step === 'preview' && (
           <div className="py-4 flex-1 overflow-hidden flex flex-col">
             <p className="text-sm text-gray-600 mb-4">
@@ -1037,6 +1307,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           )}
 
           {step === 'map' && (
+            <Button onClick={handleContinueToDuplicates}>
+              Continue to Duplicate Settings
+            </Button>
+          )}
+
+          {step === 'duplicates' && (
             <Button onClick={handleContinueToPreview}>
               Preview Import
             </Button>
