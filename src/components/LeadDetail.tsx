@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -102,6 +101,9 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     field_type: 'text',
     options: []
   });
+
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [templateFieldValues, setTemplateFieldValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setEditForm(lead);
@@ -239,6 +241,10 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     setShowCustomActivityModal(false);
   };
 
+  const handleSubmitActivity = () => {
+    // Logic for handling the submitted activity
+  };
+
   return (
     <div 
       className={`fixed inset-y-0 right-0 z-40 w-[800px] bg-white shadow-lg flex flex-col overflow-hidden transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
@@ -284,7 +290,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               <Phone className="w-4 h-4 mr-1" />
               Call
             </Button>
-            <Button size="sm" variant="outline" className="border-gray-300" onClick={handleOpenActivityModal}>
+            <Button size="sm" variant="outline" className="border-gray-300" onClick={() => setShowActivityForm(true)}>
               Activity
             </Button>
           </div>
@@ -454,7 +460,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               <div className="p-6">
                 <div className="mb-6">
                   <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">ABOUT</h2>
-                  
+
                   <div className="space-y-3">
                     {lead.email && (
                       <div className="flex items-center text-sm">
@@ -464,7 +470,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </a>
                       </div>
                     )}
-                    
+
                     {lead.phone && (
                       <div className="flex items-center text-sm">
                         <Phone className="w-4 h-4 mr-3 text-gray-400" />
@@ -473,7 +479,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </a>
                       </div>
                     )}
-                    
+
                     {lead.website && (
                       <div className="flex items-center text-sm">
                         <Globe className="w-4 h-4 mr-3 text-gray-400" />
@@ -487,14 +493,14 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </a>
                       </div>
                     )}
-                    
+
                     {lead.address && (
                       <div className="flex items-center text-sm">
                         <MapPin className="w-4 h-4 mr-3 text-gray-400" />
                         <span className="text-gray-900">{lead.address}</span>
                       </div>
                     )}
-                    
+
                     {lead.description && (
                       <div className="flex items-start text-sm">
                         <FileText className="w-4 h-4 mr-3 text-gray-400 mt-0.5" />
@@ -512,7 +518,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                       {customFields.filter(field => field.entity_type === 'lead').map(field => {
                         const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
                         const fieldValue = lead.custom_fields?.[fieldKey];
-                        
+
                         if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null;
 
                         return (
@@ -767,7 +773,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               Select an activity template and fill in the details.
             </DialogDescription>
           </DialogHeader>
-          
+
           {!selectedActivityTemplate ? (
             // Template Selection
             <div className="space-y-4">
@@ -814,7 +820,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                   Back
                 </Button>
               </div>
-              
+
               {selectedActivityTemplate.description && (
                 <p className="text-gray-600">{selectedActivityTemplate.description}</p>
               )}
@@ -826,7 +832,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                       {question.text}
                       {question.required && <span className="text-red-500 ml-1">*</span>}
                     </Label>
-                    
+
                     {question.type === 'text' && (
                       <Input
                         value={activityResponses[question.id] || ''}
@@ -834,7 +840,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         placeholder={question.placeholder || 'Enter your answer...'}
                       />
                     )}
-                    
+
                     {question.type === 'textarea' && (
                       <Textarea
                         value={activityResponses[question.id] || ''}
@@ -843,7 +849,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         rows={3}
                       />
                     )}
-                    
+
                     {question.type === 'select' && (
                       <Select
                         value={activityResponses[question.id] || ''}
@@ -861,7 +867,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </SelectContent>
                       </Select>
                     )}
-                    
+
                     {question.type === 'number' && (
                       <Input
                         type="number"
@@ -870,7 +876,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         placeholder={question.placeholder || 'Enter a number...'}
                       />
                     )}
-                    
+
                     {question.type === 'date' && (
                       <Input
                         type="date"
@@ -878,7 +884,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
                       />
                     )}
-                    
+
                     {question.type === 'checkbox' && (
                       <div className="flex items-center space-x-2">
                         <Checkbox
@@ -923,6 +929,147 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      
+{showActivityForm && (
+          <Dialog open={true} onOpenChange={() => setShowActivityForm(false)}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Custom Activity</DialogTitle>
+                <DialogDescription>
+                  Select an activity template and fill in the details.
+                </DialogDescription>
+              </DialogHeader>
+
+              {!selectedActivityTemplate ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="template-select">Select Template</Label>
+                    <Select onValueChange={(value) => {
+                      const template = activityTemplates?.find(t => t.id === value);
+                      console.log('Selected template:', template);
+                      setSelectedActivityTemplate(template || null);
+                      if (template) {
+                        // Initialize template field values
+                        const initialValues: Record<string, string> = {};
+                        if (template.fields && Array.isArray(template.fields)) {
+                          template.fields.forEach(field => {
+                            initialValues[field.name] = '';
+                          });
+                        }
+                        console.log('Initial field values:', initialValues);
+                        setTemplateFieldValues(initialValues);
+                      }
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose an activity template" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {activityTemplates?.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">{selectedActivityTemplate?.name}</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        setSelectedActivityTemplate(null);
+                        setTemplateFieldValues({});
+                      }}
+                    >
+                      ← Back
+                    </Button>
+                  </div>
+
+                  {console.log('Template fields:', selectedActivityTemplate.fields)}
+                  {selectedActivityTemplate?.fields && Array.isArray(selectedActivityTemplate.fields) && selectedActivityTemplate.fields.length > 0 ? (
+                    selectedActivityTemplate.fields.map((field, index) => (
+                      <div key={`${field.name}-${index}`} className="space-y-2">
+                        <Label htmlFor={field.name}>{field.name}</Label>
+                        {field.type === 'text' && (
+                          <Input
+                            id={field.name}
+                            value={templateFieldValues[field.name] || ''}
+                            onChange={(e) => setTemplateFieldValues(prev => ({
+                              ...prev,
+                              [field.name]: e.target.value
+                            }))}
+                            placeholder={`Enter ${field.name}`}
+                          />
+                        )}
+                        {field.type === 'textarea' && (
+                          <Textarea
+                            id={field.name}
+                            value={templateFieldValues[field.name] || ''}
+                            onChange={(e) => setTemplateFieldValues(prev => ({
+                              ...prev,
+                              [field.name]: e.target.value
+                            }))}
+                            placeholder={`Enter ${field.name}`}
+                            rows={3}
+                          />
+                        )}
+                        {field.type === 'select' && field.options && Array.isArray(field.options) && (
+                          <Select
+                            value={templateFieldValues[field.name] || ''}
+                            onValueChange={(value) => setTemplateFieldValues(prev => ({
+                              ...prev,
+                              [field.name]: value
+                            }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={`Select ${field.name}`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {field.options.map((option, optIndex) => (
+                                <SelectItem key={`${option}-${optIndex}`} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No fields configured for this template.</p>
+                      <p className="text-sm mt-2">Go to Settings → Activity Templates to add fields.</p>
+                      {selectedActivityTemplate && (
+                        <div className="mt-4 p-3 bg-gray-100 rounded text-left">
+                          <p className="text-xs"><strong>Debug Info:</strong></p>
+                          <p className="text-xs">Template ID: {selectedActivityTemplate.id}</p>
+                          <p className="text-xs">Template Name: {selectedActivityTemplate.name}</p>
+                          <p className="text-xs">Fields: {JSON.stringify(selectedActivityTemplate.fields)}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowActivityForm(false)}>
+                  Cancel
+                </Button>
+                {selectedActivityTemplate && (
+                  <Button onClick={handleSubmitActivity}>
+                    Submit Activity
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
     </div>
   );
 };
