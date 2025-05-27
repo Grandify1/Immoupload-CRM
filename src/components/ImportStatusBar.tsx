@@ -20,6 +20,7 @@ interface ImportJob {
 const ImportStatusBar: React.FC = () => {
   const [activeImports, setActiveImports] = useState<ImportJob[]>([]);
   const [completedImports, setCompletedImports] = useState<Set<string>>(new Set());
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
     const fetchActiveImports = async () => {
@@ -30,41 +31,50 @@ const ImportStatusBar: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (data) {
-        // Check for newly completed imports
-        data.forEach(job => {
-          if ((job.status === 'completed' || job.status === 'completed_with_errors') && !completedImports.has(job.id)) {
-            // Show completion toast
-            const newRecords = job.error_details?.new_records || job.processed_records;
-            const updatedRecords = job.error_details?.updated_records || 0;
-            const failedRecords = job.failed_records || 0;
+        // On initial load, mark all completed imports as already seen (don't show toast)
+        if (initialLoad) {
+          const completedJobIds = data
+            .filter(job => job.status === 'completed' || job.status === 'completed_with_errors')
+            .map(job => job.id);
+          setCompletedImports(new Set(completedJobIds));
+          setInitialLoad(false);
+        } else {
+          // Check for newly completed imports (only show toast for new completions)
+          data.forEach(job => {
+            if ((job.status === 'completed' || job.status === 'completed_with_errors') && !completedImports.has(job.id)) {
+              // Show completion toast
+              const newRecords = job.error_details?.new_records || job.processed_records;
+              const updatedRecords = job.error_details?.updated_records || 0;
+              const failedRecords = job.failed_records || 0;
 
-            if (job.status === 'completed' && failedRecords === 0) {
-              toast.success('Import erfolgreich abgeschlossen! 🎉', {
-                description: `${newRecords} neue Leads erstellt${updatedRecords > 0 ? `, ${updatedRecords} aktualisiert` : ''}`,
-                duration: 6000,
-                className: 'bg-green-50 border-green-200',
-                style: {
-                  background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-                  borderColor: '#22c55e',
-                },
-                icon: <CheckCircle className="h-5 w-5 text-green-600" />
-              });
-            } else if (job.status === 'completed_with_errors') {
-              toast.warning('Import mit Warnungen abgeschlossen', {
-                description: `${newRecords} erstellt, ${updatedRecords} aktualisiert, ${failedRecords} fehlgeschlagen`,
-                duration: 8000,
-                className: 'bg-yellow-50 border-yellow-200',
-                style: {
-                  background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-                  borderColor: '#f59e0b',
-                },
-                icon: <AlertCircle className="h-5 w-5 text-yellow-600" />
-              });
+              if (job.status === 'completed' && failedRecords === 0) {
+                toast.success('Import erfolgreich abgeschlossen! 🎉', {
+                  description: `${newRecords} neue Leads erstellt${updatedRecords > 0 ? `, ${updatedRecords} aktualisiert` : ''}`,
+                  duration: 6000,
+                  className: 'bg-green-50 border-green-200',
+                  style: {
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    borderColor: '#22c55e',
+                  },
+                  icon: <CheckCircle className="h-5 w-5 text-green-600" />
+                });
+              } else if (job.status === 'completed_with_errors') {
+                toast.warning('Import mit Warnungen abgeschlossen', {
+                  description: `${newRecords} erstellt, ${updatedRecords} aktualisiert, ${failedRecords} fehlgeschlagen`,
+                  duration: 8000,
+                  className: 'bg-yellow-50 border-yellow-200',
+                  style: {
+                    background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                    borderColor: '#f59e0b',
+                  },
+                  icon: <AlertCircle className="h-5 w-5 text-yellow-600" />
+                });
+              }
+
+              setCompletedImports(prev => new Set([...prev, job.id]));
             }
-
-            setCompletedImports(prev => new Set([...prev, job.id]));
-          }
-        });
+          });
+        }
 
         // Only show active imports (not completed ones)
         const activeJobs = data.filter(job => 
@@ -80,7 +90,7 @@ const ImportStatusBar: React.FC = () => {
     const interval = setInterval(fetchActiveImports, 2000);
 
     return () => clearInterval(interval);
-  }, [completedImports]);
+  }, [completedImports, initialLoad]);
 
   const dismissImport = (importId: string) => {
     setActiveImports(prev => prev.filter(imp => imp.id !== importId));

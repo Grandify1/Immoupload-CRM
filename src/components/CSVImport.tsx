@@ -480,8 +480,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   const handleImport = async () => {
     try {
       console.log('=== STARTING IMPORT PROCESS ===');
-      setStep('importing');
-      setImportProgress(0);
       setError(null);
 
       // Check if we have any leads to import
@@ -512,7 +510,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       }
 
       console.log('✅ User found:', user.id);
-      setImportProgress(25);
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -523,19 +520,16 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       if (profileError) {
         console.error('❌ Error getting profile:', profileError);
         setError(`Profil-Fehler: ${profileError.message}`);
-        setStep('preview');
         return;
       }
 
       if (!profile?.team_id) {
         console.error('❌ No team found for user');
         setError('Team-Information nicht gefunden. Bitte kontaktieren Sie den Support.');
-        setStep('preview');
         return;
       }
 
       console.log('✅ Profile found, team_id:', profile.team_id);
-      setImportProgress(30);
 
       const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
       console.log('Custom fields to create:', customFieldMappings);
@@ -592,20 +586,15 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         if (lead.name && lead.name.trim()) {
           leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
         }
-
-        // Update progress for data processing
-        setImportProgress(30 + Math.round(((i + 1) / csvData.length) * 10)); // 10% for data processing
       }
 
       console.log('✅ Processed CSV data, prepared leads:', leads.length);
       if (leads.length === 0) {
         setError('Keine gültigen Leads gefunden. Überprüfen Sie Ihre Feldzuordnung.');
-        setStep('preview');
         return;
       }
 
       console.log('Sample lead:', leads[0]);
-      setImportProgress(40);
 
       // Create import job entry in Supabase
       console.log('=== CREATING IMPORT JOB IN SUPABASE ===');
@@ -655,8 +644,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         skipJobTracking = true;
       }
 
-      setImportProgress(45);
-
       // Use Edge Function for background processing
       console.log('=== STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===');
       console.log('Duplicate Detection Config:', duplicateConfig);
@@ -677,15 +664,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         if (functionError) {
           console.error('❌ Edge Function error:', functionError);
           setError(`Edge Function Fehler: ${functionError.message}`);
-          setStep('preview');
           return;
         }
 
         console.log('✅ Edge Function response:', functionResponse);
-
-        // Close dialog immediately since import runs in background
-        resetState();
-        onClose();
 
         // Show success toast
         const { toast } = await import('sonner');
@@ -693,6 +675,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           description: `${csvData.length} Leads werden im Hintergrund importiert. Sie können den Fortschritt in der Status-Bar verfolgen.`,
           duration: 5000,
         });
+
+        // Close dialog immediately since import runs in background
+        resetState();
+        onClose();
 
         // Trigger refresh of leads data after a short delay
         if (onRefresh) {
@@ -705,14 +691,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       } catch (error: any) {
         console.error('❌ Edge Function failed:', error);
         setError(`Edge Function Fehler: ${error.message}`);
-        setStep('preview');
         return;
       }
 
     } catch (error: any) {
       console.error('❌ CRITICAL ERROR during import:', error);
       setError(`Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`);
-      setStep('preview');
     }
   };
 

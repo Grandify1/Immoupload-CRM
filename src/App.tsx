@@ -14,7 +14,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <SonnerToaster 
-        position="top-right"
+        position="bottom-right"
         richColors
         closeButton
         theme="light"
