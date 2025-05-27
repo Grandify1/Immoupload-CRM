@@ -15,7 +15,11 @@ import { useToast } from '@/components/ui/use-toast';
 import SalesPipelineSettings from './settings/SalesPipelineSettings';
 
 // Import Jobs History Component
-const ImportJobsHistory: React.FC = () => {
+interface ImportJobsHistoryProps {
+  teamId: string;
+}
+
+const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
   const [importJobs, setImportJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,6 +28,7 @@ const ImportJobsHistory: React.FC = () => {
       const { data, error } = await supabase
         .from('import_jobs')
         .select('*')
+        .eq('team_id', teamId)
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -52,8 +57,10 @@ const ImportJobsHistory: React.FC = () => {
           table: 'import_jobs' 
         }, 
         (payload) => {
-          console.log('Import job change detected:', payload);
-          fetchImportJobs(); // Refresh the list when changes occur
+          if (payload.new && payload.new.team_id === teamId) {
+            console.log('Import job change detected:', payload);
+            fetchImportJobs(); // Refresh the list when changes occur
+          }
         }
       )
       .subscribe();
@@ -67,7 +74,7 @@ const ImportJobsHistory: React.FC = () => {
       subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, []);
+  }, [teamId]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -186,7 +193,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [dealCustomFields, setDealCustomFields] = useState<CustomField[]>([]);
   const [templates, setTemplates] = useState<ActivityTemplate[]>([]);
   const { toast } = useToast();
-  
+  const [team, setTeam] = useState<{ id: string; name: string } | null>(null);
+
   // Neue Feld-/Template-Formulare
   const [newFieldForm, setNewFieldForm] = useState({
     name: '',
@@ -195,7 +203,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     options: [] as string[],
     sort_order: 0
   });
-  
+
   const [newTemplateForm, setNewTemplateForm] = useState({
     name: '',
     fields: [] as {
@@ -205,20 +213,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       required?: boolean;
     }[]
   });
-  
+
   const [newTemplateField, setNewTemplateField] = useState({
     name: '',
     type: 'text' as 'text' | 'number' | 'date' | 'select' | 'checkbox',
     options: '',
     required: false
   });
-  
+
   // Bearbeitungsstatus
   const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [showOptionInput, setShowOptionInput] = useState(false);
   const [newOption, setNewOption] = useState('');
-  
+
+    useEffect(() => {
+        const fetchTeam = async () => {
+            try {
+                // Assuming you have a way to identify the current team
+                // For example, from local storage or a context
+                const teamId = localStorage.getItem('currentTeamId');
+
+                if (teamId) {
+                    const { data: teamData, error: teamError } = await supabase
+                        .from('teams')
+                        .select('*')
+                        .eq('id', teamId)
+                        .single();
+
+                    if (teamError) {
+                        console.error('Error fetching team:', teamError);
+                    } else if (teamData) {
+                        setTeam({ id: teamData.id, name: teamData.name });
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching team:', error);
+            }
+        };
+
+        fetchTeam();
+    }, []);
+
   // Initialisieren der Daten
   useEffect(() => {
     setLeadCustomFields(customFields.filter(field => field.entity_type === 'lead')
@@ -227,7 +263,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       .sort((a, b) => a.sort_order - b.sort_order));
     setTemplates(activityTemplates);
   }, [customFields, activityTemplates]);
-  
+
   // Custom Field Funktionen
   const handleAddCustomField = async () => {
     try {
@@ -240,7 +276,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           ? leadCustomFields.length 
           : dealCustomFields.length
       });
-      
+
       // Formular zurücksetzen
       setNewFieldForm({
         name: '',
@@ -253,7 +289,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       console.error('Error adding custom field:', error);
     }
   };
-  
+
   const handleUpdateCustomField = async (id: string, updates: Partial<CustomField>) => {
     try {
       await onUpdateCustomField(id, updates);
@@ -262,7 +298,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       console.error('Error updating custom field:', error);
     }
   };
-  
+
   const handleDeleteCustomField = async (id: string) => {
     try {
       await onDeleteCustomField(id);
@@ -270,7 +306,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       console.error('Error deleting custom field:', error);
     }
   };
-  
+
   const handleAddOption = () => {
     if (newOption.trim()) {
       if (editingFieldId) {
@@ -288,7 +324,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setNewOption('');
     }
   };
-  
+
   const handleRemoveOption = (index: number) => {
     if (editingFieldId) {
       const field = customFields.find(f => f.id === editingFieldId);
@@ -305,7 +341,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       });
     }
   };
-  
+
   // Activity Template Funktionen
   const handleAddTemplateField = () => {
     if (newTemplateField.name.trim()) {
@@ -314,16 +350,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         type: newTemplateField.type,
         required: newTemplateField.required
       } as any;
-      
+
       if (newTemplateField.type === 'select' && newTemplateField.options) {
         field.options = newTemplateField.options.split(',').map(opt => opt.trim());
       }
-      
+
       setNewTemplateForm(prev => ({
         ...prev,
         fields: [...prev.fields, field]
       }));
-      
+
       // Zurücksetzen des Feldformulars
       setNewTemplateField({
         name: '',
@@ -333,7 +369,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       });
     }
   };
-  
+
   const handleRemoveTemplateField = (index: number) => {
     setNewTemplateForm(prev => {
       const updatedFields = [...prev.fields];
@@ -341,14 +377,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       return { ...prev, fields: updatedFields };
     });
   };
-  
+
   const handleAddActivityTemplate = async () => {
     try {
       await onAddActivityTemplate({
         name: newTemplateForm.name,
         fields: newTemplateForm.fields
       });
-      
+
       // Formular zurücksetzen
       setNewTemplateForm({
         name: '',
@@ -358,7 +394,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       console.error('Error adding activity template:', error);
     }
   };
-  
+
   const handleDeleteActivityTemplate = async (id: string) => {
     try {
       await onDeleteActivityTemplate(id);
@@ -366,11 +402,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       console.error('Error deleting activity template:', error);
     }
   };
-  
+
   return (
     <div className="flex-1 p-6">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
@@ -379,7 +415,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <TabsTrigger value="import">Import</TabsTrigger>
           <TabsTrigger value="general">General Settings</TabsTrigger>
         </TabsList>
-        
+
         {/* Custom Fields Tab */}
         <TabsContent value="custom-fields">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -428,7 +464,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           {field.field_type === 'select' && (
                             <div className="space-y-2">
                               <Label>Options</Label>
@@ -456,7 +492,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                               </div>
                             </div>
                           )}
-                          
+
                           <div className="flex justify-end gap-2">
                             <Button 
                               variant="outline" 
@@ -506,7 +542,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       )}
                     </div>
                   ))}
-                  
+
                   {/* Add New Field Form */}
                   <div className="border rounded-md p-4">
                     <h3 className="font-medium mb-3">Add New Field</h3>
@@ -544,7 +580,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       {showOptionInput && (
                         <div className="space-y-2">
                           <Label>Options</Label>
@@ -572,7 +608,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           </div>
                         </div>
                       )}
-                      
+
                       <div className="pt-2">
                         <Button 
                           onClick={handleAddCustomField}
@@ -587,7 +623,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Deal Custom Fields */}
             <Card>
               <CardHeader className="pb-3">
@@ -627,7 +663,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </Card>
           </div>
         </TabsContent>
-        
+
         {/* Activity Templates Tab */}
         <TabsContent value="activity-templates">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -666,7 +702,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Add New Template */}
             <Card>
               <CardHeader className="pb-3">
@@ -682,10 +718,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       placeholder="e.g. Customer Onboarding"
                     />
                   </div>
-                  
+
                   <div className="border-t pt-4">
                     <h3 className="font-medium mb-3">Template Fields</h3>
-                    
+
                     {newTemplateForm.fields.map((field, index) => (
                       <div key={index} className="flex items-center justify-between mb-2 p-2 bg-gray-50 rounded">
                         <div>
@@ -702,7 +738,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         </Button>
                       </div>
                     ))}
-                    
+
                     <div className="border rounded-md p-3 mt-3">
                       <h4 className="text-sm font-medium mb-2">Add Field</h4>
                       <div className="space-y-3">
@@ -739,7 +775,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             </Select>
                           </div>
                         </div>
-                        
+
                         {newTemplateField.type === 'select' && (
                           <div>
                             <Label className="text-xs">Options (comma separated)</Label>
@@ -751,7 +787,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             />
                           </div>
                         )}
-                        
+
                         <div className="flex items-center space-x-2">
                           <Switch
                             id="required-field"
@@ -762,7 +798,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           />
                           <Label htmlFor="required-field" className="text-xs">Required Field</Label>
                         </div>
-                        
+
                         <Button 
                           size="sm" 
                           onClick={handleAddTemplateField}
@@ -773,7 +809,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   <Button 
                     onClick={handleAddActivityTemplate}
                     disabled={!newTemplateForm.name.trim() || newTemplateForm.fields.length === 0}
@@ -787,12 +823,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </Card>
           </div>
         </TabsContent>
-        
+
         {/* Sales Pipeline Tab */}
         <TabsContent value="sales-pipeline">
           <SalesPipelineSettings />
         </TabsContent>
-        
+
         {/* Import Tab */}
         <TabsContent value="import">
           <div className="space-y-6">
@@ -814,7 +850,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle>Import Opportunities</CardTitle>
@@ -832,11 +868,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </CardContent>
               </Card>
             </div>
-            
+
             {/* Import Jobs History */}
-            <ImportJobsHistory />
+            {team && <ImportJobsHistory teamId={team.id} />}
           </div>
-          
+
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Import Guidelines</CardTitle>
@@ -859,7 +895,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         {/* General Settings Tab */}
         <TabsContent value="general">
           <Card>
@@ -875,7 +911,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </div>
                   <Switch id="dark-mode" />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-medium">Email Notifications</h3>
@@ -883,7 +919,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </div>
                   <Switch id="email-notifications" defaultChecked />
                 </div>
-                
+
                 <div className="pt-4">
                   <h3 className="font-medium mb-2">Default View</h3>
                   <Select defaultValue="table">

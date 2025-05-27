@@ -1,3 +1,7 @@
+The code changes aim to improve import job tracking and error handling in the CSVImport component.
+```
+
+```replit_final_file
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -25,18 +29,18 @@ type MappingType = {
 };
 
 const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddCustomField, customFields }) => {
-  
+
   // Debug logging and load custom fields if not provided
   React.useEffect(() => {
     console.log('=== CSVImport Custom Fields Debug ===');
     console.log('All customFields received:', customFields);
     console.log('customFields is array?', Array.isArray(customFields));
     console.log('customFields length:', customFields?.length);
-    
+
     if (customFields && customFields.length > 0) {
       console.log('Lead custom fields:', customFields.filter(f => f.entity_type === 'lead'));
       console.log('First custom field example:', customFields[0]);
-      
+
       // Log each custom field detail
       customFields.forEach((field, index) => {
         console.log(`Custom Field ${index}:`, {
@@ -49,7 +53,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       });
     } else {
       console.log('No custom fields provided, attempting to load from database...');
-      
+
       // If no custom fields provided, try to load them directly
       const loadCustomFields = async () => {
         try {
@@ -58,7 +62,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             .select('*')
             .eq('entity_type', 'lead')
             .order('sort_order');
-          
+
           if (error) {
             console.error('Error loading custom fields:', error);
           } else {
@@ -68,7 +72,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           console.error('Failed to load custom fields:', err);
         }
       };
-      
+
       loadCustomFields();
     }
     console.log('=== End Custom Fields Debug ===');
@@ -80,7 +84,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'importing'>('upload');
   const [importProgress, setImportProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const standardFields = [
@@ -97,12 +101,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   // Custom Fields für Leads mit verbesserter Verarbeitung
   const leadCustomFields = React.useMemo(() => {
     console.log('=== Building Lead Custom Fields ===');
-    
+
     if (!customFields || !Array.isArray(customFields)) {
       console.log('No customFields available for processing');
       return [];
     }
-    
+
     const leadFields = customFields
       .filter(field => {
         const isLead = field && field.entity_type === 'lead';
@@ -120,7 +124,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         console.log('Processed custom field:', processedField);
         return processedField;
       });
-    
+
     console.log('Final lead custom fields:', leadFields);
     console.log('=== End Building Lead Custom Fields ===');
     return leadFields;
@@ -130,12 +134,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     console.log('=== Building All Available Fields ===');
     console.log('Standard fields:', standardFields);
     console.log('Lead custom fields to add:', leadCustomFields);
-    
+
     const combined = [
       ...standardFields,
       ...leadCustomFields
     ];
-    
+
     console.log('Combined available fields:', combined);
     console.log('=== End Building All Available Fields ===');
     return combined;
@@ -164,18 +168,18 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        
+
         // Verbessertes CSV-Parsing für mehrzeilige Felder
         const parseCSVContent = (csvText: string): { headers: string[], data: string[][] } => {
           const result: string[][] = [];
           let current = '';
           let inQuotes = false;
           let row: string[] = [];
-          
+
           for (let i = 0; i < csvText.length; i++) {
             const char = csvText[i];
             const nextChar = csvText[i + 1];
-            
+
             if (char === '"') {
               if (inQuotes && nextChar === '"') {
                 // Escaped quote
@@ -207,7 +211,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               current += char;
             }
           }
-          
+
           // Add last field and row if exists
           if (current.trim() !== '' || row.length > 0) {
             row.push(current.trim());
@@ -215,14 +219,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               result.push(row);
             }
           }
-          
+
           if (result.length === 0) {
             throw new Error('Keine gültigen Zeilen gefunden');
           }
-          
+
           const headers = result[0].map(h => h.replace(/^"|"$/g, '').trim());
           const data = result.slice(1);
-          
+
           return { headers, data };
         };
 
@@ -233,7 +237,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           setStep('upload');
           return;
         }
-        
+
         // Filtere und validiere Datenzeilen
         const validData = data.filter(row => {
           // Normalisiere Spaltenzahl
@@ -243,11 +247,11 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           if (row.length > headers.length) {
             row.splice(headers.length);
           }
-          
+
           // Prüfe ob Zeile mindestens ein nicht-leeres Feld hat
           return row.some(value => value && value.length > 0);
         });
-        
+
         console.log(`CSV parsing completed: ${validData.length} valid rows from ${data.length} total rows`);
 
         if (validData.length === 0) {
@@ -255,17 +259,17 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             setStep('upload');
             return;
         }
-        
+
         setHeaders(headers);
         setCSVData(validData);
-        
+
         const initialMappings: MappingType[] = headers.map(header => {
           const matchedField = allAvailableFields.find(field => 
             field.label.toLowerCase() === header.toLowerCase() || 
             field.name.toLowerCase() === header.toLowerCase() ||
             (field.originalName && field.originalName.toLowerCase() === header.toLowerCase())
           );
-          
+
           return {
             csvHeader: header,
             fieldName: matchedField ? matchedField.name : null,
@@ -273,7 +277,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             customFieldType: 'text'
           };
         });
-        
+
         setMappings(initialMappings);
         setStep('map');
         setError(null);
@@ -284,12 +288,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         setStep('upload');
       }
     };
-    
+
     reader.onerror = () => {
         setError('Fehler beim Lesen der Datei.');
         setStep('upload');
     };
-    
+
     reader.readAsText(file);
   };
 
@@ -317,12 +321,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   const handleContinueToPreview = () => {
     const hasNameMapping = mappings.some(m => m.fieldName === 'name');
-    
+
     if (!hasNameMapping) {
       setError('You must map the "Name" field to continue.');
       return;
     }
-    
+
     setError(null);
     setStep('preview');
   };
@@ -331,9 +335,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     try {
       setStep('importing');
       setImportProgress(0);
-      
+
       const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
-      
+
       // Create new custom fields first
       for (const mapping of customFieldMappings) {
         if (mapping.fieldName) {
@@ -344,21 +348,21 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           }
         }
       }
-      
+
       const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = [];
       const duplicateNames: string[] = [];
-      
+
       for (let i = 0; i < csvData.length; i++) {
         const row = csvData[i];
         const lead: any = {
           custom_fields: {}
         };
-        
+
         mappings.forEach((mapping, index) => {
           if (mapping.fieldName && index < row.length) {
             const value = row[index]?.trim();
             if (!value) return; // Skip empty values
-            
+
             const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
 
             if (targetField && standardFields.some(sf => sf.name === targetField.name)) {
@@ -375,21 +379,21 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             }
           }
         });
-        
+
         if (!lead.status) lead.status = 'potential';
-        
+
         // Check if lead has required name field
         if (lead.name && lead.name.trim()) {
           leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
         }
-        
+
         // Update progress
         setImportProgress(Math.round(((i + 1) / csvData.length) * 90));
       }
-      
+
       console.log('Prepared leads for import:', leads.length);
       console.log('Sample lead:', leads[0]);
-      
+
       try {
         // Get current user info for import job
         const { data: { user } } = await supabase.auth.getUser();
@@ -417,9 +421,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           team_id: profile.team_id,
           created_by: user.id
         };
-        
+
         console.log('Creating import job:', importJobData);
-        
+
         let importJob: any = null;
         try {
           const { data, error: jobError } = await supabase
@@ -427,7 +431,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             .insert(importJobData)
             .select()
             .single();
-            
+
           if (jobError) {
             console.error('Error creating import job:', jobError);
           } else {
@@ -437,19 +441,19 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         } catch (err) {
           console.error('Failed to create import job:', err);
         }
-        
+
         // Import all leads in batches to improve performance - silently in background
         let processedCount = 0;
         let failedCount = 0;
         const failedLeads: any[] = [];
         const batchSize = 100; // Larger batches for faster processing
-        
+
         // Import all leads without showing individual toast messages
         const allLeadsToImport: typeof leads = [];
-        
+
         for (let i = 0; i < leads.length; i += batchSize) {
           const batch = leads.slice(i, i + batchSize);
-          
+
           try {
             // Collect leads for batch import without immediate UI updates
             allLeadsToImport.push(...batch);
@@ -458,12 +462,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             console.error(`Failed to prepare batch ${Math.floor(i/batchSize) + 1}:`, batchError);
             failedCount += batch.length;
           }
-          
+
           // Update progress
           const progress = Math.round(((i + batch.length) / leads.length) * 90);
           setImportProgress(progress);
         }
-        
+
         // Now do the actual import in one go
         try {
           await onImport(allLeadsToImport);
@@ -474,7 +478,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           // Try individual imports as fallback
           processedCount = 0;
           failedCount = 0;
-          
+
           for (const lead of allLeadsToImport) {
             try {
               await onImport([lead]);
@@ -490,7 +494,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             }
           }
         }
-        
+
         // Update import job status
         if (importJob?.id) {
           try {
@@ -507,13 +511,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             console.error('Failed to update import job:', updateError);
           }
         }
-        
+
         setImportProgress(100);
-        
+
         // Show final import summary without toast notifications
         const totalLeads = processedCount + failedCount;
         let summaryMessage = '';
-        
+
         if (failedCount === 0) {
           summaryMessage = `✅ Import erfolgreich abgeschlossen: ${processedCount} Leads wurden importiert.`;
         } else if (processedCount === 0) {
@@ -521,18 +525,18 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         } else {
           summaryMessage = `⚠️ Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen.`;
         }
-        
+
         // Show result and close after delay
         setError(summaryMessage);
-        
+
         setTimeout(() => {
           resetState();
           onClose();
         }, 4000); // Show result for 4 seconds to read the message
-        
+
       } catch (importError: any) {
         console.error('Error importing leads:', importError);
-        
+
         if (importError?.message?.includes('duplicate key')) {
           const duplicateName = importError.details?.match(/Key \(name\)=\((.*?)\)/)?.[1];
           if (duplicateName) {
@@ -558,7 +562,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         <DialogHeader>
           <DialogTitle>Import Leads from CSV</DialogTitle>
         </DialogHeader>
-        
+
         {step === 'upload' && (
           <div className="py-6">
             <div 
@@ -576,7 +580,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                 onChange={handleFileChange}
               />
             </div>
-            
+
             {error && (
               <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md flex items-start">
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
@@ -585,13 +589,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             )}
           </div>
         )}
-        
+
         {step === 'map' && (
           <div className="py-4 flex-1 overflow-hidden flex flex-col">
             <p className="text-sm text-gray-600 mb-4">
               Map the CSV columns to lead fields. You can also create custom fields for unmapped columns.
             </p>
-            
+
             <div className="flex-1 overflow-y-auto border rounded-md">
               <table className="w-full">
                 <thead className="bg-gray-50 text-left sticky top-0 z-10">
@@ -694,7 +698,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                 </tbody>
               </table>
             </div>
-            
+
             {error && (
               <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md flex items-start">
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
@@ -703,13 +707,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             )}
           </div>
         )}
-        
+
         {step === 'preview' && (
           <div className="py-4 flex-1 overflow-hidden flex flex-col">
             <p className="text-sm text-gray-600 mb-4">
               Vorschau der ersten 5 zu importierenden Leads. Gesamt: {csvData.length} Leads.
             </p>
-            
+
             <div className="flex-1 overflow-auto border rounded-md">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -754,7 +758,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             </div>
           </div>
         )}
-        
+
         {step === 'importing' && (
           <div className="py-8 text-center">
             <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
@@ -766,32 +770,32 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             <p className="text-gray-600">Importing leads... {importProgress}%</p>
           </div>
         )}
-        
+
         <DialogFooter>
           {step !== 'importing' && (
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
           )}
-          
+
           {step === 'upload' && file && (
             <Button onClick={() => setStep('map')}>
               Continue
             </Button>
           )}
-          
+
           {step === 'map' && (
             <Button onClick={handleContinueToPreview}>
               Preview Import
             </Button>
           )}
-          
+
           {step === 'preview' && (
             <Button onClick={handleImport}>
               Import {csvData.length} Leads
             </Button>
           )}
-          
+
           {step === 'importing' && importProgress === 100 && (
             <Button className="bg-green-600 hover:bg-green-700">
               <Check className="mr-2 h-4 w-4" />
