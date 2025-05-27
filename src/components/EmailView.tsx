@@ -328,11 +328,8 @@ export function EmailView() {
         setSelectedEmail(null);
       }
 
-      // Force refresh to ensure data consistency - reduced delay
-      setTimeout(() => {
-        console.log('Refreshing email list after deletion...');
-        loadEmails(true);
-      }, 300);
+      // Email state is already updated locally - no need for automatic refresh
+      // User can manually refresh if needed using the "Emails aktualisieren" button
 
     } catch (error) {
       console.error('Error deleting email via IMAP:', error);
@@ -526,6 +523,8 @@ export function EmailView() {
       );
       toast.success('Ausgewählte Emails wurden gelöscht.');
       setSelectedEmails([]);
+      
+      // No automatic refresh - emails are already updated in local state
     } catch (error) {
       console.error('Fehler beim Löschen von Emails:', error);
       toast.error('Fehler beim Löschen der ausgewählten Emails.');
