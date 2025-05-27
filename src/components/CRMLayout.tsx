@@ -1105,6 +1105,3 @@ const CRMLayout = () => {
 };
 
 export default CRMLayout;
-```
-
-Apply changes to fix scrolling issue by modifying the CRMLayout component to adjust the h-screen and overflow-hidden classes.
