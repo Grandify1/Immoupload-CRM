@@ -97,49 +97,28 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   // Custom Fields für Leads mit verbesserter Verarbeitung
   const leadCustomFields = React.useMemo(() => {
-    console.log('=== Building Lead Custom Fields ===');
-
     if (!customFields || !Array.isArray(customFields)) {
-      console.log('No customFields available for processing');
       return [];
     }
 
     const leadFields = customFields
-      .filter(field => {
-        const isLead = field && field.entity_type === 'lead';
-        console.log(`Field "${field?.name}" - is lead field:`, isLead);
-        return isLead;
-      })
-      .map(field => {
-        const processedField = {
-          name: field.name.toLowerCase().replace(/\s+/g, '_'), // Standardized key
-          label: `${field.name} (Custom)`,
-          isCustom: true,
-          originalName: field.name,
-          fieldType: field.field_type
-        };
-        console.log('Processed custom field:', processedField);
-        return processedField;
-      });
+      .filter(field => field && field.entity_type === 'lead')
+      .map(field => ({
+        name: field.name.toLowerCase().replace(/\s+/g, '_'),
+        label: `${field.name} (Custom)`,
+        isCustom: true,
+        originalName: field.name,
+        fieldType: field.field_type
+      }));
 
-    console.log('Final lead custom fields:', leadFields);
-    console.log('=== End Building Lead Custom Fields ===');
     return leadFields;
   }, [customFields]);
 
   const allAvailableFields = React.useMemo(() => {
-    console.log('=== Building All Available Fields ===');
-    console.log('Standard fields:', standardFields);
-    console.log('Lead custom fields to add:', leadCustomFields);
-
-    const combined = [
+    return [
       ...standardFields,
       ...leadCustomFields
     ];
-
-    console.log('Combined available fields:', combined);
-    console.log('=== End Building All Available Fields ===');
-    return combined;
   }, [leadCustomFields]);
 
   const resetState = () => {
@@ -673,6 +652,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         if (insertError) {
           console.error(`❌ Supabase error inserting batch ${batchIndex + 1}:`, insertError);
+          console.error('Error details:', insertError.details);
+          console.error('Error hint:', insertError.hint);
+          console.error('Error code:', insertError.code);
           failedRecords += batch.length;
 
           // Update import job with error in Supabase (only if job tracking is available)
@@ -836,18 +818,15 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__skip__">Do not import</SelectItem>
-                            {(() => {
-                              console.log('Available fields for dropdown:', allAvailableFields);
-                              return allAvailableFields.map(field => {
-                                const fieldValue = typeof field === 'string' ? field : field.value || field.name || String(field);
-                                console.log('Adding dropdown option:', fieldValue);
-                                return (
-                                  <SelectItem key={fieldValue} value={fieldValue}>
-                                    {fieldValue}
-                                  </SelectItem>
-                                );
-                              });
-                            })()}
+                            {allAvailableFields.map(field => {
+                              const fieldValue = typeof field === 'string' ? field : field.name || String(field);
+                              const fieldLabel = typeof field === 'string' ? field : field.label || field.name || String(field);
+                              return (
+                                <SelectItem key={fieldValue} value={fieldValue}>
+                                  {fieldLabel}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                       </td>
