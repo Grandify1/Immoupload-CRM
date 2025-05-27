@@ -929,7 +929,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Import Guidelines</CardTitle</CardHeader>
+              <CardTitle>Import Guidelines</CardTitle>
+            </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
