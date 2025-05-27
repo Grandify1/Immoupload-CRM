@@ -512,30 +512,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           }
         });
 
-        // Set required fields
-        if (!lead.status) lead.status = 'potential';
-        lead.team_id = profile.team_id; // Ensure team_id is always set
-
-        // Check if lead has required name field
-        if (lead.name && lead.name.trim()) {
-          leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
-        }
-
-        // Update progress for data processing
-        setImportProgress(Math.round(((i + 1) / csvData.length) * 20)); // 20% for data processing
-      }
-
-      console.log('✅ Processed CSV data, prepared leads:', leads.length);
-      if (leads.length === 0) {
-        setError('Keine gültigen Leads gefunden. Überprüfen Sie Ihre Feldzuordnung.');
-        setStep('preview');
-        return;
-      }
-
-      console.log('Sample lead:', leads[0]);
-      setImportProgress(25);
-
-      // Get current user info for import job
+        // Get current user info for import job FIRST
       console.log('=== GETTING USER INFO ===');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) {
@@ -553,7 +530,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       }
 
       console.log('✅ User found:', user.id);
-      setImportProgress(30);
+      setImportProgress(25);
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -576,7 +553,61 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       }
 
       console.log('✅ Profile found, team_id:', profile.team_id);
-      setImportProgress(35);
+      setImportProgress(30);
+
+      // Now process CSV data with the profile information
+      for (let i = 0; i < csvData.length; i++) {
+        const row = csvData[i];
+        const lead: any = {
+          custom_fields: {}
+        };
+
+        mappings.forEach((mapping, index) => {
+          if (mapping.fieldName && index < row.length) {
+            const value = row[index]?.trim();
+            if (!value) return; // Skip empty values
+
+            const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
+
+            if (targetField && standardFields.some(sf => sf.name === targetField.name)) {
+               if (targetField.name === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
+                 lead[targetField.name] = 'potential';
+               } else {
+                 lead[targetField.name] = value;
+               }
+            } else if (mapping.createCustomField && mapping.fieldName) {
+              lead.custom_fields[mapping.fieldName] = value;
+            } else if (targetField && targetField.isCustom) {
+              // Use the standardized field key for custom fields
+              lead.custom_fields[targetField.name] = value;
+            }
+          }
+        });
+
+        // Set required fields
+        if (!lead.status) lead.status = 'potential';
+        lead.team_id = profile.team_id; // Ensure team_id is always set
+
+        // Check if lead has required name field
+        if (lead.name && lead.name.trim()) {
+          leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
+        }
+
+        // Update progress for data processing
+        setImportProgress(30 + Math.round(((i + 1) / csvData.length) * 10)); // 10% for data processing
+      }
+
+      console.log('✅ Processed CSV data, prepared leads:', leads.length);
+      if (leads.length === 0) {
+        setError('Keine gültigen Leads gefunden. Überprüfen Sie Ihre Feldzuordnung.');
+        setStep('preview');
+        return;
+      }
+
+      console.log('Sample lead:', leads[0]);
+      setImportProgress(40);
+
+      
 
       // Create import job entry in Supabase
       console.log('=== CREATING IMPORT JOB IN SUPABASE ===');
@@ -626,7 +657,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         skipJobTracking = true;
       }
 
-      setImportProgress(40);
+      setImportProgress(45);
 
       // Now perform the actual import
       console.log('=== STARTING LEAD IMPORT ===');
@@ -685,10 +716,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         processedRecords += insertedLeads?.length || 0;
 
         // Update progress
-        setImportProgress(40 + Math.round(((i + batchSize) / leads.length) * 50));
+        setImportProgress(45 + Math.round(((i + batchSize) / leads.length) * 45));
       }
 
-      setImportProgress(90);
+      setImportProgress(95);
 
       // Update final import job status in Supabase (only if job tracking is available)
       if (!skipJobTracking && importJob) {
