@@ -19,28 +19,54 @@ const ImportJobsHistory: React.FC = () => {
   const [importJobs, setImportJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchImportJobs = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('import_jobs')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20);
+  const fetchImportJobs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-        if (error) {
-          console.error('Error fetching import jobs:', error);
-        } else {
-          setImportJobs(data || []);
-        }
-      } catch (error) {
+      if (error) {
         console.error('Error fetching import jobs:', error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        setImportJobs(data || []);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching import jobs:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchImportJobs();
+
+    // Set up real-time subscription for import jobs
+    const subscription = supabase
+      .channel('import_jobs_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'import_jobs' 
+        }, 
+        (payload) => {
+          console.log('Import job change detected:', payload);
+          fetchImportJobs(); // Refresh the list when changes occur
+        }
+      )
+      .subscribe();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchImportJobs();
+    }, 30000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   const getStatusBadge = (status: string) => {
@@ -75,11 +101,26 @@ const ImportJobsHistory: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Import History</CardTitle>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => {
+            setIsLoading(true);
+            fetchImportJobs();
+          }}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Loading...' : 'Refresh'}
+        </Button>
       </CardHeader>
       <CardContent>
-        {importJobs.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">Loading import history...</p>
+          </div>
+        ) : importJobs.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-gray-500">No import jobs found.</p>
           </div>
@@ -98,6 +139,11 @@ const ImportJobsHistory: React.FC = () => {
                   <div className="text-xs text-gray-500">
                     {new Date(job.created_at).toLocaleString()}
                   </div>
+                  {job.error_details && (
+                    <div className="text-xs text-red-600 mt-1">
+                      Errors occurred during import
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-semibold">{job.total_records}</div>

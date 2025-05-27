@@ -404,28 +404,16 @@ const CRMLayout = () => {
 
       if (error) {
         console.error('Error importing leads:', error);
-        toast({
-          title: "Error",
-          description: "Failed to import leads",
-          variant: "destructive",
-        });
-        return;
+        throw new Error(`Failed to import leads: ${error.message}`);
       }
 
       const importedLeads = data as Lead[];
       setLeads(prev => [...importedLeads, ...prev]);
 
-      toast({
-        title: "Success",
-        description: `${importedLeads.length} leads imported successfully`,
-      });
+      return importedLeads;
     } catch (error) {
       console.error('Error in importLeads:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred during import",
-        variant: "destructive",
-      });
+      throw error;
     }
   };
 

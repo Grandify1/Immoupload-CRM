@@ -421,31 +421,43 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           console.error('Failed to create import job:', err);
         }
         
-        // Process leads individually to handle duplicates better
+        // Import all leads in batches to improve performance
         let processedCount = 0;
         let failedCount = 0;
         const failedLeads: any[] = [];
+        const batchSize = 50; // Process in smaller batches
         
-        for (let i = 0; i < leads.length; i++) {
+        for (let i = 0; i < leads.length; i += batchSize) {
+          const batch = leads.slice(i, i + batchSize);
+          
           try {
-            // Import single lead
-            await onImport([leads[i]]);
-            processedCount++;
-          } catch (leadError: any) {
-            console.error(`Failed to import lead ${i + 1}:`, leadError);
-            failedCount++;
+            // Import batch of leads
+            await onImport(batch);
+            processedCount += batch.length;
+          } catch (batchError: any) {
+            console.error(`Failed to import batch ${Math.floor(i/batchSize) + 1}:`, batchError);
             
-            // Skip duplicate errors - they're expected
-            if (!leadError?.message?.includes('duplicate key')) {
-              failedLeads.push({ 
-                lead: leads[i], 
-                error: leadError.message || 'Unknown error' 
-              });
+            // Try individual imports for failed batch
+            for (const lead of batch) {
+              try {
+                await onImport([lead]);
+                processedCount++;
+              } catch (leadError: any) {
+                failedCount++;
+                
+                // Skip duplicate errors - they're expected
+                if (!leadError?.message?.includes('duplicate key')) {
+                  failedLeads.push({ 
+                    lead: lead, 
+                    error: leadError.message || 'Unknown error' 
+                  });
+                }
+              }
             }
           }
           
           // Update progress
-          const progress = Math.round(((i + 1) / leads.length) * 90);
+          const progress = Math.round(((i + batch.length) / leads.length) * 90);
           setImportProgress(progress);
         }
         
@@ -468,15 +480,25 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         
         setImportProgress(100);
         
-        if (failedCount > 0) {
-          setError(`Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen. Häufigste Ursache: Duplikate.`);
-          setStep('preview');
+        // Show final import summary
+        const totalLeads = processedCount + failedCount;
+        let summaryMessage = '';
+        
+        if (failedCount === 0) {
+          summaryMessage = `Import erfolgreich abgeschlossen: ${processedCount} Leads importiert.`;
+        } else if (processedCount === 0) {
+          summaryMessage = `Import fehlgeschlagen: ${failedCount} Leads konnten nicht importiert werden.`;
         } else {
-          setTimeout(() => {
-            resetState();
-            onClose();
-          }, 1000);
+          summaryMessage = `Import abgeschlossen: ${processedCount} Leads erfolgreich importiert, ${failedCount} fehlgeschlagen.`;
         }
+        
+        // Show result and close after delay
+        setError(summaryMessage);
+        
+        setTimeout(() => {
+          resetState();
+          onClose();
+        }, 3000); // Show result for 3 seconds
         
       } catch (importError: any) {
         console.error('Error importing leads:', importError);
