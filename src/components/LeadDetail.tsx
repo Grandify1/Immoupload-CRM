@@ -657,15 +657,17 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                             </div>
                             <div className="ml-10">
                               {activity.type === 'custom' && activity.template_data?.responses ? (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                   {Object.entries(activity.template_data.responses).map(([questionId, answer]) => {
                                     const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
                                     return (
                                       <div key={questionId} className="text-sm">
-                                        <span className="font-medium text-gray-700">
-                                          {question?.text || 'Question'}:
-                                        </span>
-                                        <span className="text-gray-800 ml-2">{String(answer)}</span>
+                                        <div className="font-bold text-gray-900 mb-1">
+                                          {question?.text || 'Question'}
+                                        </div>
+                                        <div className="text-gray-700 pl-2">
+                                          {String(answer)}
+                                        </div>
                                       </div>
                                     );
                                   })}
