@@ -93,6 +93,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     duplicateDetectionField: 'name',
     duplicateAction: 'update'
   });
+  const [isImporting, setIsImporting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -141,6 +142,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     setStep('upload');
     setImportProgress(0);
     setError(null);
+    setIsImporting(false);
     setDuplicateConfig({
       duplicateDetectionField: 'name',
       duplicateAction: 'update'
@@ -482,10 +484,28 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('=== STARTING IMPORT PROCESS ===');
       setError(null);
 
+      // Show immediate feedback - close modal and show loading toast
+      const { toast } = await import('sonner');
+      
+      // Set loading state immediately
+      setIsImporting(true);
+
+      // Show loading toast immediately
+      const loadingToastId = toast.loading('Import wird vorbereitet...', {
+        description: 'Daten werden verarbeitet und an den Server gesendet.',
+        duration: Infinity, // Keep it visible until we update it
+      });
+
+      // Small delay to show the loading state on button, then close modal
+      setTimeout(() => {
+        resetState();
+        onClose();
+      }, 300);
+
       // Check if we have any leads to import
       if (!csvData || csvData.length === 0) {
-        setError('Keine Daten zum Importieren gefunden.');
-        setStep('preview');
+        toast.dismiss(loadingToastId);
+        toast.error('Keine Daten zum Importieren gefunden.');
         return;
       }
 
@@ -669,16 +689,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         console.log('✅ Edge Function response:', functionResponse);
 
-        // Show success toast
-        const { toast } = await import('sonner');
+        // Dismiss loading toast and show success
+        toast.dismiss(loadingToastId);
         toast.success('Import gestartet!', {
           description: `${csvData.length} Leads werden im Hintergrund importiert. Sie können den Fortschritt in der Status-Bar verfolgen.`,
           duration: 5000,
         });
-
-        // Close dialog immediately since import runs in background
-        resetState();
-        onClose();
 
         // Trigger refresh of leads data after a short delay
         if (onRefresh) {
@@ -690,13 +706,21 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       } catch (error: any) {
         console.error('❌ Edge Function failed:', error);
-        setError(`Edge Function Fehler: ${error.message}`);
+        toast.dismiss(loadingToastId);
+        toast.error('Import fehlgeschlagen', {
+          description: `Edge Function Fehler: ${error.message}`,
+          duration: 8000,
+        });
         return;
       }
 
     } catch (error: any) {
       console.error('❌ CRITICAL ERROR during import:', error);
-      setError(`Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`);
+      toast.dismiss(loadingToastId);
+      toast.error('Import fehlgeschlagen', {
+        description: `Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`,
+        duration: 8000,
+      });
     }
   };
 
@@ -1154,8 +1178,15 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           )}
 
           {step === 'preview' && (
-            <Button onClick={handleImport}>
-              Import {csvData.length} Leads
+            <Button onClick={handleImport} disabled={isImporting}>
+              {isImporting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Wird importiert...
+                </>
+              ) : (
+                `Import ${csvData.length} Leads`
+              )}
             </Button>
           )}
 
