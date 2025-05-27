@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,18 +31,21 @@ interface Email {
   subject: string;
   sender: string;
   recipient: string;
-  body: string;
+  body?: string;
   received_at: string;
   is_read: boolean;
   lead_id?: string;
+  account_id: string;
+  message_id?: string;
+  team_id: string;
   folder?: string;
-  is_deleted?: boolean;
   is_archived?: boolean;
+  is_deleted?: boolean;
 }
 
-type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'deleted' | 'archived';
+type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'archived' | 'deleted';
 
-export const EmailView: React.FC = () => {
+export function EmailView() {
   const { user } = useAuth();
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
   const [emails, setEmails] = useState<Email[]>([]);
@@ -52,7 +54,7 @@ export const EmailView: React.FC = () => {
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showComposeForm, setShowComposeForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [lastLoadTime, setLastLoadTime] = useState<number>(0);
+  const [lastLoadTime, setLastLoadTime] = useState(0);
 
   const [accountForm, setAccountForm] = useState({
     name: '',
@@ -102,7 +104,7 @@ export const EmailView: React.FC = () => {
       console.log('Skipping email load - too recent');
       return;
     }
-    
+
     try {
       setLastLoadTime(now);
       const { data, error } = await supabase
@@ -150,7 +152,7 @@ export const EmailView: React.FC = () => {
   const moveEmailToFolder = async (emailId: string, folder: EmailFolder) => {
     try {
       const updateData: any = { folder };
-      
+
       if (folder === 'deleted') {
         updateData.is_deleted = true;
       } else if (folder === 'archived') {
@@ -169,7 +171,7 @@ export const EmailView: React.FC = () => {
 
       toast.success(`Email nach ${folders.find(f => f.id === folder)?.name} verschoben`);
       loadEmails();
-      
+
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
@@ -190,7 +192,7 @@ export const EmailView: React.FC = () => {
 
       toast.success('Email dauerhaft gelöscht');
       loadEmails();
-      
+
       if (selectedEmail?.id === emailId) {
         setSelectedEmail(null);
       }
@@ -208,7 +210,7 @@ export const EmailView: React.FC = () => {
         .eq('id', emailId);
 
       if (error) throw error;
-      
+
       setEmails(prev => prev.map(email => 
         email.id === emailId ? { ...email, is_read: true } : email
       ));
@@ -339,6 +341,25 @@ export const EmailView: React.FC = () => {
     }
   };
 
+  const deleteEmail = async (emailId: string) => {
+    try {
+      const { error } = await supabase
+        .from('emails')
+        .delete()
+        .eq('id', emailId);
+
+      if (error) throw error;
+
+      toast.success('Email permanent gelöscht');
+      loadEmails();
+      setSelectedEmail(null);
+
+    } catch (error) {
+      console.error("Fehler beim permanenten löschen der Email:", error);
+      toast.error("Fehler beim permanenten löschen der Email");
+    }
+  }
+  
   const filteredEmails = getFilteredEmails();
   const unreadCount = emails.filter(e => !e.is_read && (!e.folder || e.folder === 'inbox')).length;
 
@@ -404,9 +425,9 @@ export const EmailView: React.FC = () => {
                             return false;
                         }
                       });
-                      
+
                       const folderUnreadCount = folderEmails.filter(e => !e.is_read).length;
-                      
+
                       return (
                         <div
                           key={folder.id}
