@@ -586,7 +586,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         // Set required fields
         if (!lead.status) lead.status = 'potential';
-        lead.team_id = profile.team_id; // Ensure team_id is always set
 
         // Check if lead has required name field
         if (lead.name && lead.name.trim()) {
