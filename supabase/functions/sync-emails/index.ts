@@ -71,55 +71,9 @@ serve(async (req) => {
           username: imapConfig.username 
         })
 
-        // For now, we'll create some realistic mock emails since IMAP in Deno edge functions 
-        // has limitations. In production, you'd use a proper IMAP library
-        const mockEmails = [
-          {
-            subject: `Neue Anfrage von Website - ${new Date().toLocaleDateString('de-DE')}`,
-            sender: 'kunde@beispiel.de',
-            recipient: account.email,
-            body: `Hallo,\n\nich interessiere mich für Ihre Dienstleistungen und würde gerne mehr erfahren.\n\nBeste Grüße\nMax Mustermann`,
-            received_at: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-            is_read: false,
-            message_id: `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            account_id: account.id,
-            team_id: user_id
-          },
-          {
-            subject: `Angebot angefragt - ${new Date().toLocaleDateString('de-DE')}`,
-            sender: 'info@neuerkunde.com',
-            recipient: account.email,
-            body: `Sehr geehrte Damen und Herren,\n\nkönnen Sie mir bitte ein Angebot für Ihre Services zusenden?\n\nVielen Dank\nAnna Schmidt`,
-            received_at: new Date(Date.now() - Math.random() * 172800000).toISOString(),
-            is_read: false,
-            message_id: `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            account_id: account.id,
-            team_id: user_id
-          }
-        ]
-
-        // Insert emails (check for duplicates by message_id)
-        for (const email of mockEmails) {
-          const { data: existing } = await supabaseAdmin
-            .from('emails')
-            .select('id')
-            .eq('message_id', email.message_id)
-            .single()
-
-          if (!existing) {
-            const { error: insertError } = await supabaseAdmin
-              .from('emails')
-              .insert(email)
-
-            if (!insertError) {
-              totalSynced++
-            } else {
-              console.error('Insert error:', insertError)
-            }
-          }
-        }
-
-        console.log(`✅ Synced ${mockEmails.length} emails for ${account.email}`)
+        // Stattdessen: Keine neuen Mock-Emails generieren
+        // Das System soll nur echte Emails aus IMAP laden
+        console.log(`⚠️ IMAP-Synchronisation für ${account.email} übersprungen - nur echte Emails laden`)
 
         // TODO: Implement real IMAP fetching
         // For production use, you would implement something like this:
