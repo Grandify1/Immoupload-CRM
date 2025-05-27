@@ -534,22 +534,35 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('Sample lead:', leads[0]);
 
       try {
-        // Get current user info for import job
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('team_id')
-          .eq('id', user?.id)
-          .single();
-
-        if (!user?.id || !profile?.team_id) {
-          console.error('User or team not found');
-          setError('Fehler: Benutzer oder Team nicht gefunden.');
+        // Get current user info for import job - with proper error handling
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user?.id) {
+          console.error('Error getting user:', userError);
+          setError('Fehler: Benutzer nicht gefunden. Bitte loggen Sie sich erneut ein.');
           setStep('preview');
           return;
         }
 
-        // Create import job record first
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('team_id')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError || !profile?.team_id) {
+          console.error('Error getting profile:', profileError);
+          setError('Fehler: Team-Information nicht gefunden. Bitte kontaktieren Sie den Support.');
+          setStep('preview');
+          return;
+        }
+
+        console.log('=== IMPORT JOB CREATION START ===');
+        console.log('User ID:', user.id);
+        console.log('Team ID:', profile.team_id);
+        console.log('File name:', file?.name);
+        console.log('Total leads to import:', leads.length);
+
+        // Create import job record BEFORE importing - this is critical for tracking
         const importJobData = {
           file_name: file?.name || 'unknown.csv',
           total_records: leads.length,
@@ -558,37 +571,32 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           status: 'processing',
           error_details: null,
           team_id: profile.team_id,
-          created_by: user.id
+          created_by: user.id,
+          undo_status: 'active'
         };
 
-        console.log('Creating import job:', importJobData);
-        console.log('User ID:', user.id);
-        console.log('Team ID:', profile.team_id);
+        console.log('Creating import job with data:', importJobData);
 
-        let importJob: any = null;
-        try {
-          const { data, error: jobError } = await supabase
-            .from('import_jobs')
-            .insert([importJobData])
-            .select()
-            .single();
+        // Create import job - MUST succeed for proper tracking
+        const { data: importJob, error: jobError } = await supabase
+          .from('import_jobs')
+          .insert([importJobData])
+          .select()
+          .single();
 
-          if (jobError) {
-            console.error('Error creating import job:', jobError);
-            console.error('Job error details:', jobError.details);
-            console.error('Job error hint:', jobError.hint);
-            console.error('Job error code:', jobError.code);
-            throw new Error(`Failed to create import job: ${jobError.message}`);
-          } else {
-            importJob = data;
-            console.log('Import job created successfully with ID:', importJob.id);
-            console.log('Import job details:', importJob);
-          }
-        } catch (err) {
-          console.error('Failed to create import job:', err);
-          // Continue with import even if job creation fails but log the error
-          console.error('Import will continue without job tracking');
+        if (jobError || !importJob) {
+          console.error('CRITICAL: Failed to create import job:', jobError);
+          console.error('Job error details:', jobError?.details);
+          console.error('Job error hint:', jobError?.hint);
+          console.error('Job error code:', jobError?.code);
+          setError(`Kritischer Fehler: Import-Job konnte nicht erstellt werden. ${jobError?.message || 'Unbekannter Fehler'}`);
+          setStep('preview');
+          return;
         }
+
+        console.log('✅ Import job created successfully with ID:', importJob.id);
+        console.log('Import job details:', importJob);
+        console.log('=== IMPORT JOB CREATION SUCCESS ===')
 
         // Import all leads in batches to improve performance - silently in background
         let processedCount = 0;
@@ -643,36 +651,52 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           }
         }
 
-        // Update import job status
-        if (importJob?.id) {
-          try {
-            const updateData = {
-              processed_records: processedCount,
-              failed_records: failedCount,
-              status: failedCount > 0 ? 'completed_with_errors' : 'completed',
-              error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
-              updated_at: new Date().toISOString()
-            };
+        // Update import job status - CRITICAL for import history
+        console.log('=== UPDATING IMPORT JOB STATUS ===');
+        console.log('Import job ID to update:', importJob.id);
+        console.log('Processed records:', processedCount);
+        console.log('Failed records:', failedCount);
 
-            console.log('Updating import job with:', updateData);
+        const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
+        const updateData = {
+          processed_records: processedCount,
+          failed_records: failedCount,
+          status: finalStatus,
+          error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
+          updated_at: new Date().toISOString()
+        };
 
-            const { error: updateError } = await supabase
-              .from('import_jobs')
-              .update(updateData)
-              .eq('id', importJob.id);
+        console.log('Updating import job with:', updateData);
 
-            if (updateError) {
-              console.error('Failed to update import job:', updateError);
-            } else {
-              console.log('Import job updated successfully');
-              console.log('Import job final status:', importJob.id, updateData.status);
-            }
-          } catch (updateError) {
-            console.error('Failed to update import job:', updateError);
-          }
+        const { error: updateError } = await supabase
+          .from('import_jobs')
+          .update(updateData)
+          .eq('id', importJob.id);
+
+        if (updateError) {
+          console.error('CRITICAL: Failed to update import job status:', updateError);
+          console.error('Update error details:', updateError.details);
+          // Don't fail the import, but log the critical error
         } else {
-          console.log('No import job to update - this will cause issues with import history');
+          console.log('✅ Import job status updated successfully');
+          console.log('Final import job status:', finalStatus);
+          console.log('Import job ID:', importJob.id);
         }
+
+        // Verify the import job was actually created and updated
+        console.log('=== VERIFYING IMPORT JOB IN DATABASE ===');
+        const { data: verifyJob, error: verifyError } = await supabase
+          .from('import_jobs')
+          .select('*')
+          .eq('id', importJob.id)
+          .single();
+
+        if (verifyError) {
+          console.error('ERROR: Could not verify import job in database:', verifyError);
+        } else {
+          console.log('✅ Import job verified in database:', verifyJob);
+        }
+        console.log('=== IMPORT JOB VERIFICATION COMPLETE ===')
 
         setImportProgress(100);
 

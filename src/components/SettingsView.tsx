@@ -26,8 +26,21 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
   const fetchImportJobs = async () => {
     try {
-      console.log('Fetching import jobs for team:', teamId);
+      console.log('=== FETCHING IMPORT JOBS ===');
+      console.log('Team ID:', teamId);
       
+      // First check if we can access the table at all
+      const { count, error: countError } = await supabase
+        .from('import_jobs')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) {
+        console.error('Error accessing import_jobs table:', countError);
+      } else {
+        console.log('Total import jobs in database:', count);
+      }
+
+      // Now fetch jobs for our team
       const { data, error } = await supabase
         .from('import_jobs')
         .select('*')
@@ -37,6 +50,9 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
       if (error) {
         console.error('Error fetching import jobs:', error);
+        console.error('Error details:', error.details);
+        console.error('Error hint:', error.hint);
+        console.error('Error code:', error.code);
         toast({
           title: "Fehler",
           description: "Import-Jobs konnten nicht geladen werden.",
@@ -44,11 +60,24 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
         });
       } else {
         console.log('Import jobs fetched successfully:', data?.length || 0, 'jobs found');
-        console.log('Import jobs data:', data);
+        console.log('Raw import jobs data:', data);
+        if (data && data.length > 0) {
+          data.forEach((job, index) => {
+            console.log(`Job ${index + 1}:`, {
+              id: job.id,
+              file_name: job.file_name,
+              status: job.status,
+              team_id: job.team_id,
+              created_at: job.created_at,
+              total_records: job.total_records
+            });
+          });
+        }
         setImportJobs(data || []);
       }
+      console.log('=== FETCH IMPORT JOBS COMPLETE ===');
     } catch (error) {
-      console.error('Error fetching import jobs:', error);
+      console.error('Unexpected error fetching import jobs:', error);
       toast({
         title: "Fehler",
         description: "Ein unerwarteter Fehler ist aufgetreten.",

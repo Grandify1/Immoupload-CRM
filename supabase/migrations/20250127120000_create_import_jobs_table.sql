@@ -32,6 +32,9 @@ CREATE POLICY "Users can insert import jobs for their team" ON public.import_job
 CREATE POLICY "Users can update import jobs from their team" ON public.import_jobs
     FOR UPDATE USING (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()));
 
+CREATE POLICY "Users can delete import jobs from their team" ON public.import_jobs
+    FOR DELETE USING (team_id = (SELECT team_id FROM public.profiles WHERE id = auth.uid()));
+
 -- Create trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
