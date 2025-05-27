@@ -5,6 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 // Simple IMAP client implementation
@@ -123,7 +124,11 @@ class SimpleIMAPClient {
 
   async close(): Promise<void> {
     if (this.writer) {
-      await this.sendCommand('LOGOUT');
+      try {
+        await this.sendCommand('LOGOUT');
+      } catch (error) {
+        console.log('Logout error (ignored):', error);
+      }
       await this.writer.close();
     }
     if (this.conn) {
@@ -133,11 +138,17 @@ class SimpleIMAPClient {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { 
+      headers: corsHeaders,
+      status: 200
+    })
   }
 
   try {
+    console.log(`Delete email request: ${req.method}`)
+    
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -156,6 +167,7 @@ serve(async (req) => {
       .single()
 
     if (emailError || !email) {
+      console.error('Email not found:', emailError)
       throw new Error('Email not found')
     }
 
@@ -183,20 +195,24 @@ serve(async (req) => {
       await imap.selectMailbox('INBOX');
       
       // Search for email by Message-ID
-      const uids = await imap.searchByMessageId(email.message_id);
-      
-      if (uids.length === 0) {
-        console.log('Email not found on IMAP server (may already be deleted)');
-      } else {
-        const uid = uids[0];
+      if (email.message_id) {
+        const uids = await imap.searchByMessageId(email.message_id);
         
-        if (permanent) {
-          await imap.permanentDelete(uid);
-          console.log(`✅ Email permanently deleted from IMAP server`);
+        if (uids.length === 0) {
+          console.log('Email not found on IMAP server (may already be deleted)');
         } else {
-          await imap.moveToTrash(uid);
-          console.log(`✅ Email moved to trash on IMAP server`);
+          const uid = uids[0];
+          
+          if (permanent) {
+            await imap.permanentDelete(uid);
+            console.log(`✅ Email permanently deleted from IMAP server`);
+          } else {
+            await imap.moveToTrash(uid);
+            console.log(`✅ Email moved to trash on IMAP server`);
+          }
         }
+      } else {
+        console.log('No message_id found, skipping IMAP deletion');
       }
       
       await imap.close();
@@ -220,6 +236,7 @@ serve(async (req) => {
         .eq('team_id', userId)
 
       if (deleteError) {
+        console.error('Database delete error:', deleteError)
         throw deleteError
       }
 
@@ -231,7 +248,10 @@ serve(async (req) => {
           message: 'Email permanently deleted from server and database',
           action: 'permanent_delete'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
       )
     } else {
       // Soft delete - mark as deleted and move to trash folder
@@ -246,6 +266,7 @@ serve(async (req) => {
         .eq('team_id', userId)
 
       if (updateError) {
+        console.error('Database update error:', updateError)
         throw updateError
       }
 
@@ -257,15 +278,24 @@ serve(async (req) => {
           message: 'Email moved to trash on server and marked as deleted',
           action: 'move_to_trash'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
       )
     }
 
   } catch (error) {
     console.error('Delete email error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      JSON.stringify({ 
+        error: error.message || 'Unknown error occurred',
+        details: error.toString()
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 400 
+      }
     )
   }
 })
