@@ -669,6 +669,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         // Process each lead individually to handle duplicates properly
         for (const lead of batch) {
           try {
+            console.log(`\n📋 Processing lead: "${lead.name}" from CSV`);
+            console.log('Lead data:', {
+              name: lead.name,
+              email: lead.email,
+              phone: lead.phone,
+              website: lead.website
+            });
+            
             let existingLead = null;
             let checkError = null;
 
@@ -678,23 +686,31 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               const detectionValue = lead[detectionField];
 
               if (detectionValue && detectionValue.trim()) {
+                console.log(`🔍 Checking for duplicate using ${detectionField}: "${detectionValue}"`);
+                
                 const query = supabase
                   .from('leads')
                   .select('id, name, email, phone, website, address, description, status, custom_fields')
                   .eq('team_id', profile.team_id);
 
-                // Add the appropriate filter based on detection field
+                // Add the appropriate filter based on detection field with exact match
                 if (detectionField === 'name') {
-                  query.eq('name', detectionValue);
+                  query.eq('name', detectionValue.trim());
                 } else if (detectionField === 'email') {
-                  query.eq('email', detectionValue);
+                  query.eq('email', detectionValue.trim());
                 } else if (detectionField === 'phone') {
-                  query.eq('phone', detectionValue);
+                  query.eq('phone', detectionValue.trim());
                 }
 
                 const result = await query.single();
                 existingLead = result.data;
                 checkError = result.error;
+                
+                if (existingLead) {
+                  console.log(`⚠️ DUPLICATE FOUND: CSV "${detectionValue}" matches existing lead "${existingLead[detectionField]}" (ID: ${existingLead.id})`);
+                } else {
+                  console.log(`✅ No duplicate found for ${detectionField}: "${detectionValue}"`);
+                }
               }
             }
 
@@ -711,11 +727,11 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               const detectionValue = lead[detectionField];
               
               if (duplicateConfig.duplicateAction === 'skip') {
-                console.log(`⏭️ Skipping duplicate lead (${detectionField}: ${detectionValue})`);
+                console.log(`⏭️ SKIPPING: CSV lead "${lead.name}" because duplicate found with existing lead "${existingLead.name}" (${detectionField}: ${detectionValue})`);
                 duplicateRecords++;
                 continue;
               } else if (duplicateConfig.duplicateAction === 'update') {
-                console.log(`🔄 Updating existing lead (${detectionField}: ${detectionValue})`);
+                console.log(`🔄 UPDATING: Existing lead "${existingLead.name}" (ID: ${existingLead.id}) with data from CSV lead "${lead.name}"`);
                 
                 // Merge data intelligently: only update fields that have values and are different
                 const updateData: any = {
@@ -723,10 +739,22 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                 };
 
                 // Update standard fields if they have values and are different
-                if (lead.name && lead.name !== existingLead.name) updateData.name = lead.name;
-                if (lead.email && lead.email !== existingLead.email) updateData.email = lead.email;
-                if (lead.phone && lead.phone !== existingLead.phone) updateData.phone = lead.phone;
-                if (lead.website && lead.website !== existingLead.website) updateData.website = lead.website;
+                if (lead.name && lead.name !== existingLead.name) {
+                  console.log(`  - Updating name: "${existingLead.name}" → "${lead.name}"`);
+                  updateData.name = lead.name;
+                }
+                if (lead.email && lead.email !== existingLead.email) {
+                  console.log(`  - Updating email: "${existingLead.email}" → "${lead.email}"`);
+                  updateData.email = lead.email;
+                }
+                if (lead.phone && lead.phone !== existingLead.phone) {
+                  console.log(`  - Updating phone: "${existingLead.phone}" → "${lead.phone}"`);
+                  updateData.phone = lead.phone;
+                }
+                if (lead.website && lead.website !== existingLead.website) {
+                  console.log(`  - Updating website: "${existingLead.website}" → "${lead.website}"`);
+                  updateData.website = lead.website;
+                }
                 if (lead.address && lead.address !== existingLead.address) updateData.address = lead.address;
                 if (lead.description && lead.description !== existingLead.description) updateData.description = lead.description;
                 if (lead.status && lead.status !== existingLead.status) updateData.status = lead.status;
@@ -738,6 +766,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                     ...existingCustomFields,
                     ...lead.custom_fields
                   };
+                  console.log(`  - Updating custom fields:`, lead.custom_fields);
                 }
 
                 const { error: updateError } = await supabase
@@ -749,7 +778,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                   console.error(`❌ Error updating lead (${detectionField}: ${detectionValue}):`, updateError);
                   failedRecords++;
                 } else {
-                  console.log(`✅ Successfully updated lead (${detectionField}: ${detectionValue})`);
+                  console.log(`✅ Successfully updated existing lead "${existingLead.name}" with CSV data`);
                   updatedRecords++;
                   processedRecords++;
                 }
@@ -786,27 +815,27 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
             } else {
               // Lead doesn't exist - insert new one
-              console.log(`📝 Inserting new lead: ${lead.name}`);
+              console.log(`📝 INSERTING NEW LEAD: "${lead.name}" from CSV (no duplicates found)`);
               
               const { data: insertedLead, error: insertError } = await supabase
                 .from('leads')
                 .insert([lead])
-                .select('id')
+                .select('id, name')
                 .single();
 
               if (insertError) {
-                console.error(`❌ Error inserting lead ${lead.name}:`, insertError);
+                console.error(`❌ Error inserting lead "${lead.name}":`, insertError);
                 console.error('Full error details:', insertError);
                 
                 // Check if it's a duplicate error that slipped through
                 if (insertError.code === '23505' && insertError.message?.includes('already exists')) {
                   duplicateRecords++;
-                  console.log(`🔍 Duplicate detected for: ${lead.name}`);
+                  console.log(`🔍 Database constraint duplicate detected for: "${lead.name}"`);
                 } else {
                   failedRecords++;
                 }
               } else {
-                console.log(`✅ Successfully inserted lead: ${lead.name}`);
+                console.log(`✅ Successfully inserted new lead: "${insertedLead.name}" (ID: ${insertedLead.id})`);
                 processedRecords++;
               }
             }
