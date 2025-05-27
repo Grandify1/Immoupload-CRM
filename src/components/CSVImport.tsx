@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -453,7 +454,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('=== STARTING IMPORT PROCESS ===');
       setStep('importing');
       setImportProgress(0);
-      setError(null); // Clear any previous errors
+      setError(null);
 
       // Check if we have any leads to import
       if (!csvData || csvData.length === 0) {
@@ -465,54 +466,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('CSV data rows:', csvData.length);
       console.log('Mappings:', mappings);
 
-      const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
-      console.log('Custom fields to create:', customFieldMappings);
-
-      // Create new custom fields first
-      for (const mapping of customFieldMappings) {
-        if (mapping.fieldName) {
-          try {
-            console.log('Creating custom field:', mapping.fieldName);
-            await onAddCustomField(mapping.fieldName, mapping.customFieldType);
-            console.log('✅ Custom field created:', mapping.fieldName);
-          } catch (error) {
-            console.log('Custom field might already exist:', mapping.fieldName, error);
-          }
-        }
-      }
-
-      console.log('=== PROCESSING CSV DATA ===');
-      const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = [];
-
-      for (let i = 0; i < csvData.length; i++) {
-        const row = csvData[i];
-        const lead: any = {
-          custom_fields: {}
-        };
-
-        mappings.forEach((mapping, index) => {
-          if (mapping.fieldName && index < row.length) {
-            const value = row[index]?.trim();
-            if (!value) return; // Skip empty values
-
-            const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
-
-            if (targetField && standardFields.some(sf => sf.name === targetField.name)) {
-               if (targetField.name === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
-                 lead[targetField.name] = 'potential';
-               } else {
-                 lead[targetField.name] = value;
-               }
-            } else if (mapping.createCustomField && mapping.fieldName) {
-              lead.custom_fields[mapping.fieldName] = value;
-            } else if (targetField && targetField.isCustom) {
-              // Use the standardized field key for custom fields
-              lead.custom_fields[targetField.name] = value;
-            }
-          }
-        });
-
-        // Get current user info for import job FIRST
+      // Get current user info for import job FIRST
       console.log('=== GETTING USER INFO ===');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) {
@@ -555,7 +509,25 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('✅ Profile found, team_id:', profile.team_id);
       setImportProgress(30);
 
-      // Now process CSV data with the profile information
+      const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
+      console.log('Custom fields to create:', customFieldMappings);
+
+      // Create new custom fields first
+      for (const mapping of customFieldMappings) {
+        if (mapping.fieldName) {
+          try {
+            console.log('Creating custom field:', mapping.fieldName);
+            await onAddCustomField(mapping.fieldName, mapping.customFieldType);
+            console.log('✅ Custom field created:', mapping.fieldName);
+          } catch (error) {
+            console.log('Custom field might already exist:', mapping.fieldName, error);
+          }
+        }
+      }
+
+      console.log('=== PROCESSING CSV DATA ===');
+      const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = [];
+
       for (let i = 0; i < csvData.length; i++) {
         const row = csvData[i];
         const lead: any = {
@@ -658,9 +630,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       // Now perform the actual import
       console.log('=== STARTING LEAD IMPORT ===');
-      let processedCount = 0;
-      let failedCount = 0;
-      const failedLeads: any[] = [];
       const batchSize = 100;
       let batchIndex = 0;
       let totalBatches = Math.ceil(leads.length / batchSize);
@@ -864,7 +833,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                         <div className="flex items-center space-x-2">
                           {!mapping.createCustomField ? (
                             <Button
-                              variant="outline"size="sm"
+                              variant="outline"
+                              size="sm"
                               onClick={() => handleCustomFieldToggle(index, true)}
                             >
                               <Plus className="w-4 h-4 mr-1" />
