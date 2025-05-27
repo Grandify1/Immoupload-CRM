@@ -983,35 +983,73 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
               {!selectedActivityTemplate ? (
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="template-select">Select Template</Label>
-                    <Select onValueChange={(value) => {
-                      const template = activityTemplates?.find(t => t.id === value);
-                      console.log('Selected template:', template);
-                      setSelectedActivityTemplate(template || null);
-                      if (template) {
-                        // Initialize template field values
-                        const initialValues: Record<string, string> = {};
-                        if (template.fields && Array.isArray(template.fields)) {
-                          template.fields.forEach(field => {
-                            initialValues[field.name] = '';
-                          });
-                        }
-                        console.log('Initial field values:', initialValues);
-                        setTemplateFieldValues(initialValues);
-                      }
-                    }}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose an activity template" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {activityTemplates?.map((template) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <h3 className="text-lg font-medium text-gray-900">Select Activity Template</h3>
+                  <p className="text-sm text-gray-600">Choose a template to get started with your activity.</p>
+                  
+                  <div className="grid gap-3 max-h-[400px] overflow-y-auto">
+                    {activityTemplates && activityTemplates.length > 0 ? (
+                      activityTemplates.map((template) => (
+                        <Card 
+                          key={template.id} 
+                          className="cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 border-2"
+                          onClick={() => {
+                            console.log('Selected template:', template);
+                            setSelectedActivityTemplate(template);
+                            if (template) {
+                              // Initialize template field values
+                              const initialValues: Record<string, string> = {};
+                              if (template.fields && Array.isArray(template.fields)) {
+                                template.fields.forEach(field => {
+                                  initialValues[field.name] = '';
+                                });
+                              }
+                              console.log('Initial field values:', initialValues);
+                              setTemplateFieldValues(initialValues);
+                            }
+                          }}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <Briefcase className="w-4 h-4 text-blue-600" />
+                                  </div>
+                                  <h4 className="font-semibold text-gray-900">{template.name}</h4>
+                                </div>
+                                {template.description && (
+                                  <p className="text-sm text-gray-600 mb-3">{template.description}</p>
+                                )}
+                                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                  <span className="flex items-center space-x-1">
+                                    <FileText className="w-3 h-3" />
+                                    <span>{template.fields?.length || 0} fields</span>
+                                  </span>
+                                  {template.created_at && (
+                                    <span>Created {new Date(template.created_at).toLocaleDateString()}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                  <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <div className="text-center py-12 text-gray-500">
+                        <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Activity Templates</h3>
+                        <p className="text-sm text-gray-600 mb-4">Create your first activity template to get started.</p>
+                        <Button variant="outline" size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Template
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
