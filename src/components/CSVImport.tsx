@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -74,7 +73,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     }
     console.log('=== End Custom Fields Debug ===');
   }, [customFields]);
-  
+
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [mappings, setMappings] = useState<MappingType[]>([]);
@@ -177,12 +176,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               delimiter,
               count: (sample.match(new RegExp(`\\${delimiter}`, 'g')) || []).length
             }));
-            
+
             // Wähle das Trennzeichen mit den meisten Vorkommen
             const bestDelimiter = counts.reduce((prev, current) => 
               current.count > prev.count ? current : prev
             );
-            
+
             console.log('CSV delimiter detection:', counts, 'Selected:', bestDelimiter.delimiter);
             return bestDelimiter.delimiter;
           };
@@ -256,7 +255,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           // Clean headers - remove quotes and normalize
           const headers = result[0].map(h => {
             let cleanHeader = h.replace(/^["']|["']$/g, '').trim();
-            
+
             // Normalisiere deutsche Umlaute und Sonderzeichen für bessere Zuordnung
             const normalizeGermanText = (text: string): string => {
               return text
@@ -288,14 +287,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             if (cleanRow.length > headers.length) {
               cleanRow.splice(headers.length);
             }
-            
+
             return cleanRow.map(cell => {
               // Remove quotes and clean cell content
               let cleanCell = cell.replace(/^["']|["']$/g, '').trim();
-              
+
               // Handle multiline content in cells
               cleanCell = cleanCell.replace(/\r\n|\r|\n/g, ' ').trim();
-              
+
               return cleanCell;
             });
           });
@@ -341,7 +340,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         const createFieldMapping = (header: string, headerMeta: any): MappingType => {
           const headerLower = header.toLowerCase();
           const headerNormalized = headerMeta.normalized || header.toLowerCase();
-          
+
           // Erweiterte Zuordnungsregeln für verschiedene Sprachen und Formate
           const fieldMappings = {
             // Standard Lead Felder - Deutsch
@@ -352,7 +351,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             'address': ['address', 'adresse', 'anschrift', 'standort', 'ort', 'location'],
             'description': ['description', 'beschreibung', 'info', 'information', 'details', 'kommentar'],
             'status': ['status', 'zustand', 'state', 'stage'],
-            
+
             // Spezielle Felder aus Google Maps Daten
             'reviews': ['reviews', 'bewertungen', 'anzahl_bewertungen', 'review_count'],
             'rating': ['rating', 'bewertung', 'sterne', 'stars', 'durchschnitt'],
@@ -598,8 +597,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('✅ Profile found, team_id:', profile.team_id);
       setImportProgress(35);
 
-      // Create import job record BEFORE importing
-      console.log('=== CREATING IMPORT JOB ===');
+      // Create import job entry in Supabase
+      console.log('=== CREATING IMPORT JOB IN SUPABASE ===');
       const importJobData = {
         file_name: file?.name || 'unknown.csv',
         total_records: leads.length,
@@ -625,7 +624,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         console.error('Job error details:', jobError.details);
         console.error('Job error hint:', jobError.hint);
         console.error('Job error code:', jobError.code);
-        
+
         // If table doesn't exist, proceed with import but warn user
         if (jobError.code === 'PGRST204' || jobError.code === '42P01') {
           console.warn('⚠️ Import jobs table not found, proceeding without tracking...');
@@ -653,81 +652,88 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       let processedCount = 0;
       let failedCount = 0;
       const failedLeads: any[] = [];
+      const batchSize = 100;
+      let batchIndex = 0;
+      let totalBatches = Math.ceil(leads.length / batchSize);
+      let processedRecords = 0;
+      let failedRecords = 0;
 
-      try {
-        console.log('Calling onImport with', leads.length, 'leads');
-        await onImport(leads);
-        processedCount = leads.length;
-        failedCount = 0;
-        console.log('✅ All leads imported successfully');
-      } catch (importError: any) {
-        console.error('❌ Batch import failed, trying individual imports:', importError);
-        
-        // Fallback: try importing leads individually
-        for (let i = 0; i < leads.length; i++) {
-          const lead = leads[i];
-          try {
-            await onImport([lead]);
-            processedCount++;
-            console.log(`✅ Lead ${i + 1} imported successfully`);
-          } catch (leadError: any) {
-            failedCount++;
-            console.error(`❌ Lead ${i + 1} failed:`, leadError);
-            
-            if (!leadError?.message?.includes('duplicate key')) {
-              failedLeads.push({ 
-                lead: lead, 
-                error: leadError.message || 'Unknown error' 
-              });
-            }
-          }
-          
-          // Update progress during individual imports
-          setImportProgress(40 + Math.round(((i + 1) / leads.length) * 50));
+      // Split leads into batches for more efficient insertion
+      for (let i = 0; i < leads.length; i += batchSize) {
+        const batch = leads.slice(i, i + batchSize);
+        batchIndex = Math.floor(i / batchSize);
+
+        // Insert leads in batches using Supabase
+        console.log(`=== INSERTING BATCH ${batchIndex + 1}/${totalBatches} (${batch.length} leads) TO SUPABASE ===`);
+
+        const { data: insertedLeads, error: insertError } = await supabase
+          .from('leads')
+          .insert(batch)
+          .select('id');
+
+        if (insertError) {
+          console.error(`❌ Supabase error inserting batch ${batchIndex + 1}:`, insertError);
+          failedRecords += batch.length;
+
+          // Update import job with error in Supabase
+          await supabase
+            .from('import_jobs')
+            .update({
+              failed_records: failedRecords,
+              error_details: { 
+                batch: batchIndex + 1,
+                error: insertError.message,
+                details: insertError.details || 'Unknown Supabase error'
+              }
+            })
+            .eq('id', importJob.id);
+
+          continue;
         }
+
+        console.log(`✅ Successfully inserted batch ${batchIndex + 1} to Supabase, ${insertedLeads?.length || 0} leads`);
+        processedRecords += insertedLeads?.length || 0;
+
+        // Update progress
+        setImportProgress(40 + Math.round(((i + batchSize) / leads.length) * 50));
       }
 
       setImportProgress(90);
 
-      // Update import job status (only if job was created successfully)
-      if (importJob?.id) {
-        console.log('=== UPDATING IMPORT JOB STATUS ===');
-        const finalStatus = failedCount > 0 ? 'completed_with_errors' : 'completed';
-        const updateData = {
-          processed_records: processedCount,
-          failed_records: failedCount,
+      // Update final import job status in Supabase
+      const finalStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
+
+      console.log('=== UPDATING FINAL IMPORT JOB STATUS IN SUPABASE ===');
+      console.log('Final status:', finalStatus);
+      console.log('Processed records:', processedRecords);
+      console.log('Failed records:', failedRecords);
+
+      const { error: updateError } = await supabase
+        .from('import_jobs')
+        .update({
           status: finalStatus,
-          error_details: failedLeads.length > 0 ? JSON.stringify(failedLeads.slice(0, 10)) : null,
+          processed_records: processedRecords,
+          failed_records: failedRecords,
           updated_at: new Date().toISOString()
-        };
+        })
+        .eq('id', importJob.id);
 
-        console.log('Updating import job with:', updateData);
-
-        const { error: updateError } = await supabase
-          .from('import_jobs')
-          .update(updateData)
-          .eq('id', importJob.id);
-
-        if (updateError) {
-          console.error('❌ Failed to update import job status:', updateError);
-          // Don't fail the import, just log the error
-        } else {
-          console.log('✅ Import job status updated successfully');
-        }
+      if (updateError) {
+        console.error('❌ Error updating import job status in Supabase:', updateError);
       } else {
-        console.log('⚠️ Skipping import job status update - no job ID available');
+        console.log('✅ Import job status updated successfully in Supabase');
       }
 
       setImportProgress(100);
 
       // Show final result
       let summaryMessage = '';
-      if (failedCount === 0) {
-        summaryMessage = `✅ Import erfolgreich: ${processedCount} Leads importiert.`;
-      } else if (processedCount === 0) {
-        summaryMessage = `❌ Import fehlgeschlagen: ${failedCount} Leads konnten nicht importiert werden.`;
+      if (failedRecords === 0) {
+        summaryMessage = `✅ Import erfolgreich: ${processedRecords} Leads importiert.`;
+      } else if (processedRecords === 0) {
+        summaryMessage = `❌ Import fehlgeschlagen: ${failedRecords} Leads konnten nicht importiert werden.`;
       } else {
-        summaryMessage = `⚠️ Import abgeschlossen: ${processedCount} erfolgreich, ${failedCount} fehlgeschlagen.`;
+        summaryMessage = `⚠️ Import abgeschlossen: ${processedRecords} erfolgreich, ${failedRecords} fehlgeschlagen.`;
       }
 
       console.log('=== IMPORT COMPLETE ===');
@@ -817,13 +823,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                           <SelectContent>
                             <SelectItem value="__skip__">Do not import</SelectItem>
                             {(() => {
-                              console.log('Rendering dropdown options for:', mapping.csvHeader);
                               console.log('Available fields for dropdown:', allAvailableFields);
                               return allAvailableFields.map(field => {
-                                console.log('Adding dropdown option:', field);
+                                const fieldValue = typeof field === 'string' ? field : field.value || field.name || String(field);
+                                console.log('Adding dropdown option:', fieldValue);
                                 return (
-                                  <SelectItem key={field.name} value={field.name}>
-                                    {field.label}
+                                  <SelectItem key={fieldValue} value={fieldValue}>
+                                    {fieldValue}
                                   </SelectItem>
                                 );
                               });
@@ -835,8 +841,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                         <div className="flex items-center space-x-2">
                           {!mapping.createCustomField ? (
                             <Button
-                              variant="outline"
-                              size="sm"
+                              variant="outline"size="sm"
                               onClick={() => handleCustomFieldToggle(index, true)}
                             >
                               <Plus className="w-4 h-4 mr-1" />
