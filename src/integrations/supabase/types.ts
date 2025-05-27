@@ -161,6 +161,63 @@ export type Database = {
           },
         ]
       }
+      import_jobs: {
+        Row: {
+          created_at: string
+          created_by: string
+          error_details: Json | null
+          failed_records: number
+          file_name: string
+          id: string
+          processed_records: number
+          status: string
+          team_id: string
+          total_records: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          error_details?: Json | null
+          failed_records?: number
+          file_name: string
+          id?: string
+          processed_records?: number
+          status?: string
+          team_id: string
+          total_records: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          error_details?: Json | null
+          failed_records?: number
+          file_name?: string
+          id?: string
+          processed_records?: number
+          status?: string
+          team_id?: string
+          total_records?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_jobs_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           created_at: string

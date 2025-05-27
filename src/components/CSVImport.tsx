@@ -391,6 +391,21 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('Sample lead:', leads[0]);
       
       try {
+        // Get current user info for import job
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('team_id')
+          .eq('id', user?.id)
+          .single();
+
+        if (!user?.id || !profile?.team_id) {
+          console.error('User or team not found');
+          setError('Fehler: Benutzer oder Team nicht gefunden.');
+          setStep('preview');
+          return;
+        }
+
         // Create import job record first
         const importJobData = {
           file_name: file?.name || 'unknown.csv',
@@ -398,7 +413,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           processed_records: 0,
           failed_records: 0,
           status: 'processing' as const,
-          error_details: null
+          error_details: null,
+          team_id: profile.team_id,
+          created_by: user.id
         };
         
         console.log('Creating import job:', importJobData);
