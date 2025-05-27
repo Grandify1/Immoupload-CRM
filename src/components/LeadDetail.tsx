@@ -242,7 +242,35 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   };
 
   const handleSubmitActivity = () => {
-    // Logic for handling the submitted activity
+    if (!selectedActivityTemplate || !profile) return;
+
+    // Create content for the activity from template field values
+    const content = `${selectedActivityTemplate.name}\n\n${Object.entries(templateFieldValues)
+      .map(([fieldName, value]) => `${fieldName}: ${value}`)
+      .join('\n')}`;
+
+    // Create template data structure
+    const templateData = {
+      template_id: selectedActivityTemplate.id,
+      template_name: selectedActivityTemplate.name,
+      fields: selectedActivityTemplate.fields,
+      field_values: templateFieldValues
+    };
+
+    // Submit the activity
+    onAddActivity({
+      entity_type: 'lead',
+      entity_id: lead.id,
+      type: 'custom_activity',
+      content: content,
+      author_id: profile.id,
+      template_data: templateData
+    });
+
+    // Reset state and close modal
+    setSelectedActivityTemplate(null);
+    setTemplateFieldValues({});
+    setShowActivityForm(false);
   };
 
   return (
