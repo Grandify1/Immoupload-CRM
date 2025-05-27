@@ -1,0 +1,196 @@
+chunk-FJ2A54M7.js?v=723853c6:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:37 CRMLayout: Initial fetchData call
+CRMLayout.tsx:54 fetchData: Starting data fetch...
+CRMLayout.tsx:135 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:123 fetchData: Finished data fetch.
+CSVImport.tsx:37 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:38 All customFields received: Array(20)
+CSVImport.tsx:39 customFields is array? true
+CSVImport.tsx:40 customFields length: 20
+CSVImport.tsx:43 Lead custom fields: Array(20)
+CSVImport.tsx:44 First custom field example: Object
+CSVImport.tsx:48 Custom Field 0: Object
+CSVImport.tsx:48 Custom Field 1: Object
+CSVImport.tsx:48 Custom Field 2: Object
+CSVImport.tsx:48 Custom Field 3: Object
+CSVImport.tsx:48 Custom Field 4: Object
+CSVImport.tsx:48 Custom Field 5: Object
+CSVImport.tsx:48 Custom Field 6: Object
+CSVImport.tsx:48 Custom Field 7: Object
+CSVImport.tsx:48 Custom Field 8: Object
+CSVImport.tsx:48 Custom Field 9: Object
+CSVImport.tsx:48 Custom Field 10: Object
+CSVImport.tsx:48 Custom Field 11: Object
+CSVImport.tsx:48 Custom Field 12: Object
+CSVImport.tsx:48 Custom Field 13: Object
+CSVImport.tsx:48 Custom Field 14: Object
+CSVImport.tsx:48 Custom Field 15: Object
+CSVImport.tsx:48 Custom Field 16: Object
+CSVImport.tsx:48 Custom Field 17: Object
+CSVImport.tsx:48 Custom Field 18: Object
+CSVImport.tsx:48 Custom Field 19: Object
+CSVImport.tsx:80 === End Custom Fields Debug ===
+@radix-ui_react-dialog.js?v=723853c6:336 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ @radix-ui_react-dialog.js?v=723853c6:336
+commitHookEffectListMount @ chunk-FJ2A54M7.js?v=723853c6:16915
+commitPassiveMountOnFiber @ chunk-FJ2A54M7.js?v=723853c6:18156
+commitPassiveMountEffects_complete @ chunk-FJ2A54M7.js?v=723853c6:18129
+commitPassiveMountEffects_begin @ chunk-FJ2A54M7.js?v=723853c6:18119
+commitPassiveMountEffects @ chunk-FJ2A54M7.js?v=723853c6:18109
+flushPassiveEffectsImpl @ chunk-FJ2A54M7.js?v=723853c6:19490
+flushPassiveEffects @ chunk-FJ2A54M7.js?v=723853c6:19447
+commitRootImpl @ chunk-FJ2A54M7.js?v=723853c6:19416
+commitRoot @ chunk-FJ2A54M7.js?v=723853c6:19277
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=723853c6:18895
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=723853c6:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=723853c6:18627
+Show 13 more frames
+Show less
+CSVImport.tsx:178 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:198 CSV quote character detected: "
+CSVImport.tsx:295 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:296 Headers detected: Array(22)
+CSVImport.tsx:321 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:369 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:369 Auto-mapped "name" to "name"
+CSVImport.tsx:369 Auto-mapped "description" to "description"
+CSVImport.tsx:389 Exact match found for "is_spending_on_ads" -> "is_spending_on_ads"
+CSVImport.tsx:369 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:369 Auto-mapped "rating" to "rating"
+CSVImport.tsx:369 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:369 Auto-mapped "website" to "website"
+CSVImport.tsx:369 Auto-mapped "phone" to "phone"
+CSVImport.tsx:369 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:369 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:369 Auto-mapped "owner_profile_link" to "website"
+CSVImport.tsx:369 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:389 Exact match found for "main_category" -> "main_category"
+CSVImport.tsx:389 Exact match found for "categories" -> "categories"
+CSVImport.tsx:389 Exact match found for "workday_timing" -> "workday_timing"
+CSVImport.tsx:389 Exact match found for "is_temporarily_closed" -> "is_temporarily_closed"
+CSVImport.tsx:389 Exact match found for "closed_on" -> "closed_on"
+CSVImport.tsx:369 Auto-mapped "address" to "address"
+CSVImport.tsx:389 Exact match found for "review_keywords" -> "review_keywords"
+CSVImport.tsx:369 Auto-mapped "link" to "website"
+CSVImport.tsx:389 Exact match found for "query" -> "query"
+CSVImport.tsx:1044 Uncaught ReferenceError: Card is not defined
+    at CSVImport (CSVImport.tsx:1044:16)
+    at renderWithHooks (chunk-FJ2A54M7.js?v=723853c6:11548:26)
+    at updateFunctionComponent (chunk-FJ2A54M7.js?v=723853c6:14582:28)
+    at beginWork (chunk-FJ2A54M7.js?v=723853c6:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=723853c6:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=723853c6:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=723853c6:3733:39)
+    at beginWork$1 (chunk-FJ2A54M7.js?v=723853c6:19765:15)
+    at performUnitOfWork (chunk-FJ2A54M7.js?v=723853c6:19198:20)
+    at workLoopSync (chunk-FJ2A54M7.js?v=723853c6:19137:13)
+CSVImport @ CSVImport.tsx:1044
+renderWithHooks @ chunk-FJ2A54M7.js?v=723853c6:11548
+updateFunctionComponent @ chunk-FJ2A54M7.js?v=723853c6:14582
+beginWork @ chunk-FJ2A54M7.js?v=723853c6:15924
+callCallback2 @ chunk-FJ2A54M7.js?v=723853c6:3674
+invokeGuardedCallbackDev @ chunk-FJ2A54M7.js?v=723853c6:3699
+invokeGuardedCallback @ chunk-FJ2A54M7.js?v=723853c6:3733
+beginWork$1 @ chunk-FJ2A54M7.js?v=723853c6:19765
+performUnitOfWork @ chunk-FJ2A54M7.js?v=723853c6:19198
+workLoopSync @ chunk-FJ2A54M7.js?v=723853c6:19137
+renderRootSync @ chunk-FJ2A54M7.js?v=723853c6:19116
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=723853c6:18874
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=723853c6:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=723853c6:18627
+Show 13 more frames
+Show less
+CSVImport.tsx:1044 Uncaught ReferenceError: Card is not defined
+    at CSVImport (CSVImport.tsx:1044:16)
+    at renderWithHooks (chunk-FJ2A54M7.js?v=723853c6:11548:26)
+    at updateFunctionComponent (chunk-FJ2A54M7.js?v=723853c6:14582:28)
+    at beginWork (chunk-FJ2A54M7.js?v=723853c6:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=723853c6:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=723853c6:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=723853c6:3733:39)
+    at beginWork$1 (chunk-FJ2A54M7.js?v=723853c6:19765:15)
+    at performUnitOfWork (chunk-FJ2A54M7.js?v=723853c6:19198:20)
+    at workLoopSync (chunk-FJ2A54M7.js?v=723853c6:19137:13)
+CSVImport @ CSVImport.tsx:1044
+renderWithHooks @ chunk-FJ2A54M7.js?v=723853c6:11548
+updateFunctionComponent @ chunk-FJ2A54M7.js?v=723853c6:14582
+beginWork @ chunk-FJ2A54M7.js?v=723853c6:15924
+callCallback2 @ chunk-FJ2A54M7.js?v=723853c6:3674
+invokeGuardedCallbackDev @ chunk-FJ2A54M7.js?v=723853c6:3699
+invokeGuardedCallback @ chunk-FJ2A54M7.js?v=723853c6:3733
+beginWork$1 @ chunk-FJ2A54M7.js?v=723853c6:19765
+performUnitOfWork @ chunk-FJ2A54M7.js?v=723853c6:19198
+workLoopSync @ chunk-FJ2A54M7.js?v=723853c6:19137
+renderRootSync @ chunk-FJ2A54M7.js?v=723853c6:19116
+recoverFromConcurrentError @ chunk-FJ2A54M7.js?v=723853c6:18736
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=723853c6:18879
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=723853c6:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=723853c6:18627
+Show 14 more frames
+Show less
+chunk-FJ2A54M7.js?v=723853c6:14032 The above error occurred in the <CSVImport> component:
+
+    at CSVImport (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/CSVImport.tsx:19:22)
+    at div
+    at LeadsView (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/LeadsView.tsx:37:29)
+    at div
+    at div
+    at CRMLayout (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/CRMLayout.tsx:25:22)
+    at Index (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/pages/Index.tsx:20:44)
+    at RenderedRoute (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=723853c6:4069:5)
+    at Routes (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=723853c6:4508:5)
+    at Router (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=723853c6:4451:15)
+    at BrowserRouter (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=723853c6:5196:5)
+    at Provider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/chunk-Y7IJGSUZ.js?v=723853c6:38:15)
+    at TooltipProvider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=723853c6:59:5)
+    at QueryClientProvider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=723853c6:2794:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-FJ2A54M7.js?v=723853c6:14032
+update.callback @ chunk-FJ2A54M7.js?v=723853c6:14052
+callCallback @ chunk-FJ2A54M7.js?v=723853c6:11248
+commitUpdateQueue @ chunk-FJ2A54M7.js?v=723853c6:11265
+commitLayoutEffectOnFiber @ chunk-FJ2A54M7.js?v=723853c6:17093
+commitLayoutMountEffects_complete @ chunk-FJ2A54M7.js?v=723853c6:17980
+commitLayoutEffects_begin @ chunk-FJ2A54M7.js?v=723853c6:17969
+commitLayoutEffects @ chunk-FJ2A54M7.js?v=723853c6:17920
+commitRootImpl @ chunk-FJ2A54M7.js?v=723853c6:19353
+commitRoot @ chunk-FJ2A54M7.js?v=723853c6:19277
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=723853c6:18895
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=723853c6:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=723853c6:18627
+Show 13 more frames
+Show less
+chunk-FJ2A54M7.js?v=723853c6:9129 Uncaught ReferenceError: Card is not defined
+    at CSVImport (CSVImport.tsx:1044:16)
+    at renderWithHooks (chunk-FJ2A54M7.js?v=723853c6:11548:26)
+    at updateFunctionComponent (chunk-FJ2A54M7.js?v=723853c6:14582:28)
+    at beginWork (chunk-FJ2A54M7.js?v=723853c6:15924:22)
+    at beginWork$1 (chunk-FJ2A54M7.js?v=723853c6:19753:22)
+    at performUnitOfWork (chunk-FJ2A54M7.js?v=723853c6:19198:20)
+    at workLoopSync (chunk-FJ2A54M7.js?v=723853c6:19137:13)
+    at renderRootSync (chunk-FJ2A54M7.js?v=723853c6:19116:15)
+    at recoverFromConcurrentError (chunk-FJ2A54M7.js?v=723853c6:18736:28)
+    at performSyncWorkOnRoot (chunk-FJ2A54M7.js?v=723853c6:18879:28)
+CSVImport @ CSVImport.tsx:1044
+renderWithHooks @ chunk-FJ2A54M7.js?v=723853c6:11548
+updateFunctionComponent @ chunk-FJ2A54M7.js?v=723853c6:14582
+beginWork @ chunk-FJ2A54M7.js?v=723853c6:15924
+beginWork$1 @ chunk-FJ2A54M7.js?v=723853c6:19753
+performUnitOfWork @ chunk-FJ2A54M7.js?v=723853c6:19198
+workLoopSync @ chunk-FJ2A54M7.js?v=723853c6:19137
+renderRootSync @ chunk-FJ2A54M7.js?v=723853c6:19116
+recoverFromConcurrentError @ chunk-FJ2A54M7.js?v=723853c6:18736
+performSyncWorkOnRoot @ chunk-FJ2A54M7.js?v=723853c6:18879
+flushSyncCallbacks @ chunk-FJ2A54M7.js?v=723853c6:9119
+(anonymous) @ chunk-FJ2A54M7.js?v=723853c6:18627
+Show 11 more frames
+Show less
