@@ -28,7 +28,7 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
     try {
       console.log('=== FETCHING IMPORT JOBS ===');
       console.log('Team ID:', teamId);
-      
+
       // First check if we can access the table at all
       const { count, error: countError } = await supabase
         .from('import_jobs')
@@ -129,7 +129,7 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
           console.log('Event type:', payload.eventType);
           console.log('New data:', payload.new);
           console.log('Old data:', payload.old);
-          
+
           if (payload.new && payload.new.team_id === teamId) {
             console.log('Import job change for our team - refreshing list');
             fetchImportJobs(); // Refresh the list when changes occur
@@ -258,7 +258,7 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
       // We'll use created_at timestamp and team_id to identify leads from this import
       const importStartTime = new Date(job.created_at);
       const importEndTime = new Date(job.updated_at || job.created_at);
-      
+
       // Add some buffer time (5 minutes) around the import window
       importStartTime.setMinutes(importStartTime.getMinutes() - 5);
       importEndTime.setMinutes(importEndTime.getMinutes() + 5);
@@ -354,7 +354,7 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
 
     } catch (error: any) {
       console.error('Error undoing import:', error);
-      
+
       // Update job status to failed
       await supabase
         .from('import_jobs')
