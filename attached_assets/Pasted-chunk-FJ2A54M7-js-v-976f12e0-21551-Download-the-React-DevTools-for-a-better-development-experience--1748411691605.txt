@@ -1,0 +1,110 @@
+chunk-FJ2A54M7.js?v=976f12e0:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:49 CRMLayout: Initial fetchData call
+CRMLayout.tsx:65 fetchData: Starting data fetch...
+CRMLayout.tsx:139 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:129 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+LeadDetail.tsx:375 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+chunk-FJ2A54M7.js?v=976f12e0:3750 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+useProfile.tsx:54 Skipping profile fetch - already have data for this user
+CRMLayout.tsx:43 CRMLayout: Initial fetchData call
+CRMLayout.tsx:60 fetchData: Starting data fetch...
+useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:54 Skipping profile fetch - already have data for this user
+CRMLayout.tsx:141 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:129 fetchData: Finished data fetch.
+LeadDetail.tsx:375 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+chunk-FJ2A54M7.js?v=976f12e0:3750 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+LeadDetail.tsx:375 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+chunk-FJ2A54M7.js?v=976f12e0:3750 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+LeadDetail.tsx:375 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
+chunk-FJ2A54M7.js?v=976f12e0:3750 Uncaught ReferenceError: onNavigateToEmail is not defined
+    at handleEmailClick (LeadDetail.tsx:375:5)
+    at HTMLUnknownElement.callCallback2 (chunk-FJ2A54M7.js?v=976f12e0:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-FJ2A54M7.js?v=976f12e0:3699:24)
+    at invokeGuardedCallback (chunk-FJ2A54M7.js?v=976f12e0:3733:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-FJ2A54M7.js?v=976f12e0:3736:33)
+    at executeDispatch (chunk-FJ2A54M7.js?v=976f12e0:7014:11)
+    at processDispatchQueueItemsInOrder (chunk-FJ2A54M7.js?v=976f12e0:7034:15)
+    at processDispatchQueue (chunk-FJ2A54M7.js?v=976f12e0:7043:13)
+    at dispatchEventsForPlugins (chunk-FJ2A54M7.js?v=976f12e0:7051:11)
+    at chunk-FJ2A54M7.js?v=976f12e0:7174:20
