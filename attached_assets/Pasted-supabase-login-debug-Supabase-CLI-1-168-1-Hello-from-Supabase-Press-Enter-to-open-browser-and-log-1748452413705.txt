@@ -1,0 +1,21 @@
+supabase login --debug
+Supabase CLI 1.168.1
+Hello from Supabase! Press Enter to open browser and login automatically.
+
+Here is your login link in case browser did not open https://supabase.com/dashboard/cli/login?session_id=31614001-2e45-4079-8084-7c7d2624b39b&token_name=cli_runner@2b16d455f225_1748452396&public_key=0486430d255b499122ec6d200c8c3da4b15718e14bb0d48f2fc47fe90b1fed3e4051d23997a29123f21cc0cbb0c5985cd6413c9b1ea45212d57e5cee47c147372d
+
+2025/05/28 17:13:18 DNS Start: {Host:api.supabase.com}
+                                                      2025/05/28 17:13:18 DNS Done: {Addrs:[{IP:104.22.2.252 Zone:} {IP:104.22.3.252 Zone:} {IP:172.67.23.199 Zone:} {IP:2606:4700:10::ac43:17c7 Zone:} {IP:2606:4700:10::6816:2fc Zone:} {IP:2606:4700:10::6816:3fc Zone:}] Err:<nil> Coalesced:false}
+                                                                                                                 2025/05/28 17:13:18 Connect Start: tcp 104.22.2.252:443
+                                                                                                                                                                        2025/05/28 17:13:18 Connect Done: tcp 104.22.2.252:443
+                                        2025/05/28 17:13:18 TLS Start
+2025/05/28 17:13:18 TLS Done: {Version:772 HandshakeComplete:true DidResume:false CipherSuite:4865 NegotiatedProtocol:h2 NegotiatedProtocolIsMutual:true ServerName:api.supabase.com PeerCertificates:[0xc000333608 0xc000335188 0xc000381088] VerifiedChains:[[0xc000333608 0xc000335188 0xc000762108] [0xc000333608 0xc000335188 0xc000381088 0xc000762688]] SignedCertificateTimestamps:[] OCSPResponse:[48 130 1 18 10 1 0 160 130 1 11 48 130 1 7 6 9 43 6 1 5 5 7 48 1 1 4 129 249 48 129 246 48 129 158 162 22 4 20 144 119 146 53 103 196 255 168 204 169 230 123 217 128 121 123 204 147 249 56 24 15 50 48 50 53 48 53 50 52 49 54 52 56 49 54 90 48 115 48 113 48 73 48 9 6 5 43 14 3 2 26 5 0 4 20 185 190 213 241 166 30 64 178 65 150 176 194 158 126 26 157 139 252 181 32 4 20 144 119 146 53 103 196 255 168 204 169 230 123 217 128 121 123 204 147 249 56 2 16 118 151 232 246 42 232 29 55 19 95 120 46 115 234 10 52 128 0 24 15 50 48 50 53 48 53 50 52 49 54 52 56 49 54 90 160 17 24 15 50 48 50 53 48 53 51 49 49 53 52 56 49 53 90 48 10 6 8 42 134 72 206 61 4 3 2 3 71 0 48 68 2 32 117 216 54 17 98 136 14 217 200 239 169 84 155 150 225 6 128 92 143 66 243 238 0 249 177 89 166 56 247 70 132 13 2 32 59 90 199 35 12 242 50 44 194 194 58 163 247 216 79 77 181 113 239 7 219 145 96 182 228 28 116 207 163 128 195 209] TLSUnique:[] ekm:0x6696c0}
+                                                          2025/05/28 17:13:18 Sent Header: :authority [api.supabase.com]
+                                                                                                                        2025/05/28 17:13:18 Sent Header: :method [GET]
+                                                                                                                                                                      2025/05/28 17:13:18 Sent Header: :path [/platform/cli/login/31614001-2e45-4079-8084-7c7d2624b39b]
+                                                                                 2025/05/28 17:13:18 Sent Header: :scheme [https]
+                                                                                                                                 2025/05/28 17:13:18 Sent Header: accept-encoding [gzip]
+  2025/05/28 17:13:18 Sent Header: user-agent [Go-http-client/2.0]
+                                                                  2025/05/28 17:13:18 Send Done
+2025/05/28 17:13:18 Recv First Byte and securely encrypted. Waiting for it to arrive...
+                                   HTTP 401 Unauthorized: cannot retrieve access token
