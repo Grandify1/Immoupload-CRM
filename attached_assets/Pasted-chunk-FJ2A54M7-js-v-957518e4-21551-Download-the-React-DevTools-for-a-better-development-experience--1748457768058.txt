@@ -1,0 +1,44 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/:1 Access to fetch at 'https://api.allorigins.win/get?url=https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dmakler%2520hamburg%26tbm%3Dlcl' from origin 'https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev' has been blocked by CORS policy: Request header field cache-control is not allowed by Access-Control-Allow-Headers in preflight response.
+api.allorigins.win/get?url=https%3A%2F%2Fwww.google.com%2Fsearch%3Fq%3Dmakler%2520hamburg%26tbm%3Dlcl:1 
+        
+        
+       Failed to load resource: net::ERR_FAILED
+corsProxyScrapingService.ts:97 Proxy https://api.allorigins.win/get?url= failed: TypeError: Failed to fetch
+    at CorsProxyScrapingService.scrapeGoogleSearch (corsProxyScrapingService.ts:130:28)
+    at CorsProxyScrapingService.scrapeWithCorsProxy (corsProxyScrapingService.ts:85:40)
+    at async CorsProxyScrapingService.startScraping (corsProxyScrapingService.ts:37:26)
+    at async startJob (ScraperView.tsx:164:23)
+scrapeWithCorsProxy @ corsProxyScrapingService.ts:97
+cors-anywhere.herokuapp.com/https://www.google.de/search?q=makler%20hamburg&tbm=lcl:1 
+        
+        
+       Failed to load resource: the server responded with a status of 403 (Forbidden)
+corsProxyScrapingService.ts:97 Proxy https://cors-anywhere.herokuapp.com/ failed: Error: HTTP 403: Forbidden
+    at CorsProxyScrapingService.scrapeGoogleSearch (corsProxyScrapingService.ts:142:13)
+    at async CorsProxyScrapingService.scrapeWithCorsProxy (corsProxyScrapingService.ts:85:29)
+    at async CorsProxyScrapingService.startScraping (corsProxyScrapingService.ts:37:26)
+    at async startJob (ScraperView.tsx:164:23)
+scrapeWithCorsProxy @ corsProxyScrapingService.ts:97
+16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/:1 Access to fetch at 'https://thingproxy.freeboard.io/fetch/https://www.google.co.uk/search?q=makler%20hamburg&tbm=lcl' from origin 'https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+thingproxy.freeboard.io/fetch/https://www.google.co.uk/search?q=makler%20hamburg&tbm=lcl:1 
+        
+        
+       Failed to load resource: net::ERR_FAILED
+corsProxyScrapingService.ts:97 Proxy https://thingproxy.freeboard.io/fetch/ failed: TypeError: Failed to fetch
+    at CorsProxyScrapingService.scrapeGoogleSearch (corsProxyScrapingService.ts:130:28)
+    at CorsProxyScrapingService.scrapeWithCorsProxy (corsProxyScrapingService.ts:85:40)
+    at async CorsProxyScrapingService.startScraping (corsProxyScrapingService.ts:37:26)
+    at async startJob (ScraperView.tsx:164:23)
+scrapeWithCorsProxy @ corsProxyScrapingService.ts:97

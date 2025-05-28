@@ -1,0 +1,453 @@
+2:41:06 AM
+INFO
+✅ Scraping abgeschlossen: 20 Ergebnisse
+Data anzeigen
+{
+  "resultCount": 20,
+  "results": [
+    {
+      "id": "enhanced_mock_1748457666776_0",
+      "name": "Meisterbetrieb Wagner",
+      "category": "Dienstleistung",
+      "address": "Bahnhofstraße 199, hamburg",
+      "phone": "0221 420 761",
+      "website": "https://www.meisterbetrieb-wagner.de",
+      "rating": 4.3,
+      "reviewCount": 140,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.55186827278699,
+        "lng": 9.9900217923459
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_1",
+      "name": "Service Center",
+      "category": "Einzelhandel",
+      "address": "Hauptstraße 76, hamburg",
+      "phone": "089 151 866",
+      "website": "https://www.service-center.de",
+      "rating": 3.9,
+      "reviewCount": 332,
+      "openingHours": "Mo-Do: 9:00-18:00, Fr: 9:00-19:00",
+      "coordinates": {
+        "lat": 53.545128185507956,
+        "lng": 9.989010474805895
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_2",
+      "name": "Fachgeschäft Weber",
+      "category": "Service",
+      "address": "Hauptstraße 114, hamburg",
+      "phone": "089 122 896",
+      "website": "https://www.fachgeschaeft-weber.de",
+      "rating": 4.9,
+      "reviewCount": 189,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.54285493087391,
+        "lng": 9.999999848179167
+      }
+    }
+  ]
+}
+2:41:06 AM
+DEBUG
+📊 Progress Update: scraping_completed
+Data anzeigen
+{
+  "type": "scraping_completed",
+  "message": "Scraping abgeschlossen: 20 Unternehmen gefunden",
+  "progress": 100,
+  "data": [
+    {
+      "id": "enhanced_mock_1748457666776_0",
+      "name": "Meisterbetrieb Wagner",
+      "category": "Dienstleistung",
+      "address": "Bahnhofstraße 199, hamburg",
+      "phone": "0221 420 761",
+      "website": "https://www.meisterbetrieb-wagner.de",
+      "rating": 4.3,
+      "reviewCount": 140,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.55186827278699,
+        "lng": 9.9900217923459
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_1",
+      "name": "Service Center",
+      "category": "Einzelhandel",
+      "address": "Hauptstraße 76, hamburg",
+      "phone": "089 151 866",
+      "website": "https://www.service-center.de",
+      "rating": 3.9,
+      "reviewCount": 332,
+      "openingHours": "Mo-Do: 9:00-18:00, Fr: 9:00-19:00",
+      "coordinates": {
+        "lat": 53.545128185507956,
+        "lng": 9.989010474805895
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_2",
+      "name": "Fachgeschäft Weber",
+      "category": "Service",
+      "address": "Hauptstraße 114, hamburg",
+      "phone": "089 122 896",
+      "website": "https://www.fachgeschaeft-weber.de",
+      "rating": 4.9,
+      "reviewCount": 189,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.54285493087391,
+        "lng": 9.999999848179167
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_3",
+      "name": "Profi Service",
+      "category": "Dienstleistung",
+      "address": "Kirchgasse 108, hamburg",
+      "phone": "0711 545 941",
+      "website": "https://www.profi-service.de",
+      "rating": 4.3,
+      "reviewCount": 210,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.54937022324813,
+        "lng": 9.996709206762514
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_4",
+      "name": "Meisterbetrieb Wagner",
+      "category": "Einzelhandel",
+      "address": "Marktplatz 88, hamburg",
+      "phone": "0221 423 139",
+      "website": "https://www.meisterbetrieb-wagner.de",
+      "rating": 4.6,
+      "reviewCount": 53,
+      "openingHours": "Mo-Do: 9:00-18:00, Fr: 9:00-19:00",
+      "coordinates": {
+        "lat": 53.55027826547649,
+        "lng": 9.989685118947433
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_5",
+      "name": "Service Center 5",
+      "category": "Service",
+      "address": "Bergstraße 177, hamburg",
+      "phone": "030 425 835",
+      "website": "https://www.service-center-5.de",
+      "rating": 4,
+      "reviewCount": 117,
+      "openingHours": "Mo-Fr: 8:00-19:00, Sa: 10:00-16:00",
+      "coordinates": {
+        "lat": 53.56100562829016,
+        "lng": 10.00083153673809
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_6",
+      "name": "Fachgeschäft Weber 6",
+      "category": "Dienstleistung",
+      "address": "Marktplatz 63, hamburg",
+      "phone": "0711 738 795",
+      "website": "https://www.fachgeschaeft-weber-6.de",
+      "rating": 5,
+      "reviewCount": 57,
+      "openingHours": "Mo-Do: 9:00-18:00, Fr: 9:00-19:00",
+      "coordinates": {
+        "lat": 53.54183076478435,
+        "lng": 9.997480070239773
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_7",
+      "name": "Profi Service 7",
+      "category": "Einzelhandel",
+      "address": "Marktplatz 33, hamburg",
+      "phone": "0711 817 222",
+      "website": "https://www.profi-service-7.de",
+      "rating": 4.4,
+      "reviewCount": 472,
+      "openingHours": "Mo-Sa: 9:00-20:00",
+      "coordinates": {
+        "lat": 53.55496994830222,
+        "lng": 9.996465478430489
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_8",
+      "name": "Meisterbetrieb Wagner 8",
+      "category": "Service",
+      "address": "Hauptstraße 9, hamburg",
+      "phone": "089 143 679",
+      "website": "https://www.meisterbetrieb-wagner-8.de",
+      "rating": 4.7,
+      "reviewCount": 18,
+      "openingHours": "Mo-Fr: 8:00-19:00, Sa: 10:00-16:00",
+      "coordinates": {
+        "lat": 53.55550859071413,
+        "lng": 9.984149891005453
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_9",
+      "name": "Service Center 9",
+      "category": "Dienstleistung",
+      "address": "Bahnhofstraße 100, hamburg",
+      "phone": "0221 976 398",
+      "website": "https://www.service-center-9.de",
+      "rating": 4.6,
+      "reviewCount": 232,
+      "openingHours": "Mo-Sa: 9:00-20:00",
+      "coordinates": {
+        "lat": 53.553514086718636,
+        "lng": 9.996643936734682
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_10",
+      "name": "Fachgeschäft Weber 10",
+      "category": "Einzelhandel",
+      "address": "Bergstraße 20, hamburg",
+      "phone": "0711 739 271",
+      "website": "https://www.fachgeschaeft-weber-10.de",
+      "rating": 3.7,
+      "reviewCount": 96,
+      "openingHours": "Mo-Fr: 8:00-19:00, Sa: 10:00-16:00",
+      "coordinates": {
+        "lat": 53.55226398799994,
+        "lng": 9.99021075017336
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_11",
+      "name": "Profi Service 11",
+      "category": "Service",
+      "address": "Marktplatz 81, hamburg",
+      "phone": "0221 738 468",
+      "website": "https://www.profi-service-11.de",
+      "rating": 3.6,
+      "reviewCount": 383,
+      "openingHours": "Mo-Fr: 8:00-19:00, Sa: 10:00-16:00",
+      "coordinates": {
+        "lat": 53.54144335798324,
+        "lng": 9.992296515874859
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_12",
+      "name": "Meisterbetrieb Wagner 12",
+      "category": "Dienstleistung",
+      "address": "Hauptstraße 109, hamburg",
+      "phone": "089 445 026",
+      "website": "https://www.meisterbetrieb-wagner-12.de",
+      "rating": 4.1,
+      "reviewCount": 412,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.54305921412298,
+        "lng": 10.003229020200779
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_13",
+      "name": "Service Center 13",
+      "category": "Einzelhandel",
+      "address": "Marktplatz 42, hamburg",
+      "phone": "0711 504 489",
+      "website": "https://www.service-center-13.de",
+      "rating": 5,
+      "reviewCount": 276,
+      "openingHours": "Mo-Fr: 8:00-19:00, Sa: 10:00-16:00",
+      "coordinates": {
+        "lat": 53.545171492715795,
+        "lng": 9.989557069677604
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_14",
+      "name": "Fachgeschäft Weber 14",
+      "category": "Service",
+      "address": "Kirchgasse 35, hamburg",
+      "phone": "040 710 387",
+      "website": "https://www.fachgeschaeft-weber-14.de",
+      "rating": 4.9,
+      "reviewCount": 405,
+      "openingHours": "Mo-Do: 9:00-18:00, Fr: 9:00-19:00",
+      "coordinates": {
+        "lat": 53.55094636604935,
+        "lng": 9.988032575182858
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_15",
+      "name": "Profi Service 15",
+      "category": "Dienstleistung",
+      "address": "Bahnhofstraße 167, hamburg",
+      "phone": "040 788 611",
+      "website": "https://www.profi-service-15.de",
+      "rating": 3.6,
+      "reviewCount": 488,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.554700264512995,
+        "lng": 9.994547466265608
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_16",
+      "name": "Meisterbetrieb Wagner 16",
+      "category": "Einzelhandel",
+      "address": "Bahnhofstraße 47, hamburg",
+      "phone": "030 437 897",
+      "website": "https://www.meisterbetrieb-wagner-16.de",
+      "rating": 4.1,
+      "reviewCount": 139,
+      "openingHours": "Mo-Fr: 8:00-19:00, Sa: 10:00-16:00",
+      "coordinates": {
+        "lat": 53.5534788563681,
+        "lng": 9.985404738085947
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_17",
+      "name": "Service Center 17",
+      "category": "Service",
+      "address": "Marktplatz 139, hamburg",
+      "phone": "089 905 923",
+      "website": "https://www.service-center-17.de",
+      "rating": 3.6,
+      "reviewCount": 335,
+      "openingHours": "Mo-Sa: 9:00-20:00",
+      "coordinates": {
+        "lat": 53.55847332308454,
+        "lng": 9.9878482288623
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_18",
+      "name": "Fachgeschäft Weber 18",
+      "category": "Dienstleistung",
+      "address": "Bergstraße 39, hamburg",
+      "phone": "0711 125 941",
+      "website": "https://www.fachgeschaeft-weber-18.de",
+      "rating": 4.3,
+      "reviewCount": 268,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 53.55425007468744,
+        "lng": 9.985549285412816
+      }
+    },
+    {
+      "id": "enhanced_mock_1748457666777_19",
+      "name": "Profi Service 19",
+      "category": "Einzelhandel",
+      "address": "Bahnhofstraße 165, hamburg",
+      "phone": "030 717 320",
+      "website": "https://www.profi-service-19.de",
+      "rating": 4.2,
+      "reviewCount": 106,
+      "openingHours": "Mo-Sa: 9:00-20:00",
+      "coordinates": {
+        "lat": 53.55042495809819,
+        "lng": 10.00308926262782
+      }
+    }
+  ]
+}
+2:41:06 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Alle Proxies fehlgeschlagen, generiere Fallback-Daten...",
+  "progress": 80
+}
+2:41:06 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Proxy 3 fehlgeschlagen, versuche nächsten...",
+  "progress": 70
+}
+2:41:00 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Versuche Proxy 3/3 (google.co.uk)...",
+  "progress": 60
+}
+2:41:00 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Proxy 2 fehlgeschlagen, versuche nächsten...",
+  "progress": 50
+}
+2:40:55 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Versuche Proxy 2/3 (google.de)...",
+  "progress": 40
+}
+2:40:55 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Proxy 1 fehlgeschlagen, versuche nächsten...",
+  "progress": 30
+}
+2:40:48 AM
+DEBUG
+📊 Progress Update: scraping_update
+Data anzeigen
+{
+  "type": "scraping_update",
+  "message": "Versuche Proxy 1/3 (google.com)...",
+  "progress": 20
+}
+2:40:48 AM
+DEBUG
+📊 Progress Update: scraping_started
+Data anzeigen
+{
+  "type": "scraping_started",
+  "message": "CORS-Proxy Scraping gestartet...",
+  "progress": 0
+}
+2:40:48 AM
+INFO
+📍 Google Maps URL erstellt
+Data anzeigen
+{
+  "url": "https://www.google.com/maps/search/makler%20hamburg/"
+}
+2:40:48 AM
+INFO
+🚀 Starte iframe-basiertes Scraping
+Data anzeigen
+{
+  "searchQuery": "makler",
+  "location": "hamburg",
+  "resultLimit": 50
+}
