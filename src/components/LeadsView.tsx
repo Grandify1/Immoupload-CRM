@@ -120,55 +120,57 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const { toast } = useToast();
 
-  // Anwendung der Filter auf die Leads
-  const filteredLeads = leads.filter(lead => {
-    // Suche nach Suchbegriff
-    const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Anwendung der Filter auf die Leads (memoized für bessere Performance)
+  const filteredLeads = React.useMemo(() => {
+    return leads.filter(lead => {
+      // Suche nach Suchbegriff
+      const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    if (!matchesSearch) return false;
+      if (!matchesSearch) return false;
 
-    // Prüfe, ob alle aktiven Filter erfüllt sind
-    return activeFilters.every(filter => {
-      const { field, operator, value } = filter;
+      // Prüfe, ob alle aktiven Filter erfüllt sind
+      return activeFilters.every(filter => {
+        const { field, operator, value } = filter;
 
-      // Website-Filter
-      if (field === 'website') {
-        if (operator === 'is_empty') {
-          return !lead.website || lead.website.trim() === '';
+        // Website-Filter
+        if (field === 'website') {
+          if (operator === 'is_empty') {
+            return !lead.website || lead.website.trim() === '';
+          }
+          if (operator === 'is_not_empty') {
+            return lead.website && lead.website.trim() !== '';
+          }
         }
-        if (operator === 'is_not_empty') {
-          return lead.website && lead.website.trim() !== '';
+
+        // Email-Filter
+        if (field === 'email') {
+          if (operator === 'is_empty') {
+            return !lead.email || lead.email.trim() === '';
+          }
+          if (operator === 'is_not_empty') {
+            return lead.email && lead.email.trim() !== '';
+          }
         }
-      }
 
-      // Email-Filter
-      if (field === 'email') {
-        if (operator === 'is_empty') {
-          return !lead.email || lead.email.trim() === '';
+        // Status-Filter
+        if (field === 'status' && operator === 'is_any_of') {
+          const statusValues = value.split(',');
+          return statusValues.includes(lead.status);
         }
-        if (operator === 'is_not_empty') {
-          return lead.email && lead.email.trim() !== '';
+
+        // Standardfilter für andere Felder
+        const fieldValue = (lead as any)[field];
+        if (fieldValue === undefined) return false;
+
+        if (operator === 'contains') {
+          return String(fieldValue).toLowerCase().includes(value.toLowerCase());
         }
-      }
 
-      // Status-Filter
-      if (field === 'status' && operator === 'is_any_of') {
-        const statusValues = value.split(',');
-        return statusValues.includes(lead.status);
-      }
-
-      // Standardfilter für andere Felder
-      const fieldValue = (lead as any)[field];
-      if (fieldValue === undefined) return false;
-
-      if (operator === 'contains') {
-        return String(fieldValue).toLowerCase().includes(value.toLowerCase());
-      }
-
-      return true;
+        return true;
+      });
     });
-  });
+  }, [leads, searchTerm, activeFilters]);
 
   const handleCreateLead = async () => {
     try {
@@ -269,7 +271,14 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const tableRef = useRef<HTMLTableElement>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
-
+  
+  // Refs für optimierte Resize-Performance
+  const resizeDataRef = useRef<{
+    startX: number;
+    startWidth: number;
+    columnKey: string;
+    tempWidths: Record<string, number>;
+  } | null>(null);
 
   // Funktion zum Umschalten der Spaltensichtbarkeit
   const toggleColumnVisibility = (columnKey: string) => {
@@ -296,7 +305,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     localStorage.setItem('visibleColumns', JSON.stringify(newVisibleColumns));
   };
 
-  // Resize-Handler für Spalten
+  // Optimierte Resize-Handler für Spalten
   const handleMouseDown = (e: React.MouseEvent, columnKey: string) => {
     e.preventDefault();
     setIsResizing(true);
@@ -304,21 +313,57 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     const startX = e.clientX;
     const startWidth = columnWidths[columnKey] || 150;
+    
+    // Speichere Resize-Daten in einem Ref für bessere Performance
+    resizeDataRef.current = {
+      startX,
+      startWidth,
+      columnKey,
+      tempWidths: { ...columnWidths }
+    };
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (!resizeDataRef.current) return;
+      
+      const { startX, startWidth, columnKey, tempWidths } = resizeDataRef.current;
       const diff = e.clientX - startX;
       const newWidth = Math.max(80, startWidth + diff); // Mindestbreite von 80px
       
-      setColumnWidths(prev => {
-        const updated = { ...prev, [columnKey]: newWidth };
-        localStorage.setItem('columnWidths', JSON.stringify(updated));
-        return updated;
-      });
+      // Aktualisiere direkt das DOM für sofortige visuelle Feedback
+      if (tableRef.current) {
+        const headerCells = tableRef.current.querySelectorAll(`th`);
+        const columnIndex = visibleColumns.findIndex(col => col.key === columnKey);
+        if (headerCells[columnIndex]) {
+          (headerCells[columnIndex] as HTMLElement).style.width = `${newWidth}px`;
+        }
+        
+        // Aktualisiere auch alle Zellen in dieser Spalte
+        const rows = tableRef.current.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+          const cells = row.querySelectorAll('td');
+          if (cells[columnIndex]) {
+            (cells[columnIndex] as HTMLElement).style.width = `${newWidth}px`;
+          }
+        });
+      }
+      
+      // Aktualisiere temporäre Breiten für den State (throttled)
+      tempWidths[columnKey] = newWidth;
     };
 
     const handleMouseUp = () => {
+      if (!resizeDataRef.current) return;
+      
+      const { tempWidths } = resizeDataRef.current;
+      
+      // Aktualisiere den State nur einmal am Ende
+      setColumnWidths(tempWidths);
+      localStorage.setItem('columnWidths', JSON.stringify(tempWidths));
+      
       setIsResizing(false);
       setResizingColumn(null);
+      resizeDataRef.current = null;
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -775,10 +820,11 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                   {index < visibleColumns.length - 1 && (
                     <div
                       className={cn(
-                        "absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-blue-300 transition-colors",
+                        "absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-blue-300 transition-colors select-none",
                         isResizing && resizingColumn === column.key && "bg-blue-500"
                       )}
                       onMouseDown={(e) => handleMouseDown(e, column.key)}
+                      style={{ userSelect: 'none' }}
                     />
                   )}
                 </th>
