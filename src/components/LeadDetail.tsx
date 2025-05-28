@@ -914,6 +914,118 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
         )}
       </div>
 
+      {/* Field Layout Modal */}
+      <Dialog open={showFieldLayoutModal} onOpenChange={setShowFieldLayoutModal}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Feld-Layout anpassen</DialogTitle>
+            <DialogDescription>
+              Ziehen Sie Felder zwischen Gruppen, um das Layout anzupassen.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-2 gap-6">
+            {/* Available Fields */}
+            <div className="space-y-4">
+              <h3 className="font-medium text-gray-900">Verfügbare Felder</h3>
+              <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                {['email', 'phone', 'website', 'address', 'description', ...(customFields?.filter(cf => cf.entity_type === 'lead').map(cf => cf.name.toLowerCase().replace(/\s+/g, '_')) || [])].map(fieldKey => {
+                  const isUsed = fieldGroups.some(group => group.fields.includes(fieldKey));
+                  if (isUsed) return null;
+                  
+                  return (
+                    <div
+                      key={fieldKey}
+                      className="p-2 bg-gray-100 rounded border cursor-move hover:bg-gray-200"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, fieldKey)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      {getFieldDisplayName(fieldKey)}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Field Groups */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-gray-900">Feld-Gruppen</h3>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    placeholder="Neue Gruppe..."
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    className="w-32"
+                  />
+                  <Button size="sm" onClick={handleAddGroup}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {fieldGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    className={cn(
+                      "border rounded-lg p-3 min-h-[80px]",
+                      dragOverGroup === group.id ? "border-blue-400 bg-blue-50" : "border-gray-200"
+                    )}
+                    onDragOver={(e) => handleDragOver(e, group.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, group.id)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-sm">{group.name}</h4>
+                      {group.id !== 'about' && group.id !== 'custom_fields' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteGroup(group.id)}
+                          className="text-red-600 hover:text-red-800 p-1 h-auto"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-1">
+                      {group.fields.map((fieldKey) => (
+                        <div
+                          key={fieldKey}
+                          className={cn(
+                            "p-2 bg-white border rounded text-sm cursor-move",
+                            draggedField === fieldKey ? "opacity-50" : "hover:bg-gray-50"
+                          )}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, fieldKey)}
+                          onDragEnd={handleDragEnd}
+                        >
+                          {getFieldDisplayName(fieldKey)}
+                        </div>
+                      ))}
+                      {group.fields.length === 0 && (
+                        <div className="text-xs text-gray-500 italic p-2">
+                          Felder hierher ziehen...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button onClick={() => setShowFieldLayoutModal(false)}>
+              Fertig
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Add Custom Field Modal */}
       <Dialog open={showAddCustomFieldModal} onOpenChange={setShowAddCustomFieldModal}>
         <DialogContent>
