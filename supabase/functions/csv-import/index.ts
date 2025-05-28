@@ -21,6 +21,10 @@ serve(async (req) => {
     const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = await req.json()
 
     console.log(`Starting background import: ${csvData.length} rows, job ${jobId}`)
+    console.log('Team ID:', teamId)
+    console.log('User ID:', userId)
+    console.log('Duplicate config:', duplicateConfig)
+    console.log('Mappings received:', mappings.length)
 
     // Update job status to processing
     if (jobId) {
@@ -52,6 +56,7 @@ serve(async (req) => {
           const value = row[index]?.trim()
           if (!value) return
 
+          // Check if it's a standard field
           if (standardFields.includes(mapping.fieldName)) {
             if (mapping.fieldName === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
               lead[mapping.fieldName] = 'potential'
@@ -59,14 +64,21 @@ serve(async (req) => {
               lead[mapping.fieldName] = value
             }
           } else {
+            // All non-standard fields go to custom_fields
             lead.custom_fields[mapping.fieldName] = value
           }
         }
       })
 
+      // Ensure we have at least a name to create the lead
       if (lead.name && lead.name.trim()) {
         leads.push(lead)
       }
+    }
+
+    console.log(`Converted ${leads.length} leads with proper field mapping`)
+    if (leads.length > 0) {
+      console.log('Sample converted lead:', JSON.stringify(leads[0], null, 2))
     }
 
     console.log(`Processed ${leads.length} valid leads from CSV data`)
@@ -146,34 +158,41 @@ serve(async (req) => {
               }
             } else if (duplicateConfig.duplicateAction === 'create_new') {
               // Insert new lead anyway
-              const { error: insertError } = await supabaseAdmin
+              console.log(`Creating new lead despite duplicate: ${lead.name}`)
+              const { error: insertError, data: insertedData } = await supabaseAdmin
                 .from('leads')
                 .insert([lead])
+                .select()
 
               if (insertError) {
+                console.error('Insert error for duplicate handling:', lead.name, insertError)
                 if (insertError.code === '23505') {
                   duplicateRecords++
                 } else {
                   failedRecords++
                 }
               } else {
+                console.log(`Successfully created new lead: ${lead.name}`)
                 processedRecords++
               }
             }
           } else {
             // Insert new lead
-            const { error: insertError } = await supabaseAdmin
+            console.log(`Inserting lead: ${lead.name}`)
+            const { error: insertError, data: insertedData } = await supabaseAdmin
               .from('leads')
               .insert([lead])
+              .select()
 
             if (insertError) {
+              console.error('Insert error for lead:', lead.name, insertError)
               if (insertError.code === '23505') {
                 duplicateRecords++
               } else {
-                console.error('Insert error:', insertError)
                 failedRecords++
               }
             } else {
+              console.log(`Successfully inserted lead: ${lead.name}`)
               processedRecords++
             }
           }
