@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { create } from 'zustand';
 import { Search, Download, Play, Square, Trash2, MapPin, Phone, Globe, Star, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 // Zod Schema für Form Validation
 const scraperFormSchema = z.object({
@@ -73,7 +75,13 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
   jobHistory: [],
   isRunning: false,
 
-  startJob: (formData: ScraperFormData) => {
+  startJob: async (formData: ScraperFormData) => {
+    const { user } = await supabase.auth.getUser();
+    if (!user.data.user) {
+      toast.error('Benutzer nicht authentifiziert');
+      return;
+    }
+
     const jobId = Date.now().toString();
     const newJob: ScrapingJob = {
       id: jobId,
@@ -90,8 +98,58 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
 
     set({ currentJob: newJob, isRunning: true });
     
-    // Simulate scraping process
-    simulateScraping(newJob, set);
+    try {
+      // Call the edge function for real scraping
+      const { data, error } = await supabase.functions.invoke('google-maps-scraper', {
+        body: {
+          searchQuery: formData.searchQuery,
+          location: formData.location,
+          resultLimit: formData.resultLimit,
+          userId: user.data.user.id
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const completedJob: ScrapingJob = {
+        ...newJob,
+        status: 'completed',
+        progress: 100,
+        totalFound: data.totalFound,
+        currentCount: data.totalFound,
+        results: data.results,
+        endTime: new Date()
+      };
+
+      set(state => ({
+        currentJob: completedJob,
+        isRunning: false,
+        jobHistory: [completedJob, ...state.jobHistory.slice(0, 9)]
+      }));
+
+      toast.success(`Scraping abgeschlossen! ${data.totalFound} Unternehmen gefunden.`);
+
+    } catch (error) {
+      console.error('Scraping error:', error);
+      
+      const errorJob: ScrapingJob = {
+        ...newJob,
+        status: 'error',
+        progress: 0,
+        errorMessage: error.message || 'Unbekannter Fehler',
+        endTime: new Date()
+      };
+
+      set(state => ({
+        currentJob: errorJob,
+        isRunning: false,
+        jobHistory: [errorJob, ...state.jobHistory.slice(0, 9)]
+      }));
+
+      toast.error(`Scraping fehlgeschlagen: ${error.message}`);
+    }
   },
 
   stopJob: () => {
@@ -145,76 +203,10 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
   }
 }));
 
-// Mock-Daten für Simulation
-const getMockBusinessData = (query: string, location: string): BusinessData[] => {
-  const businesses = [
-    { name: 'Salon Schmidt', category: 'Friseur', phone: '+49 89 123456', website: 'www.salon-schmidt.de', rating: 4.5, reviewCount: 89 },
-    { name: 'Haar & Style', category: 'Friseur', phone: '+49 89 234567', website: 'www.haar-style.de', rating: 4.2, reviewCount: 156 },
-    { name: 'Beauty Lounge', category: 'Friseur', phone: '+49 89 345678', rating: 4.8, reviewCount: 203 },
-    { name: 'Cut & Color', category: 'Friseur', phone: '+49 89 456789', website: 'www.cutcolor.de', rating: 4.1, reviewCount: 74 },
-    { name: 'Trend Friseure', category: 'Friseur', phone: '+49 89 567890', rating: 4.6, reviewCount: 128 }
-  ];
 
-  return businesses.map((business, index) => ({
-    id: `business_${index}`,
-    ...business,
-    address: `${business.name} Straße ${index + 1}, 80331 ${location}`,
-    openingHours: 'Mo-Fr: 9:00-18:00, Sa: 9:00-16:00',
-    coordinates: {
-      lat: 48.1351 + (Math.random() - 0.5) * 0.1,
-      lng: 11.5820 + (Math.random() - 0.5) * 0.1
-    }
-  }));
-};
-
-// Simulation der Scraping-Funktionalität
-const simulateScraping = async (job: ScrapingJob, set: any) => {
-  const mockData = getMockBusinessData(job.searchQuery, job.location);
-  const totalToScrape = Math.min(job.resultLimit, mockData.length);
-  
-  for (let i = 0; i < totalToScrape; i++) {
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-    
-    const progress = ((i + 1) / totalToScrape) * 100;
-    const updatedJob = {
-      ...job,
-      progress,
-      currentCount: i + 1,
-      totalFound: totalToScrape,
-      results: mockData.slice(0, i + 1)
-    };
-    
-    set({ currentJob: updatedJob });
-    
-    // Check if job was stopped
-    const currentState = set.getState?.() || {};
-    if (!currentState.isRunning) {
-      break;
-    }
-  }
-  
-  // Complete job
-  const finalJob = {
-    ...job,
-    status: 'completed' as const,
-    progress: 100,
-    currentCount: totalToScrape,
-    totalFound: totalToScrape,
-    results: mockData.slice(0, totalToScrape),
-    endTime: new Date()
-  };
-  
-  set(state => ({
-    currentJob: finalJob,
-    isRunning: false,
-    jobHistory: [finalJob, ...state.jobHistory.slice(0, 9)]
-  }));
-  
-  toast.success(`Scraping abgeschlossen! ${totalToScrape} Unternehmen gefunden.`);
-};
 
 export default function ScraperView() {
+  const { user } = useAuth();
   const { currentJob, jobHistory, isRunning, startJob, stopJob, clearResults, exportToCsv } = useScraperStore();
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessData | null>(null);
 
@@ -245,13 +237,15 @@ export default function ScraperView() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="h-full flex flex-col space-y-6 overflow-hidden">
+      <div className="flex items-center justify-between flex-shrink-0">
         <h1 className="text-2xl font-bold">Google Maps Scraper</h1>
         <Badge variant={isRunning ? "default" : "secondary"}>
           {isRunning ? 'Läuft' : 'Bereit'}
         </Badge>
       </div>
+
+      <div className="flex-1 overflow-y-auto space-y-6 pr-2">
 
       {/* Scraping Form */}
       <Card>
@@ -564,6 +558,7 @@ export default function ScraperView() {
           </Card>
         </div>
       )}
+      </div>
     </div>
   );
 }
