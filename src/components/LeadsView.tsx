@@ -315,15 +315,15 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const TableView = () => (
     <div className="bg-white rounded-lg border">
       {/* Toolbar */}
-      <div className="p-2 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-3 py-2 border-b border-gray-200 flex items-center justify-between bg-gray-50">
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className="flex items-center"
+            className="flex items-center h-7 px-2 text-xs"
           >
-            <Filter className="w-4 h-4 mr-2" />
+            <Filter className="w-3 h-3 mr-1" />
             Add Filter
           </Button>
 
@@ -331,9 +331,9 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             variant="outline" 
             size="sm"
             onClick={() => setShowColumnSelector(!showColumnSelector)}
-            className="flex items-center"
+            className="flex items-center h-7 px-2 text-xs"
           >
-            <Columns className="w-4 h-4 mr-2" />
+            <Columns className="w-3 h-3 mr-1" />
             Columns
           </Button>
             
@@ -341,8 +341,8 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           {smartViews.length > 0 && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center">
-                  <Eye className="w-4 h-4 mr-2" />
+                <Button variant="outline" size="sm" className="flex items-center h-7 px-2 text-xs">
+                  <Eye className="w-3 h-3 mr-1" />
                   Smart Views
                 </Button>
               </PopoverTrigger>
@@ -372,8 +372,8 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
+          <Button variant="outline" size="sm" className="h-7 px-2 text-xs">
+            <Download className="w-3 h-3 mr-1" />
             Export
           </Button>
         </div>
@@ -585,12 +585,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         </div>
       )}
 
-      <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto pb-6">
-        <table className="w-full">
+      <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto">
+        <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b">
             <tr>
               {visibleColumns.map(column => (
-                <th key={column.key} className="text-left p-3 font-medium text-gray-600">
+                <th key={column.key} className="text-left px-3 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider">
                   <div className="flex items-center space-x-1">
                     <span>{column.label}</span>
                     <button className="text-gray-400 hover:text-gray-600">
@@ -599,36 +599,36 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                   </div>
                 </th>
               ))}
-              <th className="text-left p-3 font-medium text-gray-600">Actions</th>
+              <th className="text-left px-3 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider w-24">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {filteredLeads.map((lead) => (
               <tr 
                 key={lead.id} 
-                className="border-b hover:bg-gray-50 cursor-pointer" 
+                className="hover:bg-gray-50 cursor-pointer transition-colors" 
                 onClick={() => onLeadSelect(lead)}
               >
                 {visibleColumns.map(column => {
                   if (column.key === 'name') {
-                    return <td key={column.key} className="p-3 font-medium">{lead.name}</td>;
+                    return <td key={column.key} className="px-3 py-2 font-medium text-gray-900">{lead.name}</td>;
                   } else if (column.key === 'email') {
-                    return <td key={column.key} className="p-3 text-gray-600">{lead.email || '-'}</td>;
+                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.email || '-'}</td>;
                   } else if (column.key === 'phone') {
-                    return <td key={column.key} className="p-3 text-gray-600">{lead.phone || '-'}</td>;
+                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.phone || '-'}</td>;
                   } else if (column.key === 'website') {
                     return (
                       <td 
                         key={column.key} 
-                        className="p-3 text-gray-600"
-                        onClick={(e) => e.stopPropagation()} // Verhindert, dass der Klick auf den Link die Detailansicht öffnet
+                        className="px-3 py-2 text-gray-600"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {lead.website ? (
                           <a 
                             href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="text-blue-600 hover:underline text-sm"
                           >
                             {lead.website}
                           </a>
@@ -637,10 +637,10 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     );
                   } else if (column.key === 'status') {
                     return (
-                      <td key={column.key} className="p-3">
+                      <td key={column.key} className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button className={cn("px-2 py-1 rounded-full text-xs font-medium text-white cursor-pointer", statusColors[lead.status])}>
+                            <button className={cn("px-2 py-1 rounded-full text-xs font-medium text-white cursor-pointer hover:opacity-80 transition-opacity", statusColors[lead.status])}>
                               {statusLabels[lead.status]}
                             </button>
                           </PopoverTrigger>
@@ -651,10 +651,11 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                                 <button
                                   key={status}
                                   className={cn(
-                                    "w-full text-left px-2 py-1.5 text-sm rounded flex items-center",
+                                    "w-full text-left px-2 py-1.5 text-sm rounded flex items-center transition-colors",
                                     lead.status === status ? "bg-gray-100" : "hover:bg-gray-50"
                                   )}
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     onLeadUpdate(lead.id, { status: status as any });
                                   }}
                                 >
@@ -671,40 +672,40 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                       </td>
                     );
                   } else if (column.key === 'created_at') {
-                    return <td key={column.key} className="p-3 text-gray-600">{formatDate(lead.created_at)}</td>;
+                    return <td key={column.key} className="px-3 py-2 text-gray-600">{formatDate(lead.created_at)}</td>;
                   } else if (column.key === 'updated_at') {
-                    return <td key={column.key} className="p-3 text-gray-600">{formatDate(lead.updated_at)}</td>;
+                    return <td key={column.key} className="px-3 py-2 text-gray-600">{formatDate(lead.updated_at)}</td>;
                   } else if (column.key === 'owner') {
-                    return <td key={column.key} className="p-3 text-gray-600">{lead.owner_id || '-'}</td>;
+                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.owner_id || '-'}</td>;
                   }
-                  return <td key={column.key} className="p-3">-</td>;
+                  return <td key={column.key} className="px-3 py-2">-</td>;
                 })}
-                <td className="p-3">
+                <td className="px-3 py-2">
                   <div className="flex items-center space-x-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
-                        e.stopPropagation(); // Verhindert, dass der Klick auf den Button die Zeile auslöst
+                        e.stopPropagation();
                         onLeadSelect(lead);
                       }}
-                      className="h-8 w-8 p-0"
+                      className="h-6 w-6 p-0 hover:bg-gray-200"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-3 h-3" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-6 w-6 p-0 hover:bg-gray-200"
                     >
-                      <Phone className="w-4 h-4" />
+                      <Phone className="w-3 h-3" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-6 w-6 p-0 hover:bg-gray-200"
                     >
-                      <Mail className="w-4 h-4" />
+                      <Mail className="w-3 h-3" />
                     </Button>
                   </div>
                 </td>

@@ -52,6 +52,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface LeadDetailProps {
   lead: Lead;
@@ -1008,7 +1009,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                             <Input
                               type="number"
                               value={
-                                (editForm.custom_fields[fieldKey] as string) ||
+                                (editForm.custom_fields[fieldKey] asstring) ||
                                 ""
                               }
                               onChange={(e) => {
