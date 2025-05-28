@@ -47,7 +47,7 @@ interface Email {
 
 type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'archived' | 'deleted';
 
-// Base64 decoding helper function with improved German umlauts support
+// Enhanced email decoding with MIME multipart support
 const decodeBase64Email = (text: string): string => {
   try {
     // Handle different Base64 email encoding patterns
@@ -100,7 +100,80 @@ const decodeBase64Email = (text: string): string => {
   }
 };
 
-// Email Body Renderer Component - Apple Mail Style
+// Enhanced MIME parsing function
+const parseMimeEmail = (body: string): string => {
+  if (!body) return '';
+
+  // Check if this is a multipart email
+  const boundaryMatch = body.match(/boundary="?([^";\s]+)"?/i);
+  if (!boundaryMatch) {
+    return body; // Not multipart, return as is
+  }
+
+  const boundary = boundaryMatch[1];
+  console.log('Found MIME boundary:', boundary);
+
+  // Split by boundary
+  const parts = body.split(new RegExp(`--${boundary.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g'));
+
+  let bestContent = '';
+  let htmlContent = '';
+  let textContent = '';
+
+  for (const part of parts) {
+    if (part.trim() === '' || part.trim() === '--') continue;
+
+    // Look for Content-Type
+    const contentTypeMatch = part.match(/Content-Type:\s*([^;\r\n]+)/i);
+    if (!contentTypeMatch) continue;
+
+    const contentType = contentTypeMatch[1].toLowerCase().trim();
+    console.log('Processing MIME part with Content-Type:', contentType);
+
+    // Find the actual content (after headers)
+    const headerBodySplit = part.split(/\r?\n\r?\n/);
+    if (headerBodySplit.length < 2) continue;
+
+    let content = headerBodySplit.slice(1).join('\n\n').trim();
+
+    // Handle quoted-printable encoding
+    if (part.includes('quoted-printable')) {
+      content = content.replace(/=([0-9A-F]{2})/gi, (match, hex) => 
+        String.fromCharCode(parseInt(hex, 16))
+      ).replace(/=\r?\n/g, ''); // Remove soft line breaks
+    }
+
+    // Handle base64 encoding
+    if (part.includes('base64')) {
+      try {
+        content = atob(content.replace(/\s/g, ''));
+      } catch (e) {
+        console.warn('Failed to decode base64 content:', e);
+        continue;
+      }
+    }
+
+    // Prefer text/html, then text/plain
+    if (contentType === 'text/html') {
+      htmlContent = content;
+    } else if (contentType === 'text/plain') {
+      textContent = content;
+    }
+  }
+
+  // Return the best available content
+  bestContent = htmlContent || textContent;
+  
+  if (bestContent) {
+    console.log('Successfully extracted MIME content:', bestContent.substring(0, 200) + '...');
+    return bestContent;
+  }
+
+  console.log('No suitable MIME part found, returning original body');
+  return body;
+};
+
+// Email Body Renderer Component - Apple Mail Style with MIME support
 const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
   if (!body) {
     return (
@@ -111,8 +184,11 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
     );
   }
 
-  // First, decode any Base64 encoded text
-  let processedBody = decodeBase64Email(body);
+  // First, parse MIME multipart if applicable
+  let processedBody = parseMimeEmail(body);
+  
+  // Then decode any Base64 encoded text
+  processedBody = decodeBase64Email(processedBody);
 
   // Check if content looks like HTML
   const isHTML = processedBody.includes('<html') || processedBody.includes('<!DOCTYPE') || 
@@ -173,6 +249,8 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
             word-wrap: break-word;
             overflow-wrap: break-word;
             min-height: 100%;
+            overflow-y: auto;
+            height: auto;
           }
           
           .apple-mail-container * {
@@ -347,6 +425,8 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
             word-wrap: break-word;
             overflow-wrap: break-word;
             min-height: 100%;
+            overflow-y: auto;
+            height: auto;
           }
           
           .apple-mail-plain-text a {
@@ -1150,8 +1230,8 @@ export function EmailView({ emailRecipient, onRecipientUsed }: EmailViewProps = 
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="flex-1 p-0">
-                    <div className="h-full overflow-y-auto">
+                  <CardContent className="flex-1 p-0 overflow-hidden">
+                    <div className="h-full overflow-y-auto scroll-smooth">
                       <EmailBodyRenderer body={selectedEmail.body} />
                     </div>
                   </CardContent>
