@@ -364,7 +364,12 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
   }
 };
 
-export function EmailView() {
+interface EmailViewProps {
+  emailRecipient?: string;
+  onRecipientUsed?: () => void;
+}
+
+export function EmailView({ emailRecipient, onRecipientUsed }: EmailViewProps = {}) {
   const { user } = useAuth();
   const [emailAccounts, setEmailAccounts] = useState<EmailAccount[]>([]);
   const [emails, setEmails] = useState<Email[]>([]);
@@ -456,6 +461,20 @@ export function EmailView() {
       loadEmails();
     }
   }, [user, loadEmailAccounts, loadEmails]);
+
+  // Handle email recipient from navigation
+  useEffect(() => {
+    if (emailRecipient) {
+      setComposeForm(prev => ({
+        ...prev,
+        to: emailRecipient
+      }));
+      setShowComposeForm(true);
+      if (onRecipientUsed) {
+        onRecipientUsed();
+      }
+    }
+  }, [emailRecipient, onRecipientUsed]);
 
   const getFilteredEmails = () => {
     return emails.filter(email => {

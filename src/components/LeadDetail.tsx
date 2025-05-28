@@ -50,6 +50,7 @@ interface LeadDetailProps {
   isOpen: boolean;
   onAddCustomField?: (field: Omit<CustomField, 'id'>) => Promise<void>;
   onShowGlobalCustomFieldSettings?: () => void;
+  onNavigateToEmail?: (recipientEmail?: string) => void;
 }
 
 const statusColors = {
@@ -368,6 +369,12 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
         noteTextareaRef.current.focus();
       }
     }, 100);
+  };
+
+  const handleEmailClick = () => {
+    if (onNavigateToEmail) {
+      onNavigateToEmail(lead.email || undefined);
+    }
   };
 
   const handleCreateCustomField = async () => {
@@ -708,7 +715,12 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               <StickyNote className="w-4 h-4 mr-1" />
               Note
             </Button>
-            <Button size="sm" variant="outline" className="border-gray-300">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              className="border-gray-300"
+              onClick={handleEmailClick}
+            >
               <Mail className="w-4 h-4 mr-1" />
               Email
             </Button>

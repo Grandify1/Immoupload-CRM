@@ -32,6 +32,10 @@ const CRMLayout = () => {
   const [activityTemplates, setActivityTemplates] = useState<ActivityTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showCustomFieldForm, setShowCustomFieldForm] = useState(false);
+  const [showActivityTemplateForm, setShowActivityTemplateForm] = useState(false);
+  const [emailRecipient, setEmailRecipient] = useState<string | undefined>(undefined);
 
   // Einmaliges Laden der Daten beim Initialisieren der Komponente
   useEffect(() => {
@@ -803,148 +807,13 @@ const CRMLayout = () => {
     });
   };
 
-  const convertLeadToDeal = async (lead: Lead) => {
-    if (!team) return;
+  const convertLeadToDeal = async (lead: Lead): Promise<any | null> => {
+    return convertToOpportunity(lead.id);
+  };
 
-    try {
-      // Erstelle eine Transaktion, um sicherzustellen, dass beide Operationen erfolgreich sind
-      // 1. Erstelle einen neuen Deal aus dem Lead
-      // 2. Aktualisiere den Lead-Status
-
-      // Berechne den Initialwert des Deals basierend auf Lead-Daten
-      const initialValue = lead.custom_fields?.estimated_value ? 
-        parseFloat(lead.custom_fields.estimated_value as string) : 0;
-
-      // Hole die aktuelle Benutzer-ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('Kein Benutzer gefunden');
-      }
-
-      // Erstelle den Deal mit Daten aus dem Lead
-      const { data: dealData, error: dealError } = await supabase
-        .from('deals')
-        .insert({
-          team_id: team.id,
-          name: lead.name,
-          status: 'meeting_booked', // Setze den initialen Status auf 'Meeting Booked'
-          value: initialValue,
-          lead_id: lead.id,
-          owner_id: user.id, // Verwende die ID des aktuellen Benutzers
-          custom_fields: {
-            ...lead.custom_fields,
-            converted_from_lead: true,
-            conversion_date: new Date().toISOString(),
-            source: 'lead_conversion'
-          },
-          expected_close_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 Tage in der Zukunft
-        })
-        .select()
-        .single();
-
-      if (dealError) {
-        console.error('Error creating deal:', dealError);
-        throw dealError;
-      }
-
-      // Kopiere Aktivitäten vom Lead zum Deal
-      if (lead.activities && lead.activities.length > 0) {
-        const activitiesToCopy = lead.activities.map(activity => ({
-          team_id: team.id,
-          entity_type: 'deal' as 'lead' | 'deal', // Setze entity_type auf 'deal'
-          entity_id: dealData.id, // Setze entity_id auf die ID des neuen Deals
-          type: activity.type,
-          title: activity.title,
-          content: activity.content,
-          template_id: activity.template_id,
-          template_data: activity.template_data,
-          author_id: activity.author_id,
-          created_at: activity.created_at // Behalte den ursprünglichen Erstellungszeitpunkt bei
-        }));
-
-        // Versuche, die Aktivitäten als Batch einzufügen
-        const { error: activitiesError } = await supabase
-          .from('activities')
-          .insert(activitiesToCopy);
-
-        if (activitiesError) {
-          console.error('Error copying activities to deal:', activitiesError);
-          // Gib eine Warnung aus, aber fahre mit der Konvertierung fort
-          toast({
-            title: "Warnung",
-            description: "Einige Aktivitäten konnten nicht kopiert werden.",
-            variant: "default",
-          });
-        }
-      }
-
-      // Aktualisiere den Lead-Status auf 'qualified' und füge einen Verweis auf den Deal hinzu
-      const { error: leadError } = await supabase
-        .from('leads')
-        .update({ 
-          status: 'qualified',
-          custom_fields: {
-            ...lead.custom_fields,
-            converted_to_deal: true,
-            deal_id: dealData.id,
-            conversion_date: new Date().toISOString()
-          }
-        })
-        .eq('id', lead.id)
-        .eq('team_id', team.id);
-
-      if (leadError) {
-        console.error('Error updating lead after conversion:', leadError);
-        throw leadError;
-      }
-
-      // Füge eine Aktivität hinzu, um die Konvertierung zu dokumentieren
-      await addActivity('lead', lead.id, {
-        type: 'note',
-        content: `Lead wurde in Deal konvertiert: ${dealData.id}`,
-        author_id: user.id, // Verwende die ID des aktuellen Benutzers
-        entity_type: 'lead',
-        entity_id: lead.id,
-        template_data: {}
-      });
-
-      // Aktualisiere den lokalen Zustand für Deals und füge die kopierten Aktivitäten hinzu
-      const newDeal = { ...dealData, activities: lead.activities || [] } as Deal;
-      setDeals(prev => [newDeal, ...prev]);
-
-      // Aktualisiere den Lead im lokalen Zustand
-      const updatedLead: Lead = {
-        ...lead,
-        status: 'qualified' as const,
-        custom_fields: {
-          ...lead.custom_fields,
-          converted_to_deal: true,
-          deal_id: dealData.id,
-          conversion_date: new Date().toISOString()
-        }
-      };
-      setLeads(prev => prev.map(l => l.id === lead.id ? updatedLead : l));
-
-      // Schließe den Lead-Detail-Bereich und öffne den Deal-Detail-Bereich
-      setSelectedLead(null);
-      setSelectedDeal(newDeal);
-      setActiveSection('opportunities');
-
-      toast({
-        title: "Erfolg",
-        description: `Lead "${lead.name}" wurde erfolgreich in einen Deal konvertiert`,
-      });
-
-      return newDeal;
-    } catch (error) {
-      console.error('Error converting lead to deal:', error);
-      toast({
-        title: "Fehler",
-        description: "Konvertierung des Leads in einen Deal fehlgeschlagen",
-        variant: "destructive",
-      });
-      return null;
-    }
+  const handleNavigateToEmail = (recipientEmail?: string) => {
+    setEmailRecipient(recipientEmail);
+    setActiveSection('email');
   };
 
   const importDeals = async (leadsToImport: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[]) => {
@@ -1039,8 +908,8 @@ const CRMLayout = () => {
             onDeleteActivityTemplate={deleteActivityTemplate}
           />
         );
-      case 'email':
-        return <EmailView />;
+        case 'email':
+          return <EmailView emailRecipient={emailRecipient} onRecipientUsed={() => setEmailRecipient(undefined)} />;
       default:
         return null;
     }
@@ -1097,6 +966,7 @@ const CRMLayout = () => {
               setSelectedLead(null); // Close lead detail view
               setActiveSection('settings'); // Navigate to settings
             }}
+            onNavigateToEmail={() => handleNavigateToEmail(selectedLead.email)}
           />
         )}
       </div>
