@@ -31,6 +31,7 @@ interface LeadsViewProps {
   onAddCustomField?: (field: Omit<CustomField, 'id' | 'team_id' | 'created_at'>) => Promise<void>;
   customFields?: CustomField[];
   activityTemplates?: ActivityTemplate[];
+  onNavigateToEmail?: (recipientEmail?: string) => void;
 }
 
 const statusColors = {
@@ -59,7 +60,8 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   onImportLeads,
   onAddCustomField,
   customFields,
-  activityTemplates = []
+  activityTemplates = [],
+  onNavigateToEmail
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewLeadForm, setShowNewLeadForm] = useState(false);
@@ -1163,10 +1165,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             activityTemplates={activityTemplates}
             onDeleteActivity={deleteActivity}
             isOpen={!!selectedLead}
-            onNavigateToEmail={(recipientEmail) => {
-              // This will need to be implemented to navigate to email view
-              console.log('Navigate to email with recipient:', recipientEmail);
-            }}
+            onNavigateToEmail={onNavigateToEmail}
           />
         )}
       </Dialog>

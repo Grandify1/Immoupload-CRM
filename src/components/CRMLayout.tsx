@@ -876,6 +876,7 @@ const CRMLayout = () => {
             onImportLeads={importLeads}
             onAddCustomField={addCustomField}
             customFields={customFields}
+            onNavigateToEmail={handleNavigateToEmail}
           />
         );
       case 'opportunities':
