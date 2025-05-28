@@ -47,53 +47,87 @@ interface Email {
 
 type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'archived' | 'deleted';
 
-// Email Body Renderer Component
+// Base64 decoding helper function
+const decodeBase64Email = (text: string): string => {
+  try {
+    // Handle different Base64 email encoding patterns
+    return text.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
+      try {
+        if (encoding.toUpperCase() === 'B') {
+          // Base64 decoding
+          const decoded = atob(encoded);
+          return decodeURIComponent(escape(decoded));
+        } else if (encoding.toUpperCase() === 'Q') {
+          // Quoted-printable decoding (simplified)
+          return encoded
+            .replace(/=([0-9A-F]{2})/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+            .replace(/_/g, ' ');
+        }
+        return match;
+      } catch (e) {
+        console.warn('Failed to decode email text:', e);
+        return encoded; // Return the encoded part if decoding fails
+      }
+    });
+  } catch (e) {
+    console.warn('Failed to process email encoding:', e);
+    return text;
+  }
+};
+
+// Email Body Renderer Component - Apple Mail Style
 const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
   if (!body) {
     return (
-      <div className="text-muted-foreground italic p-4">
-        Keine Nachricht verfügbar
+      <div className="text-muted-foreground italic p-6 text-center">
+        <div className="text-gray-400 mb-2">📧</div>
+        <p>Keine Nachricht verfügbar</p>
       </div>
     );
   }
 
+  // First, decode any Base64 encoded text
+  let processedBody = decodeBase64Email(body);
+
   // Check if content looks like HTML
-  const isHTML = body.includes('<html') || body.includes('<!DOCTYPE') || body.includes('<div') || body.includes('<p') || body.includes('<br') || body.includes('<table');
+  const isHTML = processedBody.includes('<html') || processedBody.includes('<!DOCTYPE') || 
+                 processedBody.includes('<div') || processedBody.includes('<p') || 
+                 processedBody.includes('<br') || processedBody.includes('<table') ||
+                 processedBody.includes('<span');
 
   if (isHTML) {
-    // More aggressive HTML cleaning for better display
-    let cleanedHTML = body
-      // Remove DOCTYPE and HTML structure tags
+    // Advanced HTML cleaning for Apple Mail-like appearance
+    let cleanedHTML = processedBody
+      // Remove DOCTYPE and structure tags
       .replace(/<!DOCTYPE[^>]*>/gi, '')
       .replace(/<\/?html[^>]*>/gi, '')
       .replace(/<\/?head[^>]*>/gi, '')
       .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
       .replace(/<\/?body[^>]*>/gi, '')
-      // Remove style tags and meta tags
+      // Remove style/script/meta tags
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<meta[^>]*>/gi, '')
       .replace(/<link[^>]*>/gi, '')
-      // Clean up encoding artifacts
-      .replace(/=\?UTF-8\?B\?[^?]*\?=/gi, '')
-      .replace(/=\?utf-8\?[^?]*\?=/gi, '')
-      .replace(/=09/gi, ' ')
-      .replace(/=20/gi, ' ')
-      .replace(/=\d+/gi, ' ')
-      // Remove excessive whitespace and line breaks
-      .replace(/\s+/g, ' ')
-      .replace(/>\s+</g, '><')
+      // Clean up quoted-printable encoding
+      .replace(/=([0-9A-F]{2})/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/=\r?\n/g, '') // Remove soft line breaks
+      // Clean up whitespace but preserve intentional spacing
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Remove excessive line breaks
+      .replace(/>\s+</g, '><') // Remove whitespace between tags
       .trim();
 
-    // Use DOMPurify for sanitization with more permissive settings
+    // Use DOMPurify with Apple Mail-like settings
     const sanitizedHTML = DOMPurify.sanitize(cleanedHTML, {
       ALLOWED_TAGS: [
         'p', 'br', 'div', 'span', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot',
-        'font', 'center', 'pre', 'code', 'hr', 'small', 'big', 'sup', 'sub'
+        'center', 'font'
       ],
       ALLOWED_ATTR: [
-        'href', 'src', 'alt', 'title', 'width', 'height', 'style', 'color', 'bgcolor', 
-        'align', 'valign', 'border', 'cellpadding', 'cellspacing', 'class', 'size', 'face'
+        'href', 'src', 'alt', 'title', 'width', 'height', 'color', 'size', 'face', 'style'
       ],
       ALLOW_DATA_ATTR: false,
       SANITIZE_DOM: true,
@@ -101,190 +135,203 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
     });
 
     return (
-      <div className="email-body-container">
+      <div className="apple-mail-container">
         <style>{`
-          .email-body-container {
+          .apple-mail-container {
             background: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.47;
+            color: #000000;
             max-width: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: #333333;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
           }
           
-          .email-body-container img {
+          .apple-mail-container * {
             max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-            display: block;
-            margin: 10px auto;
           }
           
-          .email-body-container table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-            background: white;
+          .apple-mail-container p {
+            margin: 0 0 16px 0;
+            line-height: 1.47;
           }
           
-          .email-body-container td, .email-body-container th {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-            vertical-align: top;
+          .apple-mail-container p:last-child {
+            margin-bottom: 0;
           }
           
-          .email-body-container th {
-            background-color: #f8fafc;
+          .apple-mail-container div {
+            margin: 0 0 8px 0;
+          }
+          
+          .apple-mail-container div:last-child {
+            margin-bottom: 0;
+          }
+          
+          .apple-mail-container br {
+            line-height: 1.47;
+          }
+          
+          .apple-mail-container h1, .apple-mail-container h2, .apple-mail-container h3, 
+          .apple-mail-container h4, .apple-mail-container h5, .apple-mail-container h6 {
+            margin: 24px 0 12px 0;
             font-weight: 600;
+            line-height: 1.3;
+            color: #000000;
           }
           
-          .email-body-container a {
-            color: #2563eb;
+          .apple-mail-container h1 { font-size: 24px; }
+          .apple-mail-container h2 { font-size: 20px; }
+          .apple-mail-container h3 { font-size: 18px; }
+          .apple-mail-container h4 { font-size: 16px; }
+          .apple-mail-container h5 { font-size: 14px; }
+          .apple-mail-container h6 { font-size: 12px; }
+          
+          .apple-mail-container a {
+            color: #007AFF;
+            text-decoration: none;
+          }
+          
+          .apple-mail-container a:hover {
             text-decoration: underline;
           }
           
-          .email-body-container a:hover {
-            color: #1d4ed8;
-          }
-          
-          .email-body-container p {
-            margin: 10px 0;
-            line-height: 1.6;
-          }
-          
-          .email-body-container h1, .email-body-container h2, .email-body-container h3, 
-          .email-body-container h4, .email-body-container h5, .email-body-container h6 {
-            margin: 20px 0 10px 0;
+          .apple-mail-container strong, .apple-mail-container b {
             font-weight: 600;
-            line-height: 1.3;
-            color: #1f2937;
+            color: #000000;
           }
           
-          .email-body-container h1 { font-size: 1.8em; }
-          .email-body-container h2 { font-size: 1.5em; }
-          .email-body-container h3 { font-size: 1.3em; }
-          .email-body-container h4 { font-size: 1.1em; }
-          
-          .email-body-container ul, .email-body-container ol {
-            margin: 10px 0;
-            padding-left: 25px;
-          }
-          
-          .email-body-container li {
-            margin: 5px 0;
-          }
-          
-          .email-body-container blockquote {
-            border-left: 4px solid #e5e7eb;
-            padding-left: 20px;
-            margin: 20px 0;
+          .apple-mail-container em, .apple-mail-container i {
             font-style: italic;
-            color: #6b7280;
-            background: #f9fafb;
-            border-radius: 0 4px 4px 0;
-            padding: 15px 20px;
           }
           
-          .email-body-container pre {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            border: 1px solid #e5e7eb;
+          .apple-mail-container ul, .apple-mail-container ol {
+            margin: 16px 0;
+            padding-left: 24px;
           }
           
-          .email-body-container code {
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
+          .apple-mail-container li {
+            margin: 4px 0;
+            line-height: 1.47;
           }
           
-          .email-body-container hr {
-            border: none;
-            border-top: 2px solid #e5e7eb;
-            margin: 25px 0;
+          .apple-mail-container blockquote {
+            margin: 16px 0;
+            padding-left: 16px;
+            border-left: 3px solid #E5E5E7;
+            color: #6B6B6B;
+            font-style: italic;
           }
           
-          .email-body-container center {
+          .apple-mail-container table {
+            border-collapse: collapse;
+            margin: 16px 0;
+            width: 100%;
+            font-size: 14px;
+          }
+          
+          .apple-mail-container td, .apple-mail-container th {
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid #E5E5E7;
+          }
+          
+          .apple-mail-container th {
+            font-weight: 600;
+            background-color: #F5F5F7;
+          }
+          
+          .apple-mail-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 16px 0;
+            border-radius: 4px;
+          }
+          
+          .apple-mail-container center {
             text-align: center;
             display: block;
+            margin: 16px 0;
           }
           
-          .email-body-container font {
+          .apple-mail-container font {
             display: inline;
           }
           
-          .email-body-container div {
-            margin: 5px 0;
+          .apple-mail-container span {
+            display: inline;
           }
           
-          .email-body-container strong, .email-body-container b {
-            font-weight: 600;
+          /* Remove extra spacing from nested elements */
+          .apple-mail-container div div {
+            margin: 0;
           }
           
-          .email-body-container em, .email-body-container i {
-            font-style: italic;
+          .apple-mail-container p br + br {
+            display: none;
           }
           
-          .email-body-container small {
-            font-size: 0.85em;
-            color: #6b7280;
-          }
-          
-          .email-body-container big {
-            font-size: 1.1em;
+          /* Clean code blocks */
+          .apple-mail-container code {
+            background-color: #F5F5F7;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.45;
+            display: block;
+            margin: 16px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
           }
         `}</style>
-        <div 
-          dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
-        />
+        <div dangerouslySetInnerHTML={{ __html: sanitizedHTML }} />
       </div>
     );
   } else {
-    // Handle plain text emails with better formatting
-    const formattedText = body
-      // Clean up encoding artifacts
-      .replace(/=\?UTF-8\?B\?[^?]*\?=/gi, '')
-      .replace(/=\?utf-8\?[^?]*\?=/gi, '')
-      .replace(/=09/gi, '\t')
-      .replace(/=20/gi, ' ')
-      .replace(/=\d+/gi, '')
+    // Handle plain text emails with Apple Mail styling
+    let cleanedText = processedBody
+      // Clean up quoted-printable encoding
+      .replace(/=([0-9A-F]{2})/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/=\r?\n/g, '') // Remove soft line breaks
       // Convert URLs to clickable links
       .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
       // Convert email addresses to mailto links
       .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1">$1</a>')
+      // Convert line breaks to <br> tags
+      .replace(/\r?\n/g, '<br>')
       .trim();
 
     return (
-      <div className="plain-text-email">
+      <div className="apple-mail-plain-text">
         <style>{`
-          .plain-text-email {
+          .apple-mail-plain-text {
             background: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            font-family: 'Courier New', monospace;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 14px;
-            line-height: 1.6;
-            color: #374151;
+            line-height: 1.47;
+            color: #000000;
             white-space: pre-wrap;
             word-wrap: break-word;
+            overflow-wrap: break-word;
           }
           
-          .plain-text-email a {
-            color: #2563eb;
+          .apple-mail-plain-text a {
+            color: #007AFF;
+            text-decoration: none;
+          }
+          
+          .apple-mail-plain-text a:hover {
             text-decoration: underline;
           }
-          
-          .plain-text-email a:hover {
-            color: #1d4ed8;
-          }
         `}</style>
-        <div dangerouslySetInnerHTML={{ __html: formattedText }} />
+        <div dangerouslySetInnerHTML={{ __html: cleanedText }} />
       </div>
     );
   }
