@@ -18,7 +18,8 @@ import {
   StickyNote,
   User,
   FolderOpen,
-  Briefcase
+  Briefcase,
+  ArrowUpDown
 } from 'lucide-react';
 import { Lead, Activity, CustomField, ActivityTemplate } from '@/types/database';
 import { cn } from '@/lib/utils';
