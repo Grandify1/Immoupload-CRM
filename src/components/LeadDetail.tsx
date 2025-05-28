@@ -1,7 +1,4 @@
-Updating the drag and drop functionality for field items in SalesPipelineSettings.tsx.
-```
 
-```tsx
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -128,6 +125,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   ]);
   const [newGroupName, setNewGroupName] = useState('');
   const [draggedField, setDraggedField] = useState<string | null>(null);
+  const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
 
   useEffect(() => {
     setEditForm(lead);
@@ -180,6 +178,8 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   };
 
   const handleMoveField = (fieldKey: string, fromGroupId: string, toGroupId: string) => {
+    console.log(`Moving field: ${fieldKey} from ${fromGroupId} to ${toGroupId}`);
+    
     setFieldGroups(prev => prev.map(group => {
       if (group.id === fromGroupId) {
         return { ...group, fields: group.fields.filter(f => f !== fieldKey) };
@@ -468,14 +468,50 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     setShowActivityForm(false);
   };
 
-  // Drag and Drop Functionality
+  // Improved Drag and Drop Functionality
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, fieldKey: string) => {
+    console.log(`Drag start: ${fieldKey}`);
     setDraggedField(fieldKey);
     event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', fieldKey);
   };
 
   const handleDragEnd = () => {
+    console.log('Drag end');
     setDraggedField(null);
+    setDragOverGroup(null);
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>, groupId: string) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setDragOverGroup(groupId);
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    // Only clear drag over state if we're leaving the drop zone completely
+    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+      setDragOverGroup(null);
+    }
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>, toGroupId: string) => {
+    event.preventDefault();
+    const fieldKey = event.dataTransfer.getData('text/plain') || draggedField;
+    
+    if (!fieldKey) return;
+
+    console.log(`Dropping field: ${fieldKey} into group: ${toGroupId}`);
+
+    // Find the current group of the field
+    const fromGroup = fieldGroups.find(group => group.fields.includes(fieldKey));
+    
+    if (fromGroup && fromGroup.id !== toGroupId) {
+      handleMoveField(fieldKey, fromGroup.id, toGroupId);
+    }
+
+    setDraggedField(null);
+    setDragOverGroup(null);
   };
 
   return (
@@ -699,10 +735,19 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                       return value !== undefined && value !== null && value !== '';
                     });
 
-                    if (!hasVisibleFields) return null;
+                    if (!hasVisibleFields && group.id !== 'custom_fields') return null;
 
                     return (
-                      <div key={group.id} className="mb-6">
+                      <div 
+                        key={group.id} 
+                        className={cn(
+                          "mb-6 p-3 border-2 border-dashed border-transparent rounded-lg transition-colors",
+                          dragOverGroup === group.id && "border-blue-400 bg-blue-50"
+                        )}
+                        onDragOver={(e) => handleDragOver(e, group.id)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, group.id)}
+                      >
                         <div className="flex items-center justify-between mb-4">
                           <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
                             {group.name}
@@ -720,44 +765,33 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </div>
 
                         <div className="space-y-3">
-                          {group.fields.map((fieldKey, fieldIndex) => (
-                            <div
-                              key={`${group.id}-${fieldKey}`}
-                              className={cn(
-                                "flex items-center justify-between p-2 bg-gray-50 rounded border cursor-move transition-colors",
-                                draggedField === fieldKey ? "opacity-50" : "hover:bg-gray-100"
-                              )}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, fieldKey)}
-                              onDragEnd={handleDragEnd}
-                            >
-                              <span className="text-sm font-medium">
-                                {getFieldDisplayName(fieldKey)}
-                              </span>
-                              <div className="flex items-center space-x-1">
-                                <Select
-                                  value={group.id}
-                                  onValueChange={(newGroupId) => {
-                                    if (newGroupId !== group.id) {
-                                      handleMoveField(fieldKey, group.id, newGroupId);
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger className="w-32 h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {fieldGroups.map((g) => (
-                                      <SelectItem key={g.id} value={g.id}>
-                                        {g.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                          {group.fields.map((fieldKey) => {
+                            const value = getFieldValue(fieldKey);
+                            if (!value) return null;
+
+                            return (
+                              <div
+                                key={`${group.id}-${fieldKey}`}
+                                className={cn(
+                                  "p-3 bg-gray-50 rounded-lg border transition-all duration-200 cursor-move",
+                                  draggedField === fieldKey ? "opacity-50 scale-95" : "hover:bg-gray-100 hover:shadow-sm"
+                                )}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, fieldKey)}
+                                onDragEnd={handleDragEnd}
+                              >
+                                {renderFieldContent(fieldKey)}
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
+
+                        {/* Drop zone indicator */}
+                        {dragOverGroup === group.id && draggedField && (
+                          <div className="mt-3 p-2 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 text-center text-sm text-blue-600">
+                            Felder hierher ziehen
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -852,8 +886,95 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                               </div>
                             </div>
                             <div className="ml-10">
-                              {activity.type === 'custom' && activity.template_data?.field_values ? (
-                                <div className="prose prose-sm max-w-none">
-                                  <div className="text-sm text-gray-800 space-y-2">
-                                    {Object.entries(activity.template_data.field_values).map(([fieldName, value]) => (
-                                      <div key={fieldName} className="border-l-2 border-gray
+                              <div className="text-sm text-gray-800 whitespace-pre-wrap">
+                                {activity.content}
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 py-8">
+                      No activities yet. Add a note to get started.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Add Custom Field Modal */}
+      <Dialog open={showAddCustomFieldModal} onOpenChange={setShowAddCustomFieldModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Custom Field</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="field-name">Field Name</Label>
+              <Input
+                id="field-name"
+                value={newCustomField.name}
+                onChange={(e) => setNewCustomField({ ...newCustomField, name: e.target.value })}
+                placeholder="Enter field name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="field-type">Field Type</Label>
+              <Select
+                value={newCustomField.field_type}
+                onValueChange={(value: 'text' | 'number' | 'date' | 'select' | 'checkbox') => 
+                  setNewCustomField({ ...newCustomField, field_type: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="number">Number</SelectItem>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="select">Select</SelectItem>
+                  <SelectItem value="checkbox">Checkbox</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {newCustomField.field_type === 'select' && (
+              <div>
+                <Label>Options (one per line)</Label>
+                <Textarea
+                  value={newCustomField.options.join('\n')}
+                  onChange={(e) => setNewCustomField({ 
+                    ...newCustomField, 
+                    options: e.target.value.split('\n').filter(opt => opt.trim()) 
+                  })}
+                  placeholder="Option 1&#10;Option 2&#10;Option 3"
+                  rows={4}
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddCustomFieldModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCustomField}>
+              Add Field
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
