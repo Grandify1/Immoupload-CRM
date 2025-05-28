@@ -704,7 +704,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               <Phone className="w-4 h-4 mr-1" />
               Call
             </Button>
-            <Button size="sm" variant="outline" className="border-gray-300" onClick={() => setShowActivityForm(true)}>
+            <Button size="sm" variant="outline" className="border-gray-300" onClick={handleOpenActivityModal}>
               Activity
             </Button>
           </div>
@@ -1205,6 +1205,127 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             <Button onClick={() => setShowFieldLayoutModal(false)} className="px-8 py-2">
               Fertig
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Activity Modal */}
+      <Dialog open={showCustomActivityModal} onOpenChange={setShowCustomActivityModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Activity</DialogTitle>
+            <DialogDescription>
+              Select an activity template or create a custom activity
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!selectedActivityTemplate ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                {activityTemplates && activityTemplates.length > 0 ? (
+                  activityTemplates.map((template) => (
+                    <Button
+                      key={template.id}
+                      variant="outline"
+                      className="justify-start h-auto p-4 text-left"
+                      onClick={() => handleSelectActivityTemplate(template)}
+                    >
+                      <div>
+                        <div className="font-medium">{template.name}</div>
+                        {template.description && (
+                          <div className="text-sm text-gray-500 mt-1">{template.description}</div>
+                        )}
+                      </div>
+                    </Button>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    No activity templates available
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">{selectedActivityTemplate.name}</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedActivityTemplate(null)}
+                >
+                  Back
+                </Button>
+              </div>
+              
+              {selectedActivityTemplate.questions && selectedActivityTemplate.questions.length > 0 ? (
+                <div className="space-y-4">
+                  {selectedActivityTemplate.questions.map((question) => (
+                    <div key={question.id} className="space-y-2">
+                      <Label className="text-sm font-medium">{question.text}</Label>
+                      {question.type === 'text' && (
+                        <Input
+                          value={activityResponses[question.id] || ''}
+                          onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
+                          placeholder={question.placeholder || ''}
+                        />
+                      )}
+                      {question.type === 'textarea' && (
+                        <Textarea
+                          value={activityResponses[question.id] || ''}
+                          onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
+                          placeholder={question.placeholder || ''}
+                          rows={3}
+                        />
+                      )}
+                      {question.type === 'select' && (
+                        <Select
+                          value={activityResponses[question.id] || ''}
+                          onValueChange={(value) => handleActivityResponseChange(question.id, value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={question.placeholder || 'Select an option'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {question.options?.map((option, index) => (
+                              <SelectItem key={index} value={option}>{option}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium">Activity Details</Label>
+                  <Textarea
+                    value={activityResponses['general'] || ''}
+                    onChange={(e) => handleActivityResponseChange('general', e.target.value)}
+                    placeholder="Enter activity details..."
+                    rows={4}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowCustomActivityModal(false);
+                setSelectedActivityTemplate(null);
+                setActivityResponses({});
+              }}
+            >
+              Cancel
+            </Button>
+            {selectedActivityTemplate && (
+              <Button onClick={handleSubmitCustomActivity}>
+                Add Activity
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
