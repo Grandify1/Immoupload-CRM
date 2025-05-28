@@ -480,27 +480,64 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       // Leads in kleineren Batches löschen um URL-Längenbeschränkungen zu vermeiden
       const batchSize = 50; // Kleinere Batches verwenden
       let totalDeleted = 0;
+      let failedDeletes: string[] = [];
       
       for (let i = 0; i < leadsToDelete.length; i += batchSize) {
         const batch = leadsToDelete.slice(i, i + batchSize);
         
-        const { error } = await supabase
+        const { error, count } = await supabase
           .from('leads')
-          .delete()
+          .delete({ count: 'exact' })
           .in('id', batch);
           
         if (error) {
           console.error('Error deleting batch:', error);
-          throw error;
+          
+          // Prüfe ob es ein Foreign Key Constraint Fehler ist
+          if (error.code === '23503') {
+            // Versuche jeden Lead einzeln zu löschen, um herauszufinden, welche problematisch sind
+            for (const leadId of batch) {
+              const { error: singleError } = await supabase
+                .from('leads')
+                .delete()
+                .eq('id', leadId);
+                
+              if (singleError) {
+                if (singleError.code === '23503') {
+                  failedDeletes.push(leadId);
+                } else {
+                  throw singleError; // Andere Fehler weiterwerfen
+                }
+              } else {
+                totalDeleted += 1;
+              }
+            }
+          } else {
+            throw error; // Andere Fehler weiterwerfen
+          }
+        } else {
+          totalDeleted += count || batch.length;
         }
-        
-        totalDeleted += batch.length;
       }
 
-      toast({
-        title: "Leads gelöscht",
-        description: `${totalDeleted} Lead(s) wurden erfolgreich gelöscht.`,
-      });
+      if (totalDeleted > 0 && failedDeletes.length === 0) {
+        toast({
+          title: "Leads gelöscht",
+          description: `${totalDeleted} Lead(s) wurden erfolgreich gelöscht.`,
+        });
+      } else if (totalDeleted > 0 && failedDeletes.length > 0) {
+        toast({
+          title: "Teilweise erfolgreich",
+          description: `${totalDeleted} Lead(s) wurden gelöscht. ${failedDeletes.length} Lead(s) konnten nicht gelöscht werden, da sie mit Deals verknüpft sind.`,
+          variant: "destructive",
+        });
+      } else if (failedDeletes.length > 0) {
+        toast({
+          title: "Löschen fehlgeschlagen",
+          description: `Alle ausgewählten Leads sind mit Deals verknüpft und können nicht gelöscht werden. Löschen Sie zuerst die zugehörigen Deals.`,
+          variant: "destructive",
+        });
+      }
       
       setSelectedLeads(new Set());
       setShowBulkActionsMenu(false);
