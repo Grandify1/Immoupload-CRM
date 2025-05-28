@@ -1,0 +1,170 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+OpportunitiesView.tsx:296 loadAllowedStatuses: Start
+OpportunitiesView.tsx:317 loadAllowedStatuses: Geladene Stati: Array(5)
+chunk-FJ2A54M7.js?v=957518e4:521 Warning: Connect(Droppable): Support for defaultProps will be removed from memo components in a future major release. Use JavaScript default parameters instead.
+    at div
+    at div
+    at Provider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=957518e4:945:20)
+    at App (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=957518e4:7462:25)
+    at ErrorBoundary2 (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=957518e4:1959:35)
+    at DragDropContext (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=957518e4:7582:19)
+    at KanbanView (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/OpportunitiesView.tsx:348:23)
+    at div
+    at div
+    at OpportunitiesView (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/OpportunitiesView.tsx:545:37)
+    at div
+    at div
+    at CRMLayout (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/CRMLayout.tsx:28:22)
+    at Index (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/pages/Index.tsx:25:44)
+    at RenderedRoute (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=957518e4:4069:5)
+    at Routes (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=957518e4:4508:5)
+    at Router (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=957518e4:4451:15)
+    at BrowserRouter (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=957518e4:5196:5)
+    at Provider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/chunk-YIE57KHZ.js?v=957518e4:48:15)
+    at TooltipProvider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=957518e4:59:5)
+    at QueryClientProvider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=957518e4:2794:3)
+    at App
+printWarning @ chunk-FJ2A54M7.js?v=957518e4:521
+Show 1 more frame
+Show less
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 12
+SettingsView.tsx:86 Import jobs fetched successfully: 12 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(12)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 12
+SettingsView.tsx:86 Import jobs fetched successfully: 12 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(12)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 12
+SettingsView.tsx:86 Import jobs fetched successfully: 12 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(12)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:182 CSV delimiter detection: Array(4) Selected: ,
+CSVImport.tsx:202 CSV quote character detected: "
+CSVImport.tsx:299 CSV parsing completed: 9809 rows, 15 columns
+CSVImport.tsx:300 Headers detected: Array(15)
+CSVImport.tsx:325 CSV parsing completed: 9809 valid rows from 9809 total rows
+CSVImport.tsx:411 No auto-mapping found for "Keyword"
+CSVImport.tsx:411 No auto-mapping found for "Title"
+CSVImport.tsx:381 Auto-mapped "Average Rating" to "rating"
+CSVImport.tsx:381 Auto-mapped "Reviews" to "reviews"
+CSVImport.tsx:381 Auto-mapped "Address" to "address"
+CSVImport.tsx:381 Auto-mapped "Description" to "description"
+CSVImport.tsx:381 Auto-mapped "Website" to "website"
+CSVImport.tsx:411 No auto-mapping found for "Category"
+CSVImport.tsx:411 No auto-mapping found for "Timings"
+CSVImport.tsx:381 Auto-mapped "Phone Number" to "phone"
+CSVImport.tsx:411 No auto-mapping found for "Extra Services"
+CSVImport.tsx:411 No auto-mapping found for "Latitude"
+CSVImport.tsx:411 No auto-mapping found for "Longitude"
+CSVImport.tsx:411 No auto-mapping found for "Link"
+CSVImport.tsx:411 No auto-mapping found for "Data ID"
+CSVImport.tsx:801 Field mapping changed: Object
+CSVImport.tsx:801 Field mapping changed: Object
+CSVImport.tsx:801 Field mapping changed: Object
+CSVImport.tsx:801 Field mapping changed: Object
+CSVImport.tsx:801 Field mapping changed: Object
+CSVImport.tsx:801 Field mapping changed: ObjectcsvColumn: "Latitude"selectedField: "__skip__"[[Prototype]]: Object
+CSVImport.tsx:801 Field mapping changed: ObjectcsvColumn: "Longitude"selectedField: "__skip__"[[Prototype]]: Object
+CSVImport.tsx:801 Field mapping changed: ObjectcsvColumn: "Link"selectedField: "gmb_url"[[Prototype]]: Object
+CSVImport.tsx:801 Field mapping changed: ObjectcsvColumn: "Data ID"selectedField: "__skip__"[[Prototype]]: Object
+CSVImport.tsx:484 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:512 CSV data rows: 9809
+CSVImport.tsx:513 Mappings: Array(15)0: {csvHeader: 'Keyword', fieldName: 'query', createCustomField: false, customFieldType: 'text'}1: {csvHeader: 'Title', fieldName: 'name', createCustomField: false, customFieldType: 'text'}2: {csvHeader: 'Average Rating', fieldName: 'rating', createCustomField: false, customFieldType: 'text'}3: {csvHeader: 'Reviews', fieldName: 'reviews', createCustomField: false, customFieldType: 'text'}4: {csvHeader: 'Address', fieldName: 'address', createCustomField: false, customFieldType: 'text'}5: {csvHeader: 'Description', fieldName: 'description', createCustomField: false, customFieldType: 'text'}6: {csvHeader: 'Website', fieldName: 'website', createCustomField: false, customFieldType: 'text'}7: {csvHeader: 'Category', fieldName: 'main_category', createCustomField: false, customFieldType: 'text'}8: {csvHeader: 'Timings', fieldName: 'workday_timing', createCustomField: false, customFieldType: 'text'}9: {csvHeader: 'Phone Number', fieldName: 'phone', createCustomField: false, customFieldType: 'text'}10: {csvHeader: 'Extra Services', fieldName: 'categories', createCustomField: false, customFieldType: 'text'}11: {csvHeader: 'Latitude', fieldName: null, createCustomField: false, customFieldType: 'text'}12: {csvHeader: 'Longitude', fieldName: null, createCustomField: false, customFieldType: 'text'}13: {csvHeader: 'Link', fieldName: 'gmb_url', createCustomField: false, customFieldType: 'text'}14: {csvHeader: 'Data ID', fieldName: null, createCustomField: false, customFieldType: 'text'}length: 15[[Prototype]]: Array(0)
+CSVImport.tsx:516 === GETTING USER INFO ===
+CSVImport.tsx:532 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:552 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:555 Custom fields to create: Array(0)
+CSVImport.tsx:570 === PROCESSING CSV DATA ===
+CSVImport.tsx:611 ✅ Processed CSV data, prepared leads: 9809
+CSVImport.tsx:617 Sample lead: Objectaddress: "Katharinenstraße 30a"custom_fields: {query: 'Immobilienmakler Hamburg', rating: '5,0', reviews: '39', main_category: 'Immobilienmakler', workday_timing: 'Schließt demnächst ⋅ 21:00 ⋅ Öffnet Do um 08:00 +49 40 57223234', …}description: "Schließt demnächst ⋅ 21:00 ⋅ Öffnet Do um 08:00 +49 40 57223234"name: "Makler mit Herz - Immobilienmakler Hamburg"phone: "+49 40 57223234"status: "potential"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"website: "https://www.maklermitherz-hamburg.de/"[[Prototype]]: Object
+CSVImport.tsx:620 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:637 Import job data: Objectcreated_by: "4467ca04-af24-4c9e-b26b-f3152a00f429"error_details: nullfailed_records: 0file_name: "100 Biggest Cities Scrape.csv"processed_records: 0status: "processing"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"total_records: 9809undo_status: "active"[[Prototype]]: Object
+CSVImport.tsx:660 ✅ Import job created with ID: 3bf81d0d-c3f9-4860-9097-96a64d5345a8
+CSVImport.tsx:668 === STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===
+CSVImport.tsx:669 Duplicate Detection Config: ObjectduplicateAction: "update"duplicateDetectionField: "none"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+CSVImport.tsx:670 Sending data to Edge Function...
+CSVImport.tsx:690 ✅ Edge Function response: ObjectfailedRecords: 0processedRecords: 9809success: true[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+CSVImport.tsx:701 🔄 Triggering automatic refresh of leads data...
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
