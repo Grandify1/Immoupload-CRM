@@ -5,7 +5,7 @@ import { OpportunitiesView } from './OpportunitiesView';
 import { ReportsView } from './ReportsView';
 import { SettingsView } from './SettingsView';
 import { EmailView } from './EmailView';
-import { ScraperView } from './ScraperView';
+import ScraperView from './ScraperView';
 import { LeadDetail } from './LeadDetail';
 import { DealDetail } from './DealDetail';
 import { Lead, Deal, Activity, SavedFilter, CustomField, ActivityTemplate } from '@/types/database';
