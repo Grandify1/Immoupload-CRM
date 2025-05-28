@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   X,
@@ -839,7 +840,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                   >
                     <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[key as keyof typeof statusColors])} />
                     {label}
-                  </div>
+                  </Button>
                 ))}
               </div>
             </PopoverContent>
