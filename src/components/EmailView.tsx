@@ -47,18 +47,28 @@ interface Email {
 
 type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'archived' | 'deleted';
 
-// Base64 decoding helper function
+// Base64 decoding helper function with improved German umlauts support
 const decodeBase64Email = (text: string): string => {
   try {
     // Handle different Base64 email encoding patterns
-    return text.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
+    let processedText = text.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, encoded) => {
       try {
         if (encoding.toUpperCase() === 'B') {
           // Base64 decoding
           const decoded = atob(encoded);
-          return decodeURIComponent(escape(decoded));
+          // Handle UTF-8 encoding properly for German umlauts
+          if (charset.toLowerCase().includes('utf-8') || charset.toLowerCase().includes('utf8')) {
+            // Convert UTF-8 bytes to proper Unicode string
+            const bytes = new Uint8Array(decoded.length);
+            for (let i = 0; i < decoded.length; i++) {
+              bytes[i] = decoded.charCodeAt(i);
+            }
+            return new TextDecoder('utf-8').decode(bytes);
+          } else {
+            return decodeURIComponent(escape(decoded));
+          }
         } else if (encoding.toUpperCase() === 'Q') {
-          // Quoted-printable decoding (simplified)
+          // Quoted-printable decoding
           return encoded
             .replace(/=([0-9A-F]{2})/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
             .replace(/_/g, ' ');
@@ -69,6 +79,21 @@ const decodeBase64Email = (text: string): string => {
         return encoded; // Return the encoded part if decoding fails
       }
     });
+
+    // Additional cleanup for common German umlaut encoding issues
+    processedText = processedText
+      .replace(/=C3=A4/gi, 'ä')
+      .replace(/=C3=B6/gi, 'ö')
+      .replace(/=C3=BC/gi, 'ü')
+      .replace(/=C3=84/gi, 'Ä')
+      .replace(/=C3=96/gi, 'Ö')
+      .replace(/=C3=9C/gi, 'Ü')
+      .replace(/=C3=9F/gi, 'ß')
+      .replace(/=E2=80=99/gi, ''') // Right single quotation mark
+      .replace(/=E2=80=9C/gi, '"') // Left double quotation mark
+      .replace(/=E2=80=9D/gi, '"'); // Right double quotation mark
+
+    return processedText;
   } catch (e) {
     console.warn('Failed to process email encoding:', e);
     return text;
@@ -948,37 +973,83 @@ export function EmailView() {
                     </div>
                   ) : (
                     <div className="divide-y h-full overflow-y-auto">
-                      {filteredEmails.map((email) => (
-                        <div
-                          key={email.id}
-                          className={`p-4 cursor-pointer hover:bg-muted/50 ${
-                            selectedEmail?.id === email.id ? 'bg-muted' : ''
-                          } ${!email.is_read ? 'font-semibold' : ''}`}
-                          onClick={() => handleEmailSelect(email)}
-                        >
-                            <div className="flex items-center justify-between mb-1">
-                            <Checkbox
+                      {filteredEmails.map((email) => {
+                        // Extract sender name and email from sender field
+                        const extractSenderInfo = (senderString: string) => {
+                          // Handle formats like "Name <email@domain.com>" or just "email@domain.com"
+                          const match = senderString.match(/^(.+?)\s*<(.+?)>$/);
+                          if (match) {
+                            return {
+                              name: decodeBase64Email(match[1].trim()),
+                              email: match[2].trim()
+                            };
+                          } else {
+                            // If no name, just email
+                            return {
+                              name: senderString.trim(),
+                              email: senderString.trim()
+                            };
+                          }
+                        };
+
+                        const senderInfo = extractSenderInfo(email.sender);
+                        const decodedSubject = decodeBase64Email(email.subject);
+
+                        return (
+                          <div
+                            key={email.id}
+                            className={`p-4 cursor-pointer hover:bg-muted/50 ${
+                              selectedEmail?.id === email.id ? 'bg-muted' : ''
+                            } ${!email.is_read ? 'font-semibold' : ''}`}
+                            onClick={() => handleEmailSelect(email)}
+                          >
+                            <div className="flex items-start gap-3">
+                              <Checkbox
                                 id={`email-${email.id}`}
                                 checked={selectedEmails.includes(email.id)}
                                 onCheckedChange={() => handleSelectEmail(email.id)}
-                            />
-                            <span className="text-sm font-medium truncate">
-                              {email.sender}
-                            </span>
-                            {!email.is_read && (
-                              <Badge variant="default" className="ml-2">
-                                Neu
-                              </Badge>
-                            )}
+                                className="mt-1"
+                              />
+                              <div className="flex-1 min-w-0 space-y-1">
+                                {/* Sender Name */}
+                                <div className="flex items-center justify-between">
+                                  <div className="text-sm font-medium truncate">
+                                    {senderInfo.name}
+                                  </div>
+                                  {!email.is_read && (
+                                    <Badge variant="default" className="ml-2 flex-shrink-0">
+                                      Neu
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                {/* Sender Email (if different from name) */}
+                                {senderInfo.name !== senderInfo.email && (
+                                  <div className="text-xs text-muted-foreground truncate">
+                                    {senderInfo.email}
+                                  </div>
+                                )}
+                                
+                                {/* Subject */}
+                                <div className="text-sm truncate">
+                                  {decodedSubject}
+                                </div>
+                                
+                                {/* Date */}
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(email.received_at).toLocaleDateString('de-DE', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-sm font-medium mb-1 truncate">
-                            {email.subject}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(email.received_at).toLocaleDateString('de-DE')}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
@@ -992,9 +1063,15 @@ export function EmailView() {
                   <CardHeader className="flex-shrink-0">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-lg">{selectedEmail.subject}</CardTitle>
+                        <CardTitle className="text-lg">{decodeBase64Email(selectedEmail.subject)}</CardTitle>
                         <CardDescription>
-                          Von: {selectedEmail.sender} • {new Date(selectedEmail.received_at).toLocaleString('de-DE')}
+                          Von: {(() => {
+                            const match = selectedEmail.sender.match(/^(.+?)\s*<(.+?)>$/);
+                            if (match) {
+                              return `${decodeBase64Email(match[1].trim())} (${match[2].trim()})`;
+                            }
+                            return selectedEmail.sender;
+                          })()} • {new Date(selectedEmail.received_at).toLocaleString('de-DE')}
                         </CardDescription>
                       </div>
                       <div className="flex gap-2">
