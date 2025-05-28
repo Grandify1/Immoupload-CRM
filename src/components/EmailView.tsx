@@ -51,139 +51,240 @@ type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'archived' | 'deleted'
 const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
   if (!body) {
     return (
-      <div className="text-muted-foreground italic">
+      <div className="text-muted-foreground italic p-4">
         Keine Nachricht verfügbar
       </div>
     );
   }
 
   // Check if content looks like HTML
-  const isHTML = body.includes('<html') || body.includes('<!DOCTYPE') || body.includes('<div') || body.includes('<p') || body.includes('<br');
+  const isHTML = body.includes('<html') || body.includes('<!DOCTYPE') || body.includes('<div') || body.includes('<p') || body.includes('<br') || body.includes('<table');
 
   if (isHTML) {
-    // Pre-clean the HTML to remove unwanted elements
-    const preCleanedHTML = body
+    // More aggressive HTML cleaning for better display
+    let cleanedHTML = body
       // Remove DOCTYPE and HTML structure tags
       .replace(/<!DOCTYPE[^>]*>/gi, '')
       .replace(/<\/?html[^>]*>/gi, '')
       .replace(/<\/?head[^>]*>/gi, '')
       .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
       .replace(/<\/?body[^>]*>/gi, '')
-      // Remove style tags but preserve inline styles
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+      // Remove style tags and meta tags
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<meta[^>]*>/gi, '')
+      .replace(/<link[^>]*>/gi, '')
+      // Clean up encoding artifacts
+      .replace(/=\?UTF-8\?B\?[^?]*\?=/gi, '')
+      .replace(/=\?utf-8\?[^?]*\?=/gi, '')
+      .replace(/=09/gi, ' ')
+      .replace(/=20/gi, ' ')
+      .replace(/=\d+/gi, ' ')
+      // Remove excessive whitespace and line breaks
+      .replace(/\s+/g, ' ')
+      .replace(/>\s+</g, '><')
+      .trim();
 
-    // Use DOMPurify for thorough sanitization
-    const cleanHTML = DOMPurify.sanitize(preCleanedHTML, {
+    // Use DOMPurify for sanitization with more permissive settings
+    const sanitizedHTML = DOMPurify.sanitize(cleanedHTML, {
       ALLOWED_TAGS: [
         'p', 'br', 'div', 'span', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'tr', 'td', 'th', 'thead', 'tbody',
-        'font', 'center', 'pre', 'code', 'hr'
+        'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot',
+        'font', 'center', 'pre', 'code', 'hr', 'small', 'big', 'sup', 'sub'
       ],
       ALLOWED_ATTR: [
         'href', 'src', 'alt', 'title', 'width', 'height', 'style', 'color', 'bgcolor', 
-        'align', 'valign', 'border', 'cellpadding', 'cellspacing', 'class'
+        'align', 'valign', 'border', 'cellpadding', 'cellspacing', 'class', 'size', 'face'
       ],
       ALLOW_DATA_ATTR: false,
-      SANITIZE_DOM: true
+      SANITIZE_DOM: true,
+      KEEP_CONTENT: true
     });
 
     return (
-      <div className="email-content">
+      <div className="email-body-container">
         <style>{`
-          .email-content {
-            max-width: 100%;
-            overflow-x: auto;
-            background: white;
+          .email-body-container {
+            background: #ffffff;
             border-radius: 8px;
-            padding: 16px;
+            padding: 20px;
+            max-width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333333;
           }
-          .email-content img {
+          
+          .email-body-container img {
             max-width: 100%;
             height: auto;
             border-radius: 4px;
+            display: block;
+            margin: 10px auto;
           }
-          .email-content table {
-            max-width: 100%;
+          
+          .email-body-container table {
+            width: 100%;
             border-collapse: collapse;
-            margin: 8px 0;
+            margin: 15px 0;
+            background: white;
           }
-          .email-content td, .email-content th {
-            padding: 8px;
-            border: 1px solid #e5e7eb;
+          
+          .email-body-container td, .email-body-container th {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
             vertical-align: top;
           }
-          .email-content a {
-            color: #3b82f6;
+          
+          .email-body-container th {
+            background-color: #f8fafc;
+            font-weight: 600;
+          }
+          
+          .email-body-container a {
+            color: #2563eb;
             text-decoration: underline;
           }
-          .email-content a:hover {
+          
+          .email-body-container a:hover {
             color: #1d4ed8;
           }
-          .email-content p {
-            margin: 8px 0;
+          
+          .email-body-container p {
+            margin: 10px 0;
             line-height: 1.6;
           }
-          .email-content h1, .email-content h2, .email-content h3, .email-content h4, .email-content h5, .email-content h6 {
-            margin: 16px 0 8px 0;
-            font-weight: bold;
-            line-height: 1.4;
+          
+          .email-body-container h1, .email-body-container h2, .email-body-container h3, 
+          .email-body-container h4, .email-body-container h5, .email-body-container h6 {
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+            line-height: 1.3;
+            color: #1f2937;
           }
-          .email-content h1 { font-size: 1.5em; }
-          .email-content h2 { font-size: 1.3em; }
-          .email-content h3 { font-size: 1.1em; }
-          .email-content ul, .email-content ol {
-            margin: 8px 0;
-            padding-left: 20px;
+          
+          .email-body-container h1 { font-size: 1.8em; }
+          .email-body-container h2 { font-size: 1.5em; }
+          .email-body-container h3 { font-size: 1.3em; }
+          .email-body-container h4 { font-size: 1.1em; }
+          
+          .email-body-container ul, .email-body-container ol {
+            margin: 10px 0;
+            padding-left: 25px;
           }
-          .email-content li {
-            margin: 4px 0;
+          
+          .email-body-container li {
+            margin: 5px 0;
           }
-          .email-content blockquote {
+          
+          .email-body-container blockquote {
             border-left: 4px solid #e5e7eb;
-            padding-left: 16px;
-            margin: 16px 0;
+            padding-left: 20px;
+            margin: 20px 0;
             font-style: italic;
             color: #6b7280;
             background: #f9fafb;
-            border-radius: 4px;
+            border-radius: 0 4px 4px 0;
+            padding: 15px 20px;
           }
-          .email-content pre {
-            background: #f3f4f6;
-            padding: 12px;
-            border-radius: 4px;
+          
+          .email-body-container pre {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
             overflow-x: auto;
-            font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, consolas, 'DejaVu Sans Mono', monospace;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #e5e7eb;
           }
-          .email-content code {
-            background: #f3f4f6;
-            padding: 2px 4px;
-            border-radius: 2px;
-            font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, consolas, 'DejaVu Sans Mono', monospace;
+          
+          .email-body-container code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
           }
-          .email-content hr {
+          
+          .email-body-container hr {
             border: none;
-            border-top: 1px solid #e5e7eb;
-            margin: 16px 0;
+            border-top: 2px solid #e5e7eb;
+            margin: 25px 0;
           }
-          /* Handle font tags common in old emails */
-          .email-content font {
+          
+          .email-body-container center {
+            text-align: center;
+            display: block;
+          }
+          
+          .email-body-container font {
             display: inline;
           }
-          .email-content center {
-            text-align: center;
+          
+          .email-body-container div {
+            margin: 5px 0;
+          }
+          
+          .email-body-container strong, .email-body-container b {
+            font-weight: 600;
+          }
+          
+          .email-body-container em, .email-body-container i {
+            font-style: italic;
+          }
+          
+          .email-body-container small {
+            font-size: 0.85em;
+            color: #6b7280;
+          }
+          
+          .email-body-container big {
+            font-size: 1.1em;
           }
         `}</style>
         <div 
-          dangerouslySetInnerHTML={{ __html: cleanHTML }}
-          className="prose prose-sm max-w-none"
+          dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
         />
       </div>
     );
   } else {
-    // Handle plain text emails
+    // Handle plain text emails with better formatting
+    const formattedText = body
+      // Clean up encoding artifacts
+      .replace(/=\?UTF-8\?B\?[^?]*\?=/gi, '')
+      .replace(/=\?utf-8\?[^?]*\?=/gi, '')
+      .replace(/=09/gi, '\t')
+      .replace(/=20/gi, ' ')
+      .replace(/=\d+/gi, '')
+      // Convert URLs to clickable links
+      .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>')
+      // Convert email addresses to mailto links
+      .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1">$1</a>')
+      .trim();
+
     return (
-      <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
-        {body}
+      <div className="plain-text-email">
+        <style>{`
+          .plain-text-email {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #374151;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+          }
+          
+          .plain-text-email a {
+            color: #2563eb;
+            text-decoration: underline;
+          }
+          
+          .plain-text-email a:hover {
+            color: #1d4ed8;
+          }
+        `}</style>
+        <div dangerouslySetInnerHTML={{ __html: formattedText }} />
       </div>
     );
   }
@@ -840,11 +941,11 @@ export function EmailView() {
             {/* Email-Inhalt */}
             <div className="lg:col-span-2">
               {selectedEmail ? (
-                <Card>
-                  <CardHeader>
+                <Card className="h-[calc(100vh-200px)] flex flex-col">
+                  <CardHeader className="flex-shrink-0">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle>{selectedEmail.subject}</CardTitle>
+                        <CardTitle className="text-lg">{selectedEmail.subject}</CardTitle>
                         <CardDescription>
                           Von: {selectedEmail.sender} • {new Date(selectedEmail.received_at).toLocaleString('de-DE')}
                         </CardDescription>
@@ -904,8 +1005,10 @@ export function EmailView() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <EmailBodyRenderer body={selectedEmail.body} />
+                  <CardContent className="flex-1 overflow-y-auto p-0">
+                    <div className="max-h-full overflow-y-auto">
+                      <EmailBodyRenderer body={selectedEmail.body} />
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
