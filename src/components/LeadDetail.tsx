@@ -497,7 +497,11 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     event.preventDefault();
     event.stopPropagation();
     
-    if (draggedField === fieldKey) return;
+    if (draggedField === fieldKey) {
+      setDragOverField(null);
+      setDragPosition(null);
+      return;
+    }
     
     const rect = event.currentTarget.getBoundingClientRect();
     const y = event.clientY - rect.top;
@@ -509,6 +513,9 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     setDragOverField(fieldKey);
     setDragPosition(position);
     event.dataTransfer.dropEffect = 'move';
+    
+    // Prevent the group drop handler from being called
+    event.stopPropagation();
   };
 
   const handleFieldDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
@@ -532,21 +539,35 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     
     const sourceFieldKey = event.dataTransfer.getData('text/plain') || draggedField;
     
-    if (!sourceFieldKey || sourceFieldKey === targetFieldKey) return;
+    if (!sourceFieldKey || sourceFieldKey === targetFieldKey) {
+      setDraggedField(null);
+      setDragOverGroup(null);
+      setDragOverField(null);
+      setDragPosition(null);
+      return;
+    }
 
-    console.log(`Reordering field: ${sourceFieldKey} relative to: ${targetFieldKey} (${dragPosition})`);
+    console.log(`Field drop: ${sourceFieldKey} relative to: ${targetFieldKey} (${dragPosition})`);
 
     // Find the groups containing both fields
     const sourceGroup = fieldGroups.find(group => group.fields.includes(sourceFieldKey));
     const targetGroup = fieldGroups.find(group => group.fields.includes(targetFieldKey));
     
-    if (!sourceGroup || !targetGroup) return;
+    if (!sourceGroup || !targetGroup) {
+      setDraggedField(null);
+      setDragOverGroup(null);
+      setDragOverField(null);
+      setDragPosition(null);
+      return;
+    }
 
     if (sourceGroup.id === targetGroup.id) {
       // Reordering within the same group
+      console.log(`Reordering within group ${sourceGroup.id}: ${sourceFieldKey} -> ${targetFieldKey} (${dragPosition})`);
       handleReorderFieldsInGroup(sourceGroup.id, sourceFieldKey, targetFieldKey, dragPosition);
     } else {
       // Moving between groups - insert at specific position
+      console.log(`Moving between groups: ${sourceFieldKey} from ${sourceGroup.id} to ${targetGroup.id}`);
       handleMoveFieldToPosition(sourceFieldKey, sourceGroup.id, targetGroup.id, targetFieldKey, dragPosition);
     }
 
@@ -580,12 +601,16 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const handleReorderFieldsInGroup = (groupId: string, sourceField: string, targetField: string, position: 'before' | 'after' | null) => {
     if (!position) return;
 
+    console.log(`Reordering in group ${groupId}: moving ${sourceField} ${position} ${targetField}`);
+
     setFieldGroups(prev => prev.map(group => {
       if (group.id !== groupId) return group;
 
       const fields = [...group.fields];
       const sourceIndex = fields.indexOf(sourceField);
       const targetIndex = fields.indexOf(targetField);
+      
+      console.log(`Source index: ${sourceIndex}, Target index: ${targetIndex}, Fields:`, fields);
       
       if (sourceIndex === -1 || targetIndex === -1) return group;
 
@@ -596,8 +621,12 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
       const newTargetIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
       const insertIndex = position === 'before' ? newTargetIndex : newTargetIndex + 1;
       
+      console.log(`Insert index: ${insertIndex}, New target index: ${newTargetIndex}`);
+      
       // Insert at new position
       fields.splice(insertIndex, 0, sourceField);
+      
+      console.log(`New field order:`, fields);
       
       return { ...group, fields };
     }));
@@ -909,6 +938,14 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                                   onDrop={(e) => handleFieldDrop(e, fieldKey)}
                                 >
                                   {renderFieldContent(fieldKey)}
+                                  
+                                  {/* Visual feedback for drop position */}
+                                  {isBeingDraggedOver && dragPosition && draggedField !== fieldKey && (
+                                    <div className={cn(
+                                      "absolute left-0 right-0 h-1 bg-blue-500 rounded-full z-20",
+                                      dragPosition === 'before' ? "-top-1" : "-bottom-1"
+                                    )} />
+                                  )}
                                 </div>
 
                                 {/* Drop indicator below */}
