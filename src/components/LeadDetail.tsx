@@ -126,6 +126,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const [newGroupName, setNewGroupName] = useState('');
   const [draggedField, setDraggedField] = useState<string | null>(null);
   const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setEditForm(lead);
@@ -472,25 +473,45 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>, fieldKey: string) => {
     console.log(`Drag start: ${fieldKey}`);
     setDraggedField(fieldKey);
+    setIsDragging(true);
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('text/plain', fieldKey);
+    
+    // Add visual feedback
+    event.currentTarget.style.opacity = '0.5';
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (event: React.DragEvent<HTMLDivElement>) => {
     console.log('Drag end');
     setDraggedField(null);
     setDragOverGroup(null);
+    setIsDragging(false);
+    
+    // Reset visual feedback
+    event.currentTarget.style.opacity = '1';
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>, groupId: string) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    setDragOverGroup(groupId);
+    
+    // Only set drag over if we have a dragged field
+    if (draggedField || event.dataTransfer.types.includes('text/plain')) {
+      setDragOverGroup(groupId);
+    }
   };
 
   const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
     // Only clear drag over state if we're leaving the drop zone completely
-    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const isOutside = (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    );
+    
+    if (isOutside) {
       setDragOverGroup(null);
     }
   };
@@ -507,11 +528,25 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     const fromGroup = fieldGroups.find(group => group.fields.includes(fieldKey));
     
     if (fromGroup && fromGroup.id !== toGroupId) {
-      handleMoveField(fieldKey, fromGroup.id, toGroupId);
+      // Update field groups state
+      setFieldGroups(prev => {
+        const updated = prev.map(group => {
+          if (group.id === fromGroup.id) {
+            return { ...group, fields: group.fields.filter(f => f !== fieldKey) };
+          }
+          if (group.id === toGroupId) {
+            return { ...group, fields: [...group.fields, fieldKey] };
+          }
+          return group;
+        });
+        console.log('Updated field groups:', updated);
+        return updated;
+      });
     }
 
     setDraggedField(null);
     setDragOverGroup(null);
+    setIsDragging(false);
   };
 
   return (
@@ -741,12 +776,16 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                       <div 
                         key={group.id} 
                         className={cn(
-                          "mb-6 p-3 border-2 border-dashed border-transparent rounded-lg transition-colors",
-                          dragOverGroup === group.id && "border-blue-400 bg-blue-50"
+                          "mb-6 p-3 rounded-lg transition-all duration-200",
+                          isDragging ? "border-2 border-dashed border-gray-300" : "border border-gray-200",
+                          dragOverGroup === group.id && isDragging && "border-blue-400 bg-blue-50 shadow-md"
                         )}
                         onDragOver={(e) => handleDragOver(e, group.id)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, group.id)}
+                        style={{
+                          minHeight: isDragging ? '120px' : 'auto'
+                        }}
                       >
                         <div className="flex items-center justify-between mb-4">
                           <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
@@ -773,12 +812,16 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                               <div
                                 key={`${group.id}-${fieldKey}`}
                                 className={cn(
-                                  "p-3 bg-gray-50 rounded-lg border transition-all duration-200 cursor-move",
-                                  draggedField === fieldKey ? "opacity-50 scale-95" : "hover:bg-gray-100 hover:shadow-sm"
+                                  "p-3 bg-gray-50 rounded-lg border transition-all duration-200 cursor-move select-none",
+                                  draggedField === fieldKey ? "opacity-50 scale-95 shadow-lg border-blue-400" : "hover:bg-gray-100 hover:shadow-sm",
+                                  isDragging && draggedField !== fieldKey ? "pointer-events-none" : ""
                                 )}
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, fieldKey)}
                                 onDragEnd={handleDragEnd}
+                                style={{
+                                  cursor: isDragging ? 'grabbing' : 'grab'
+                                }}
                               >
                                 {renderFieldContent(fieldKey)}
                               </div>
@@ -787,9 +830,16 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </div>
 
                         {/* Drop zone indicator */}
-                        {dragOverGroup === group.id && draggedField && (
-                          <div className="mt-3 p-2 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 text-center text-sm text-blue-600">
-                            Felder hierher ziehen
+                        {dragOverGroup === group.id && isDragging && (
+                          <div className="mt-3 p-3 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 text-center text-sm text-blue-600 font-medium">
+                            <span className="animate-pulse">📁 Feld hier ablegen</span>
+                          </div>
+                        )}
+                        
+                        {/* Empty state for groups with no fields when dragging */}
+                        {group.fields.length === 0 && isDragging && dragOverGroup !== group.id && (
+                          <div className="p-4 text-center text-gray-400 text-sm italic border border-dashed border-gray-300 rounded-lg bg-gray-50">
+                            Felder hierher ziehen...
                           </div>
                         )}
                       </div>
