@@ -475,8 +475,24 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     if (!confirmed) return;
 
     try {
-      // Hier würde die tatsächliche Löschlogik implementiert werden
-      // Für jetzt nur eine Benachrichtigung
+      const leadsToDelete = Array.from(selectedLeads);
+      
+      // Leads aus der Datenbank löschen
+      const { error } = await supabase
+        .from('leads')
+        .delete()
+        .in('id', leadsToDelete);
+
+      if (error) {
+        console.error('Error deleting leads:', error);
+        toast({
+          title: "Fehler",
+          description: "Beim Löschen der Leads ist ein Fehler aufgetreten.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Leads gelöscht",
         description: `${selectedLeads.size} Lead(s) wurden erfolgreich gelöscht.`,
@@ -486,6 +502,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       setShowBulkActionsMenu(false);
       onRefresh();
     } catch (error) {
+      console.error('Unexpected error during bulk delete:', error);
       toast({
         title: "Fehler",
         description: "Beim Löschen der Leads ist ein Fehler aufgetreten.",
