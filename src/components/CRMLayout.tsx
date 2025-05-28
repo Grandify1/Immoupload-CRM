@@ -4,6 +4,8 @@ import { LeadsView } from './LeadsView';
 import { OpportunitiesView } from './OpportunitiesView';
 import { ReportsView } from './ReportsView';
 import { SettingsView } from './SettingsView';
+import { EmailView } from './EmailView';
+import { ScraperView } from './ScraperView';
 import { LeadDetail } from './LeadDetail';
 import { DealDetail } from './DealDetail';
 import { Lead, Deal, Activity, SavedFilter, CustomField, ActivityTemplate } from '@/types/database';
@@ -12,13 +14,12 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import ImportStatusBar from './ImportStatusBar';
-import { EmailView } from './EmailView';
 
 const CRMLayout = () => {
   const { team } = useProfile();
   const { toast } = useToast();
 
-  const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings' | 'email'>('leads');
+  const [activeSection, setActiveSection] = useState<'leads' | 'opportunities' | 'reports' | 'settings' | 'email' | 'scraper'>('leads');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [leadsView, setLeadsView] = useState<'table' | 'kanban'>('table');
@@ -909,8 +910,10 @@ const CRMLayout = () => {
             onDeleteActivityTemplate={deleteActivityTemplate}
           />
         );
-        case 'email':
-          return <EmailView emailRecipient={emailRecipient} onRecipientUsed={() => setEmailRecipient(undefined)} />;
+      case 'email':
+        return <EmailView emailRecipient={emailRecipient} onRecipientUsed={() => setEmailRecipient(undefined)} />;
+      case 'scraper':
+        return <ScraperView />;
       default:
         return null;
     }
