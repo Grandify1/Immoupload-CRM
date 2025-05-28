@@ -1,0 +1,22 @@
+KRITISCHER FEHLER: Edge Function Scraping Fehlgeschlagen - Sofortige Korrektur Erforderlich
+Problem Analyse:
+Ihre Edge Function versucht echtes Scraping, aber Google Maps blockiert diese Anfragen komplett. Das liegt daran, dass Google Maps eine hochdynamische JavaScript-Anwendung ist, die nicht über einfache HTTP-Requests gescrapt werden kann. Der aktuelle Ansatz mit fetch() und HTML-Parsing funktioniert NICHT für Google Maps.
+Warum der aktuelle Code versagt:
+Google Maps lädt Geschäftsdaten dynamisch über JavaScript nach dem ersten Seitenladen. Wenn Sie nur die HTML-Antwort eines HTTP-Requests parsen, erhalten Sie eine leere Seite ohne Geschäftsdaten. Deshalb fallen Sie immer auf Mock-Daten zurück.
+SOFORTIGE LÖSUNG:
+Schritt 1: Problem erkennen und akzeptieren
+Der aktuelle HTML-Scraping-Ansatz mit fetch() funktioniert grundsätzlich NICHT für Google Maps. Sie müssen einen anderen Ansatz wählen.
+Schritt 2: Alternative Implementierung - Google Search Scraping
+Anstatt Google Maps direkt zu scrapen, scrapen Sie Google Search Ergebnisse für lokale Businesses. Diese sind viel einfacher zu extrahieren und enthalten trotzdem die gewünschten Geschäftsinformationen.
+Schritt 3: URL-Strategie ändern
+Ersetzen Sie die Google Maps URL durch eine Google Search URL mit lokalem Business-Focus. Verwenden Sie URLs wie "https://www.google.com/search?q=restaurants+near+munich" anstatt der Maps-URL.
+Schritt 4: Einfachere Datenextraktion
+Google Search Ergebnisse für lokale Businesses enthalten strukturierte Daten, die viel einfacher zu extrahieren sind als die komplexe Google Maps Oberfläche.
+Schritt 5: Robuste Fehlerbehandlung
+Implementieren Sie echte Fehlerbehandlung, die erkennt, wann das Scraping tatsächlich fehlschlägt versus wann es erfolgreich ist aber keine Daten findet.
+Schritt 6: Debug-Logging verbessern
+Fügen Sie detailliertes Logging hinzu, das zeigt, was genau von der HTML-Antwort geparst wird. Loggen Sie die tatsächlich empfangene HTML-Struktur, um zu verstehen, warum keine Daten extrahiert werden.
+Schritt 7: Alternative Datenquellen
+Falls Google komplett blockiert, implementieren Sie Scraping von anderen lokalen Business-Verzeichnissen wie Gelbe Seiten, Yelp, oder anderen öffentlich verfügbaren Quellen.
+Kritische Erkenntnis:
+Der Grund, warum Sie immer Mock-Daten erhalten, ist NICHT, dass das Scraping funktioniert aber keine Daten findet. Das Scraping funktioniert überhaupt nicht, weil Google Maps eine Single-Page-Application ist, die alle Daten über JavaScript lädt.
