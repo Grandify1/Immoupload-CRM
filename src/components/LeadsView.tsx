@@ -1163,6 +1163,10 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             activityTemplates={activityTemplates}
             onDeleteActivity={deleteActivity}
             isOpen={!!selectedLead}
+            onNavigateToEmail={(recipientEmail) => {
+              // This will need to be implemented to navigate to email view
+              console.log('Navigate to email with recipient:', recipientEmail);
+            }}
           />
         )}
       </Dialog>
