@@ -1,0 +1,104 @@
+chunk-FJ2A54M7.js?v=976f12e0:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:39 CRMLayout: Initial fetchData call
+CRMLayout.tsx:56 fetchData: Starting data fetch...
+CRMLayout.tsx:137 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:125 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx?t=1748406417555:338 Loading emails from database...
+2EmailView.tsx?t=1748406417555:333 Skipping email load - too recent
+EmailView.tsx?t=1748406417555:347 Loaded 48 emails from database
+OpportunitiesView.tsx:296 loadAllowedStatuses: Start
+OpportunitiesView.tsx:317 loadAllowedStatuses: Geladene Stati: Array(5)
+chunk-FJ2A54M7.js?v=976f12e0:521 Warning: Connect(Droppable): Support for defaultProps will be removed from memo components in a future major release. Use JavaScript default parameters instead.
+    at div
+    at div
+    at Provider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=976f12e0:945:20)
+    at App (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=976f12e0:7462:25)
+    at ErrorBoundary2 (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=976f12e0:1959:35)
+    at DragDropContext (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-beautiful-dnd.js?v=976f12e0:7582:19)
+    at KanbanView (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/OpportunitiesView.tsx:348:23)
+    at div
+    at div
+    at OpportunitiesView (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/OpportunitiesView.tsx:545:37)
+    at div
+    at div
+    at CRMLayout (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/components/CRMLayout.tsx?t=1748406417555:27:22)
+    at Index (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/src/pages/Index.tsx?t=1748406417555:25:44)
+    at RenderedRoute (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=976f12e0:4069:5)
+    at Routes (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=976f12e0:4508:5)
+    at Router (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=976f12e0:4451:15)
+    at BrowserRouter (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=976f12e0:5196:5)
+    at Provider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/chunk-Y7IJGSUZ.js?v=976f12e0:38:15)
+    at TooltipProvider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=976f12e0:59:5)
+    at QueryClientProvider (https://16c95772-d8eb-493d-8535-ec66fd9f6ac8-00-2mf74cqqq78n0.pike.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=976f12e0:2794:3)
+    at App
+printWarning @ chunk-FJ2A54M7.js?v=976f12e0:521
+Show 1 more frame
+Show less
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx?t=1748406417555:338 Loading emails from database...
+2EmailView.tsx?t=1748406417555:333 Skipping email load - too recent
+EmailView.tsx?t=1748406417555:347 Loaded 48 emails from database
+SalesPipelineSettings.tsx:14 SalesPipelineSettings: Komponente wird gerendert
+SalesPipelineSettings.tsx:160 useEffect: Komponente gemounted, lade Stati...
+SalesPipelineSettings.tsx:21 loadStatuses: Start
+SalesPipelineSettings.tsx:14 SalesPipelineSettings: Komponente wird gerendert
+SalesPipelineSettings.tsx:41 Geladene Stati: Array(5)
+SalesPipelineSettings.tsx:43 loadStatuses: Stati im State gesetzt Array(5)
+2SalesPipelineSettings.tsx:14 SalesPipelineSettings: Komponente wird gerendert
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 11
+SettingsView.tsx:86 Import jobs fetched successfully: 11 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(11)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 11
+SettingsView.tsx:86 Import jobs fetched successfully: 11 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(11)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx?t=1748406575211:457 Loading emails from database...
+2EmailView.tsx?t=1748406575211:452 Skipping email load - too recent
+EmailView.tsx?t=1748406575211:466 Loaded 48 emails from database
+EmailView.tsx:403 Loading emails from database...
+EmailView.tsx:397 Skipping email load - too recent
+useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+EmailView.tsx:397 Skipping email load - too recent
+7Third-party cookie will be blocked. Learn more in the Issues tab.
+EmailView.tsx:418 Loaded 48 emails from database
+EmailView.tsx:1 
+        
+        
+       Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+client:176 [hmr] Failed to reload /src/components/EmailView.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+warnFailedUpdate @ client:176
