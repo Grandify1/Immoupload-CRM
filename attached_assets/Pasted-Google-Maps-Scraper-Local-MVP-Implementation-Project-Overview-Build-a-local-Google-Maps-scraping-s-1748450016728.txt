@@ -1,0 +1,189 @@
+Google Maps Scraper - Local MVP Implementation
+Project Overview
+Build a local Google Maps scraping system that runs entirely on the user's machine. Simple React frontend with local Playwright scraping - no backend servers, no databases, just a working scraper with clean UI.
+Technical Requirements
+Tech Stack
+
+Frontend: React + Vite + TypeScript
+Styling: Tailwind CSS + Shadcn/UI components
+Scraping: Playwright running locally via Electron or Tauri
+State Management: Zustand for client state
+Data Storage: Browser localStorage/IndexedDB
+Form Handling: React Hook Form + Zod validation
+UI Components: Lucide React icons, Sonner for notifications
+
+Architecture
+
+Desktop App: Electron wrapper around React app
+Local Scraping: Playwright runs in Electron main process
+Data Storage: Local browser storage (no external databases)
+Communication: IPC between React frontend and Electron scraping process
+
+Core Functionalities
+1. Simple Desktop Interface
+
+Single Window Electron App
+Clean, modern UI with Tailwind CSS
+No authentication - direct access to scraping
+Responsive layout that works in desktop window
+
+2. Scraping Job Setup
+Simple Form Interface:
+
+Search query input (e.g., "Friseur München")
+Location input field
+Result limit dropdown (50, 100, 200, 500, 1000)
+"Start Scraping" button
+Form validation with Zod
+
+3. Local Scraping Engine
+Playwright Integration in Electron:
+Core Features:
+
+Playwright runs in Electron main process
+Real browser automation (Chromium bundled with Electron)
+Search Google Maps directly
+Extract business data in real-time
+Progress updates sent to React frontend via IPC
+
+Data Extraction:
+
+Business name and category
+Full address
+Phone number
+Website URL
+Google rating and review count
+Opening hours
+Coordinates
+
+Anti-Detection:
+
+Random user agents
+Human-like scrolling and delays
+Stealth mode configuration
+Random delays (2-5 seconds between actions)
+
+4. Job Management
+Job Status Display:
+
+Current job progress bar
+Real-time count of scraped businesses
+Status: Idle, Running, Completed, Error
+Ability to stop current job
+Simple job history (stored in localStorage)
+
+5. Results Display
+Results Table:
+
+Clean table with scraped business data
+Sortable columns
+Search/filter functionality
+Export to CSV button
+Pagination for large datasets
+
+Business Details:
+
+Click row to see full business details
+Modal popup with all scraped information
+Copy contact information buttons
+
+6. Local Data Management
+Browser Storage:
+
+Save scraping results in IndexedDB
+Store job history and settings
+Export/import functionality for data backup
+Clear data option
+
+Technical Implementation
+Electron Setup
+src/
+├── main/              # Electron main process
+│   ├── main.ts        # Electron main entry
+│   ├── scraper.ts     # Playwright scraping logic
+│   └── ipc.ts         # IPC handlers
+├── renderer/          # React frontend
+│   ├── components/    # UI components
+│   ├── stores/        # Zustand stores
+│   └── App.tsx        # Main React app
+└── shared/            # Shared types and utilities
+Scraping Implementation
+
+Playwright in Main Process: Scraping runs in Electron main process
+IPC Communication: Progress updates sent to React via IPC
+Error Handling: Robust error recovery and user feedback
+Data Flow: Scraped data sent to frontend and stored locally
+
+Frontend Implementation
+
+React Components: Clean, reusable UI components
+Real-time Updates: Listen to IPC messages for scraping progress
+State Management: Zustand for app state and scraped data
+Local Storage: Persist data and settings in browser storage
+
+Key Features
+1. One-Click Scraping
+
+Simple form → click start → see results
+Real-time progress with business count
+No complex setup or configuration needed
+
+2. Offline Operation
+
+Works completely offline after initial setup
+No internet required except for scraping Google Maps
+Local data storage and management
+
+3. Export Functionality
+
+Export results to CSV
+Save/load scraping sessions
+Backup and restore data
+
+4. Clean User Experience
+
+Professional UI with Shadcn components
+Loading states and progress indicators
+Clear error messages and recovery options
+Responsive design for different window sizes
+
+Development Structure
+Phase 1: Basic Electron + React Setup
+
+Electron app with React frontend
+Basic UI with scraping form
+IPC communication setup
+
+Phase 2: Playwright Integration
+
+Playwright scraper in main process
+Basic Google Maps automation
+Data extraction and progress updates
+
+Phase 3: UI Polish
+
+Results table and export functionality
+Error handling and user feedback
+Professional styling with Tailwind
+
+Phase 4: Data Management
+
+Local storage implementation
+Job history and data persistence
+Import/export capabilities
+
+Success Metrics
+
+Scraping Works: Successfully extract 100+ businesses per job
+Local Operation: No external dependencies or servers needed
+User Experience: Simple, intuitive interface
+Reliability: Handle errors gracefully and provide clear feedback
+Performance: Fast UI updates and smooth scraping progress
+
+Deliverables
+
+Working Electron App that can be downloaded and run
+Functional Scraper that extracts real Google Maps data
+Clean UI for job management and results viewing
+Export Functionality to save scraped data
+Documentation for building and running the app
