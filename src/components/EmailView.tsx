@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Mail, Send, Inbox, Settings, Plus, Trash2, RefreshCw, Archive, AlertTriangle, Edit, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Mail, Send, Inbox, Settings, Plus, Trash2, RefreshCw, Archive, AlertTriangle, Edit, FolderOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -460,7 +460,6 @@ export function EmailView({ emailRecipient, onRecipientUsed }: EmailViewProps = 
   const [loading, setLoading] = useState(false);
   const [lastLoadTime, setLastLoadTime] = useState(0);
   const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
-  const [isFolderPanelCollapsed, setIsFolderPanelCollapsed] = useState(false);
 
   const [accountForm, setAccountForm] = useState({
     name: '',
@@ -988,33 +987,12 @@ export function EmailView({ emailRecipient, onRecipientUsed }: EmailViewProps = 
         </TabsList>
 
         <TabsContent value="emails">
-          <div className={`grid grid-cols-1 gap-6 transition-all duration-300 ${
-            isFolderPanelCollapsed ? 'lg:grid-cols-3' : 'lg:grid-cols-4'
-          }`}>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Ordner-Sidebar */}
-            <div className={`transition-all duration-300 ${
-              isFolderPanelCollapsed ? 'lg:col-span-0 lg:w-0 lg:overflow-hidden' : 'lg:col-span-1'
-            }`}>
-              <Card className={isFolderPanelCollapsed ? 'w-0 overflow-hidden' : ''}>
-                <CardHeader className="relative">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className={isFolderPanelCollapsed ? 'opacity-0' : 'opacity-100'}>
-                      Ordner
-                    </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsFolderPanelCollapsed(!isFolderPanelCollapsed)}
-                      className="h-8 w-8 p-0 hover:bg-muted"
-                      title={isFolderPanelCollapsed ? 'Ordner einblenden' : 'Ordner ausblenden'}
-                    >
-                      {isFolderPanelCollapsed ? (
-                        <ChevronRight className="h-4 w-4" />
-                      ) : (
-                        <ChevronLeft className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ordner</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="space-y-1">
@@ -1070,25 +1048,8 @@ export function EmailView({ emailRecipient, onRecipientUsed }: EmailViewProps = 
               </Card>
             </div>
 
-            {/* Floating Toggle Button when collapsed */}
-            {isFolderPanelCollapsed && (
-              <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-50 lg:block hidden">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setIsFolderPanelCollapsed(false)}
-                  className="h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-primary hover:bg-primary/90"
-                  title="Ordner einblenden"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-              </div>
-            )}
-
             {/* Email-Liste */}
-            <div className={`transition-all duration-300 ${
-              isFolderPanelCollapsed ? 'lg:col-span-1' : 'lg:col-span-1'
-            }`}>
+            <div className="lg:col-span-1">
               <Card className="h-[calc(100vh-200px)] flex flex-col">
                 <CardHeader className="flex-shrink-0">
                   <CardTitle>
@@ -1197,9 +1158,7 @@ export function EmailView({ emailRecipient, onRecipientUsed }: EmailViewProps = 
             </div>
 
             {/* Email-Inhalt */}
-            <div className={`transition-all duration-300 ${
-              isFolderPanelCollapsed ? 'lg:col-span-2' : 'lg:col-span-2'
-            }`}>
+            <div className="lg:col-span-2">
               {selectedEmail ? (
                 <Card className="h-[calc(100vh-200px)] flex flex-col">
                   <CardHeader className="flex-shrink-0">
