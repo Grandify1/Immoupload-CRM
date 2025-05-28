@@ -816,14 +816,34 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
       <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-white">
         <div className="flex items-center space-x-3">
           <h1 className="text-xl font-semibold text-gray-900">{lead.name}</h1>
-          <Badge
-            className={cn(
-              "inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white",
-              statusColors[lead.status],
-            )}
-          >
-            {statusLabels[lead.status]}
-          </Badge>
+          <Popover>
+            <PopoverTrigger>
+              <Badge
+                className={cn(
+                  "inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white cursor-pointer hover:opacity-80",
+                  statusColors[lead.status],
+                )}
+              >
+                {statusLabels[lead.status]}
+              </Badge>
+            </PopoverTrigger>
+            <PopoverContent className="w-40 p-2">
+              <div className="space-y-1">
+                {Object.entries(statusLabels).map(([key, label]) => (
+                  <Button
+                    key={key}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-left"
+                    onClick={() => onUpdateLead(lead.id, { status: key as 'potential' | 'contacted' | 'qualified' | 'closed' })}
+                  >
+                    <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[key as keyof typeof statusColors])} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="sm" onClick={handleToggleEdit}>
@@ -1009,7 +1029,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                             <Input
                               type="number"
                               value={
-                                (editForm.custom_fields[fieldKey] asstring) ||
+                                (editForm.custom_fields[fieldKey] as string) ||
                                 ""
                               }
                               onChange={(e) => {
