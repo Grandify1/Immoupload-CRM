@@ -815,12 +815,24 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           });
         }
 
-        // Trigger refresh of leads data after a short delay
+        // Trigger refresh of leads data with multiple attempts
         if (onRefresh) {
           console.log('🔄 Triggering automatic refresh of leads data...');
+          
+          // Immediately refresh
+          onRefresh();
+          
+          // Retry after 2 seconds to ensure data is available
           setTimeout(() => {
+            console.log('🔄 Second refresh attempt...');
             onRefresh();
-          }, 1000);
+          }, 2000);
+          
+          // Final retry after 5 seconds
+          setTimeout(() => {
+            console.log('🔄 Final refresh attempt...');
+            onRefresh();
+          }, 5000);
         }
 
       } catch (error: any) {

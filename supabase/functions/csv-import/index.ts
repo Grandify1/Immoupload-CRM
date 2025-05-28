@@ -341,6 +341,15 @@ serve(async (req) => {
       }
     }
 
+    // Final verification - count actual leads in database
+    const { data: verificationLeads, error: verificationError } = await supabaseAdmin
+      .from('leads')
+      .select('id')
+      .eq('team_id', teamId);
+
+    const actualLeadCount = verificationLeads?.length || 0;
+    console.log(`✅ FINAL VERIFICATION: ${actualLeadCount} leads now exist in database for team ${teamId}`);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -350,7 +359,8 @@ serve(async (req) => {
         duplicateRecords: duplicateRecords,
         failedRecords: failedRecords,
         status: finalStatus,
-        message: `Successfully imported ${processedRecords} leads (${newRecords} new, ${updatedRecords} updated)`
+        actualLeadCount: actualLeadCount,
+        message: `Successfully imported ${processedRecords} leads (${newRecords} new, ${updatedRecords} updated). Database now contains ${actualLeadCount} total leads.`
       }),
       { status: 200, headers: responseHeaders }
     );
