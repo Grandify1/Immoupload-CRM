@@ -256,6 +256,20 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     return availableColumns.filter(col => col.visible);
   });
 
+  // State für Spaltenbreiten
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    const savedWidths = localStorage.getItem('columnWidths');
+    if (savedWidths) {
+      return JSON.parse(savedWidths);
+    }
+    return {};
+  });
+
+  // Refs für Resize-Funktionalität
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
+
 
   // Funktion zum Umschalten der Spaltensichtbarkeit
   const toggleColumnVisibility = (columnKey: string) => {
@@ -280,6 +294,42 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     // Speichere die Einstellung im localStorage
     localStorage.setItem('visibleColumns', JSON.stringify(newVisibleColumns));
+  };
+
+  // Resize-Handler für Spalten
+  const handleMouseDown = (e: React.MouseEvent, columnKey: string) => {
+    e.preventDefault();
+    setIsResizing(true);
+    setResizingColumn(columnKey);
+
+    const startX = e.clientX;
+    const startWidth = columnWidths[columnKey] || 150;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const diff = e.clientX - startX;
+      const newWidth = Math.max(80, startWidth + diff); // Mindestbreite von 80px
+      
+      setColumnWidths(prev => {
+        const updated = { ...prev, [columnKey]: newWidth };
+        localStorage.setItem('columnWidths', JSON.stringify(updated));
+        return updated;
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      setResizingColumn(null);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Funktion zum Abrufen der Spaltenbreite
+  const getColumnWidth = (columnKey: string) => {
+    return columnWidths[columnKey] || 150; // Standardbreite 150px
   };
 
   // Funktion zum Hinzufügen eines Filters
@@ -706,17 +756,31 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       )}
 
       <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto">
-        <table className="w-full text-sm">
+        <table ref={tableRef} className="w-full text-sm table-fixed">
           <thead className="bg-gray-50 border-b">
             <tr>
-              {visibleColumns.map(column => (
-                <th key={column.key} className="text-left px-3 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider">
+              {visibleColumns.map((column, index) => (
+                <th 
+                  key={column.key} 
+                  className="text-left px-3 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider relative border-r border-gray-200"
+                  style={{ width: `${getColumnWidth(column.key)}px` }}
+                >
                   <div className="flex items-center space-x-1">
-                    <span>{column.label}</span>
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <span className="truncate">{column.label}</span>
+                    <button className="text-gray-400 hover:text-gray-600 flex-shrink-0">
                       <ArrowUpDown className="w-3 h-3" />
                     </button>
                   </div>
+                  {/* Resize Handle */}
+                  {index < visibleColumns.length - 1 && (
+                    <div
+                      className={cn(
+                        "absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent hover:bg-blue-300 transition-colors",
+                        isResizing && resizingColumn === column.key && "bg-blue-500"
+                      )}
+                      onMouseDown={(e) => handleMouseDown(e, column.key)}
+                    />
+                  )}
                 </th>
               ))}
               <th className="text-left px-3 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider w-24">Actions</th>
@@ -730,18 +794,33 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 onClick={() => onLeadSelect(lead)}
               >
                 {visibleColumns.map(column => {
+                  const cellStyle = { width: `${getColumnWidth(column.key)}px` };
+                  
                   // Render standard fields
                   if (column.key === 'name') {
-                    return <td key={column.key} className="px-3 py-2 font-medium text-gray-900">{lead.name}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 font-medium text-gray-900 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate" title={lead.name}>{lead.name}</div>
+                      </td>
+                    );
                   } else if (column.key === 'email') {
-                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.email || '-'}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate" title={lead.email || ''}>{lead.email || '-'}</div>
+                      </td>
+                    );
                   } else if (column.key === 'phone') {
-                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.phone || '-'}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate" title={lead.phone || ''}>{lead.phone || '-'}</div>
+                      </td>
+                    );
                   } else if (column.key === 'website') {
                     return (
                       <td 
                         key={column.key} 
-                        className="px-3 py-2 text-gray-600"
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200"
+                        style={cellStyle}
                         onClick={(e) => e.stopPropagation()}
                       >
                         {lead.website ? (
@@ -749,18 +828,25 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                             href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline text-sm"
+                            className="text-blue-600 hover:underline text-sm truncate block"
+                            title={lead.website}
                           >
                             {lead.website}
                           </a>
-                        ) : '-'}
+                        ) : (
+                          <div className="truncate">-</div>
+                        )}
                       </td>
                     );
                   } else if (column.key === 'address') {
-                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.address || '-'}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate" title={lead.address || ''}>{lead.address || '-'}</div>
+                      </td>
+                    );
                   } else if (column.key === 'description') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 max-w-xs">
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
                         <div className="truncate" title={lead.description || ''}>
                           {lead.description || '-'}
                         </div>
@@ -768,7 +854,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     );
                   } else if (column.key === 'status') {
                     return (
-                      <td key={column.key} className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                      <td key={column.key} className="px-3 py-2 border-r border-gray-200" style={cellStyle} onClick={(e) => e.stopPropagation()}>
                         <Popover>
                           <PopoverTrigger asChild>
                             <button className={cn("px-2 py-1 rounded-full text-xs font-medium text-white cursor-pointer hover:opacity-80 transition-opacity", statusColors[lead.status])}>
@@ -803,17 +889,29 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                       </td>
                     );
                   } else if (column.key === 'created_at') {
-                    return <td key={column.key} className="px-3 py-2 text-gray-600">{formatDate(lead.created_at)}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate">{formatDate(lead.created_at)}</div>
+                      </td>
+                    );
                   } else if (column.key === 'updated_at') {
-                    return <td key={column.key} className="px-3 py-2 text-gray-600">{formatDate(lead.updated_at)}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate">{formatDate(lead.updated_at)}</div>
+                      </td>
+                    );
                   } else if (column.key === 'owner_id') {
-                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.owner_id || '-'}</td>;
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                        <div className="truncate">{lead.owner_id || '-'}</div>
+                      </td>
+                    );
                   }
                   // Render custom fields
                   else if (column.isCustom) {
                     const customFieldValue = lead.custom_fields?.[column.key];
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 max-w-xs">
+                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
                         <div className="truncate" title={String(customFieldValue || '')}>
                           {customFieldValue !== null && customFieldValue !== undefined ? String(customFieldValue) : '-'}
                         </div>
@@ -821,7 +919,11 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     );
                   }
                   
-                  return <td key={column.key} className="px-3 py-2">-</td>;
+                  return (
+                    <td key={column.key} className="px-3 py-2 border-r border-gray-200" style={cellStyle}>
+                      <div className="truncate">-</div>
+                    </td>
+                  );
                 })}
                 <td className="px-3 py-2">
                   <div className="flex items-center space-x-1">
