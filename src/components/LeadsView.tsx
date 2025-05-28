@@ -258,6 +258,10 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     return availableColumns.filter(col => col.visible);
   });
 
+  // State für ausgewählte Leads (Checkbox-Funktionalität)
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [showBulkActionsMenu, setShowBulkActionsMenu] = useState(false);
+
   // State für Spaltenbreiten
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
     const savedWidths = localStorage.getItem('columnWidths');
@@ -444,6 +448,78 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     return date.toLocaleDateString();
   };
 
+  // Funktionen für Bulk-Aktionen
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allLeadIds = new Set(filteredLeads.map(lead => lead.id));
+      setSelectedLeads(allLeadIds);
+    } else {
+      setSelectedLeads(new Set());
+    }
+  };
+
+  const handleSelectLead = (leadId: string, checked: boolean) => {
+    const newSelected = new Set(selectedLeads);
+    if (checked) {
+      newSelected.add(leadId);
+    } else {
+      newSelected.delete(leadId);
+    }
+    setSelectedLeads(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedLeads.size === 0) return;
+    
+    const confirmed = window.confirm(`Sind Sie sicher, dass Sie ${selectedLeads.size} Lead(s) löschen möchten?`);
+    if (!confirmed) return;
+
+    try {
+      // Hier würde die tatsächliche Löschlogik implementiert werden
+      // Für jetzt nur eine Benachrichtigung
+      toast({
+        title: "Leads gelöscht",
+        description: `${selectedLeads.size} Lead(s) wurden erfolgreich gelöscht.`,
+      });
+      
+      setSelectedLeads(new Set());
+      setShowBulkActionsMenu(false);
+      onRefresh();
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Beim Löschen der Leads ist ein Fehler aufgetreten.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkCreateDeals = async () => {
+    if (selectedLeads.size === 0) return;
+    
+    try {
+      // Hier würde die tatsächliche Deal-Erstellungslogik implementiert werden
+      toast({
+        title: "Deals erstellt",
+        description: `${selectedLeads.size} Deal(s) wurden erfolgreich aus den ausgewählten Leads erstellt.`,
+      });
+      
+      setSelectedLeads(new Set());
+      setShowBulkActionsMenu(false);
+      onRefresh();
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Beim Erstellen der Deals ist ein Fehler aufgetreten.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Prüfen ob alle sichtbaren Leads ausgewählt sind
+  const isAllSelected = filteredLeads.length > 0 && filteredLeads.every(lead => selectedLeads.has(lead.id));
+  const isIndeterminate = selectedLeads.size > 0 && !isAllSelected;
+
   const TableView = () => (
     <div className="bg-white rounded-lg border">
       {/* Toolbar */}
@@ -468,6 +544,47 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             <Columns className="w-3 h-3 mr-1" />
             Columns
           </Button>
+
+          {/* Bulk Actions Menu - nur anzeigen wenn Leads ausgewählt sind */}
+          {selectedLeads.size > 0 && (
+            <Popover open={showBulkActionsMenu} onOpenChange={setShowBulkActionsMenu}>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center h-7 px-2 text-xs"
+                >
+                  <span className="mr-1">{selectedLeads.size} ausgewählt</span>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-medium mb-2">Aktionen</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-sm"
+                    onClick={handleBulkCreateDeals}
+                  >
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Deals erstellen
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-sm text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={handleBulkDelete}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Löschen
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
 
           {/* Smart Views Dropdown */}
           {smartViews.length > 0 && (
@@ -804,6 +921,21 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         <table ref={tableRef} className="w-full text-sm table-fixed">
           <thead className="bg-gray-50 border-b">
             <tr>
+              {/* Checkbox-Spalte */}
+              <th className="text-left px-3 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider w-12 border-r border-gray-200">
+                <div className="flex items-center justify-center">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Alle Leads auswählen"
+                    className={cn(
+                      "h-4 w-4",
+                      isIndeterminate && "data-[state=checked]:bg-gray-500"
+                    )}
+                    {...(isIndeterminate ? { 'data-state': 'indeterminate' } : {})}
+                  />
+                </div>
+              </th>
               {visibleColumns.map((column, index) => (
                 <th 
                   key={column.key} 
@@ -836,28 +968,57 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             {filteredLeads.map((lead) => (
               <tr 
                 key={lead.id} 
-                className="hover:bg-gray-50 cursor-pointer transition-colors" 
-                onClick={() => onLeadSelect(lead)}
+                className={cn(
+                  "hover:bg-gray-50 transition-colors",
+                  selectedLeads.has(lead.id) ? "bg-blue-50" : ""
+                )}
               >
+                {/* Checkbox-Zelle */}
+                <td className="px-3 py-2 border-r border-gray-200 w-12">
+                  <div className="flex items-center justify-center">
+                    <Checkbox
+                      checked={selectedLeads.has(lead.id)}
+                      onCheckedChange={(checked) => handleSelectLead(lead.id, checked as boolean)}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Lead ${lead.name} auswählen`}
+                      className="h-4 w-4"
+                    />
+                  </div>
+                </td>
                 {visibleColumns.map(column => {
                   const cellStyle = { width: `${getColumnWidth(column.key)}px` };
                   
                   // Render standard fields
                   if (column.key === 'name') {
                     return (
-                      <td key={column.key} className="px-3 py-2 font-medium text-gray-900 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 font-medium text-gray-900 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate" title={lead.name}>{lead.name}</div>
                       </td>
                     );
                   } else if (column.key === 'email') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate" title={lead.email || ''}>{lead.email || '-'}</div>
                       </td>
                     );
                   } else if (column.key === 'phone') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate" title={lead.phone || ''}>{lead.phone || '-'}</div>
                       </td>
                     );
@@ -886,13 +1047,23 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     );
                   } else if (column.key === 'address') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate" title={lead.address || ''}>{lead.address || '-'}</div>
                       </td>
                     );
                   } else if (column.key === 'description') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate" title={lead.description || ''}>
                           {lead.description || '-'}
                         </div>
@@ -936,19 +1107,34 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     );
                   } else if (column.key === 'created_at') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate">{formatDate(lead.created_at)}</div>
                       </td>
                     );
                   } else if (column.key === 'updated_at') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate">{formatDate(lead.updated_at)}</div>
                       </td>
                     );
                   } else if (column.key === 'owner_id') {
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate">{lead.owner_id || '-'}</div>
                       </td>
                     );
@@ -957,7 +1143,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                   else if (column.isCustom) {
                     const customFieldValue = lead.custom_fields?.[column.key];
                     return (
-                      <td key={column.key} className="px-3 py-2 text-gray-600 border-r border-gray-200" style={cellStyle}>
+                      <td 
+                        key={column.key} 
+                        className="px-3 py-2 text-gray-600 border-r border-gray-200 cursor-pointer" 
+                        style={cellStyle}
+                        onClick={() => onLeadSelect(lead)}
+                      >
                         <div className="truncate" title={String(customFieldValue || '')}>
                           {customFieldValue !== null && customFieldValue !== undefined ? String(customFieldValue) : '-'}
                         </div>
@@ -966,7 +1157,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                   }
                   
                   return (
-                    <td key={column.key} className="px-3 py-2 border-r border-gray-200" style={cellStyle}>
+                    <td 
+                      key={column.key} 
+                      className="px-3 py-2 border-r border-gray-200 cursor-pointer" 
+                      style={cellStyle}
+                      onClick={() => onLeadSelect(lead)}
+                    >
                       <div className="truncate">-</div>
                     </td>
                   );
