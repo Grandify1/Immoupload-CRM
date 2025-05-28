@@ -1,0 +1,39 @@
+KRITISCHE IMPLEMENTIERUNG: Frontend-basiertes Google Maps Scraping mit iframe
+Aufgabe:
+Implementiere echtes Google Maps Scraping direkt im Frontend deines bestehenden CRM-Systems. Das UI bleibt unverändert, aber beim Klick auf "Scraping starten" wird ein verstecktes iframe geladen, das echtes Browser-basiertes Scraping durchführt.
+Technische Anforderungen:
+1. UI-Verhalten beibehalten:
+Das bestehende Scraping-Interface bleibt exakt gleich. Der Nutzer gibt Suchbegriff, Standort und Anzahl Ergebnisse ein, klickt auf "Scraping starten", und sieht den gewohnten Progress-Balken mit Echtzeit-Updates.
+2. iframe-Integration:
+Erstelle ein verstecktes iframe-Element, das nur beim Start des Scraping-Prozesses dynamisch eingefügt wird. Das iframe soll vollständig unsichtbar sein (display: none) und nach dem Scraping wieder entfernt werden.
+3. Cross-Origin-Kommunikation:
+Implementiere postMessage-Kommunikation zwischen dem Haupt-React-Code und dem iframe-Inhalt. Der iframe lädt Google Maps, führt das Scraping durch, und sendet die extrahierten Daten über postMessage zurück.
+4. Scraping-Logik im iframe:
+Injiziere JavaScript-Code in das iframe, der folgende Aufgaben übernimmt: Google Maps Such-URL aufrufen, warten bis Geschäfte geladen sind, durch die Ergebnisliste scrollen um mehr Daten zu laden, Geschäftsinformationen aus dem DOM extrahieren (Name, Adresse, Telefon, Website, Bewertung), und Daten strukturiert zurück an das Haupt-Fenster senden.
+5. Echtzeit-Progress-Updates:
+Der iframe-Code soll regelmäßige Progress-Updates senden, damit der bestehende Progress-Balken und die Geschäfte-Zählung in Echtzeit aktualisiert werden. Implementiere Progress-Events wie "scraping_started", "business_found", "scraping_progress", "scraping_completed".
+6. Fehlerbehandlung:
+Robuste Fehlerbehandlung für CORS-Probleme, Google-Blockierungen, und Timeout-Situationen. Falls das iframe-Scraping fehlschlägt, zeige klare Fehlermeldungen und biete Fallback-Optionen.
+7. Anti-Detection-Maßnahmen:
+Implementiere Verzögerungen zwischen Aktionen, simuliere menschliche Scroll-Patterns, rotiere User-Agents wenn möglich, und verwende realistische Timing-Parameter.
+8. Datenextraktion-Strategien:
+Nutze multiple DOM-Selektoren als Fallback, da Google Maps das Layout häufig ändert. Extrahiere Daten sowohl aus sichtbaren Elementen als auch aus versteckten Datenattributen. Implementiere Regex-basierte Fallbacks für wichtige Informationen wie Telefonnummern.
+9. Integration in bestehende Architektur:
+Das neue Frontend-Scraping soll nahtlos in das bestehende System integriert werden. Verwende die gleichen State-Management-Patterns, Error-Handling-Mechanismen, und UI-Update-Logiken wie der Rest der Anwendung.
+10. Performance-Optimierung:
+Das iframe soll ressourcenschonend arbeiten, sich automatisch nach dem Scraping zerstören, und keine Memory-Leaks verursachen. Implementiere Cleanup-Mechanismen für Event-Listener und Timer.
+Implementierungsschritte:
+Schritt 1: iframe-Manager erstellen
+Erstelle einen Service oder Hook, der das iframe dynamisch erstellt, Google Maps lädt, und die Kommunikation verwaltet.
+Schritt 2: Scraping-Worker implementieren
+Entwickle den JavaScript-Code, der im iframe-Kontext läuft und das eigentliche Scraping durchführt.
+Schritt 3: Bestehende Scraping-Komponente erweitern
+Modifiziere die aktuelle ScraperView-Komponente, sodass sie das neue Frontend-Scraping anstatt der Supabase Edge Function nutzt.
+Schritt 4: Progress-System anpassen
+Stelle sicher, dass die Progress-Updates vom iframe korrekt im bestehenden UI angezeigt werden.
+Schritt 5: Testing und Debugging
+Implementiere ausführliches Logging und Debug-Modi für die Entwicklungsphase.
+Erwartetes Ergebnis:
+Ein vollständig funktionierendes Google Maps Scraping-System, das echte Geschäftsdaten extrahiert, ohne dass sich das bestehende UI oder die User Experience ändert. Das System soll zuverlässig hunderte von Geschäften pro Scraping-Job finden und alle relevanten Kontaktinformationen extrahieren.
+Kritische Erfolgsfaktoren:
+Das Scraping muss tatsächlich funktionieren und echte Daten liefern, die bestehende UI darf sich nicht ändern, die Performance muss akzeptabel bleiben, und das System muss robust gegen Google's Anti-Bot-Maßnahmen sein.
