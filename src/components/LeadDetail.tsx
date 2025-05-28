@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   Phone, 
@@ -106,6 +106,8 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [templateFieldValues, setTemplateFieldValues] = useState<Record<string, string>>({});
+  const [isNoteActive, setIsNoteActive] = useState(false);
+  const noteTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Field layout customization states
   const [showFieldLayoutModal, setShowFieldLayoutModal] = useState(false);
@@ -354,7 +356,18 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
         template_data: {}
       });
       setNewNote('');
+      setIsNoteActive(false);
     }
+  };
+
+  const handleNoteClick = () => {
+    setIsNoteActive(true);
+    // Focus the textarea after a short delay to ensure it's rendered
+    setTimeout(() => {
+      if (noteTextareaRef.current) {
+        noteTextareaRef.current.focus();
+      }
+    }, 100);
   };
 
   const handleCreateCustomField = async () => {
@@ -687,7 +700,11 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
       {!isEditing && (
         <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center space-x-2">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button 
+              size="sm" 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleNoteClick}
+            >
               <StickyNote className="w-4 h-4 mr-1" />
               Note
             </Button>
@@ -1013,10 +1030,16 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                 <div className="mb-6">
                   <div className="flex space-x-3">
                     <Textarea
+                      ref={noteTextareaRef}
                       value={newNote}
                       onChange={(e) => setNewNote(e.target.value)}
+                      onFocus={() => setIsNoteActive(true)}
+                      onBlur={() => setIsNoteActive(false)}
                       placeholder="Add a note, log a call, etc..."
-                      className="flex-1 min-h-[100px] resize-none border-gray-300"
+                      className={cn(
+                        "flex-1 min-h-[100px] resize-none border-gray-300 transition-all duration-200",
+                        isNoteActive && "ring-2 ring-blue-500 border-blue-500"
+                      )}
                     />
                     <Button 
                       onClick={handleAddNote} 
