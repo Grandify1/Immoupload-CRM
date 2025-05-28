@@ -1,3 +1,7 @@
+Updating the drag and drop functionality for field items in SalesPipelineSettings.tsx.
+```
+
+```tsx
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
@@ -105,7 +109,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [templateFieldValues, setTemplateFieldValues] = useState<Record<string, string>>({});
-  
+
   // Field layout customization states
   const [showFieldLayoutModal, setShowFieldLayoutModal] = useState(false);
   const [fieldGroups, setFieldGroups] = useState([
@@ -128,13 +132,13 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   useEffect(() => {
     setEditForm(lead);
     setIsEditing(false);
-    
+
     // Update custom fields group with actual custom field keys
     if (customFields) {
       const customFieldKeys = customFields
         .filter(field => field.entity_type === 'lead')
         .map(field => field.name.toLowerCase().replace(/\s+/g, '_'));
-      
+
       setFieldGroups(prev => prev.map(group => 
         group.id === 'custom_fields' 
           ? { ...group, fields: customFieldKeys }
@@ -146,24 +150,24 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   // Field layout management functions
   const handleAddGroup = () => {
     if (!newGroupName.trim()) return;
-    
+
     const newGroup = {
       id: `group_${Date.now()}`,
       name: newGroupName.trim().toUpperCase(),
       fields: [],
       order: fieldGroups.length
     };
-    
+
     setFieldGroups([...fieldGroups, newGroup]);
     setNewGroupName('');
   };
 
   const handleDeleteGroup = (groupId: string) => {
     if (groupId === 'about' || groupId === 'custom_fields') return; // Prevent deletion of default groups
-    
+
     const groupToDelete = fieldGroups.find(g => g.id === groupId);
     if (!groupToDelete) return;
-    
+
     // Move fields from deleted group to "about" group
     setFieldGroups(prev => {
       const filtered = prev.filter(g => g.id !== groupId);
@@ -191,7 +195,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     const result = Array.from(fieldGroups);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-    
+
     setFieldGroups(result.map((group, index) => ({ ...group, order: index })));
   };
 
@@ -201,7 +205,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     if (fieldKey === 'website') return 'Website';
     if (fieldKey === 'address') return 'Address';
     if (fieldKey === 'description') return 'Description';
-    
+
     const customField = customFields?.find(cf => 
       cf.name.toLowerCase().replace(/\s+/g, '_') === fieldKey
     );
@@ -214,7 +218,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     if (fieldKey === 'website') return lead.website;
     if (fieldKey === 'address') return lead.address;
     if (fieldKey === 'description') return lead.description;
-    
+
     return lead.custom_fields?.[fieldKey];
   };
 
@@ -282,7 +286,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     const customField = customFields?.find(cf => 
       cf.name.toLowerCase().replace(/\s+/g, '_') === fieldKey
     );
-    
+
     if (customField) {
       return (
         <div className="text-sm">
@@ -462,6 +466,16 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     setSelectedActivityTemplate(null);
     setTemplateFieldValues({});
     setShowActivityForm(false);
+  };
+
+  // Drag and Drop Functionality
+  const handleDragStart = (event: React.DragEvent<HTMLDivElement>, fieldKey: string) => {
+    setDraggedField(fieldKey);
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    setDraggedField(null);
   };
 
   return (
@@ -706,14 +720,43 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                         </div>
 
                         <div className="space-y-3">
-                          {group.fields.map(fieldKey => {
-                            const fieldContent = renderFieldContent(fieldKey);
-                            return fieldContent ? (
-                              <div key={fieldKey}>
-                                {fieldContent}
+                          {group.fields.map((fieldKey, fieldIndex) => (
+                            <div
+                              key={`${group.id}-${fieldKey}`}
+                              className={cn(
+                                "flex items-center justify-between p-2 bg-gray-50 rounded border cursor-move transition-colors",
+                                draggedField === fieldKey ? "opacity-50" : "hover:bg-gray-100"
+                              )}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, fieldKey)}
+                              onDragEnd={handleDragEnd}
+                            >
+                              <span className="text-sm font-medium">
+                                {getFieldDisplayName(fieldKey)}
+                              </span>
+                              <div className="flex items-center space-x-1">
+                                <Select
+                                  value={group.id}
+                                  onValueChange={(newGroupId) => {
+                                    if (newGroupId !== group.id) {
+                                      handleMoveField(fieldKey, group.id, newGroupId);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="w-32 h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {fieldGroups.map((g) => (
+                                      <SelectItem key={g.id} value={g.id}>
+                                        {g.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </div>
-                            ) : null;
-                          })}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );
@@ -813,721 +856,4 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                                 <div className="prose prose-sm max-w-none">
                                   <div className="text-sm text-gray-800 space-y-2">
                                     {Object.entries(activity.template_data.field_values).map(([fieldName, value]) => (
-                                      <div key={fieldName} className="border-l-2 border-gray-200 pl-3">
-                                        <div className="font-semibold text-gray-900">{fieldName}</div>
-                                        <div className="text-gray-700">{String(value)}</div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ) : activity.type === 'custom' && activity.template_data?.responses ? (
-                                <div className="prose prose-sm max-w-none">
-                                  <div className="text-sm text-gray-800 space-y-2">
-                                    {Object.entries(activity.template_data.responses).map(([questionId, answer]) => {
-                                      const question = activity.template_data?.questions?.find((q: any) => q.id === questionId);
-                                      const questionText = question?.text || 'Question';
-                                      return (
-                                        <div key={questionId} className="border-l-2 border-gray-200 pl-3">
-                                          <div className="font-semibold text-gray-900">{questionText}</div>
-                                          <div className="text-gray-700">{String(answer)}</div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-800">{activity.content}</p>
-                              )}
-                            </div>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => onDeleteActivity(activity.id, 'lead', lead.id)}
-                            className="text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12 text-gray-500">
-                      <StickyNote className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p>No activities yet. Add your first note above.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Add Custom Field Modal */}
-      <Dialog open={showAddCustomFieldModal} onOpenChange={setShowAddCustomFieldModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add Custom Field</DialogTitle>
-            <DialogDescription>
-              Create a new custom field for this lead.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="newFieldName">Field Name</Label>
-              <Input
-                id="newFieldName"
-                value={newCustomField.name}
-                onChange={(e) => setNewCustomField({...newCustomField, name: e.target.value})}
-                placeholder="e.g. Budget"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="newFieldType">Field Type</Label>
-              <Select
-                value={newCustomField.field_type}
-                onValueChange={(value: 'text' | 'number' | 'date' | 'select' | 'checkbox') => 
-                  setNewCustomField({...newCustomField, field_type: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="number">Number</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="select">Select</SelectItem>
-                  <SelectItem value="checkbox">Checkbox</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {newCustomField.field_type === 'select' && (
-              <div className="space-y-2">
-                <Label>Options</Label>
-                <div className="space-y-2">
-                  {newCustomField.options.map((option, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={option}
-                        onChange={(e) => {
-                          const newOptions = [...newCustomField.options];
-                          newOptions[index] = e.target.value;
-                          setNewCustomField({...newCustomField, options: newOptions});
-                        }}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          const newOptions = newCustomField.options.filter((_, i) => i !== index);
-                          setNewCustomField({...newCustomField, options: newOptions});
-                        }}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setNewCustomField({
-                      ...newCustomField,
-                      options: [...newCustomField.options, '']
-                    })}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Option
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowAddCustomFieldModal(false);
-              setNewCustomField({ name: '', field_type: 'text', options: [] });
-            }}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateCustomField} disabled={!newCustomField.name || (newCustomField.field_type === 'select' && newCustomField.options.length === 0)}>
-              Create Field
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Custom Activity Modal */}
-      <Dialog open={showCustomActivityModal} onOpenChange={setShowCustomActivityModal}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Custom Activity</DialogTitle>
-            <DialogDescription>
-              Select an activity template and fill in the details.
-            </DialogDescription>
-          </DialogHeader>
-
-          {!selectedActivityTemplate ? (
-            // Template Selection
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Select Activity Template</h3>
-              <div className="grid gap-3">
-                {activityTemplates && activityTemplates.length > 0 ? (
-                  activityTemplates.map((template) => (
-                    <Card 
-                      key={template.id} 
-                      className="cursor-pointer hover:bg-gray-50 transition-colors"
-                      onClick={() => handleSelectActivityTemplate(template)}
-                    >
-                      <CardContent className="p-4">
-                        <h4 className="font-medium text-gray-900">{template.name}</h4>
-                        {template.description && (
-                          <p className="text-sm text-gray-600 mt-1">{template.description}</p>
-                        )}
-                        <div className="text-xs text-gray-500 mt-2">
-                          {template.questions?.length || 0} questions
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Briefcase className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No activity templates available.</p>
-                    <p className="text-sm">Create templates in the Settings section.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            // Template Form
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">{selectedActivityTemplate.name}</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setSelectedActivityTemplate(null)}
-                >
-                  <ArrowRight className="w-4 h-4 rotate-180" />
-                  Back
-                </Button>
-              </div>
-
-              {selectedActivityTemplate.description && (
-                <p className="text-gray-600">{selectedActivityTemplate.description}</p>
-              )}
-
-              <div className="space-y-4">
-                {selectedActivityTemplate.questions && selectedActivityTemplate.questions.map((question) => (
-                  <div key={question.id} className="space-y-2">
-                    <Label className="text-sm font-medium">
-                      {question.text}
-                      {question.required && <span className="text-red-500 ml-1">*</span>}
-                    </Label>
-
-                    {question.type === 'text' && (
-                      <Input
-                        value={activityResponses[question.id] || ''}
-                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
-                        placeholder={question.placeholder || 'Enter your answer...'}
-                      />
-                    )}
-
-                    {question.type === 'textarea' && (
-                      <Textarea
-                        value={activityResponses[question.id] || ''}
-                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
-                        placeholder={question.placeholder || 'Enter your answer...'}
-                        rows={3}
-                      />
-                    )}
-
-                    {question.type === 'select' && (
-                      <Select
-                        value={activityResponses[question.id] || ''}
-                        onValueChange={(value) => handleActivityResponseChange(question.id, value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={question.placeholder || 'Select an option...'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {question.options?.map((option, index) => (
-                            <SelectItem key={index} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-
-                    {question.type === 'number' && (
-                      <Input
-                        type="number"
-                        value={activityResponses[question.id] || ''}
-                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
-                        placeholder={question.placeholder || 'Enter a number...'}
-                      />
-                    )}
-
-                    {question.type === 'date' && (
-                      <Input
-                        type="date"
-                        value={activityResponses[question.id] || ''}
-                        onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
-                      />
-                    )}
-
-                    {question.type === 'checkbox' && (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={question.id}
-                          checked={activityResponses[question.id] === 'true'}
-                          onCheckedChange={(checked) => 
-                            handleActivityResponseChange(question.id, checked ? 'true' : 'false')
-                          }
-                        />
-                        <Label htmlFor={question.id} className="text-sm">
-                          {question.placeholder || 'Check if applicable'}
-                        </Label>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowCustomActivityModal(false);
-              setSelectedActivityTemplate(null);
-              setActivityResponses({});
-            }}>
-              Cancel
-            </Button>
-            {selectedActivityTemplate && (
-              <Button 
-                onClick={handleSubmitCustomActivity}
-                disabled={
-                  !selectedActivityTemplate.questions ||
-                  selectedActivityTemplate.questions.some(q => 
-                    q.required && !activityResponses[q.id]
-                  )
-                }
-              >
-                Submit Activity
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      
-{showActivityForm && (
-          <Dialog open={true} onOpenChange={() => setShowActivityForm(false)}>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Custom Activity</DialogTitle>
-                <DialogDescription>
-                  Select an activity template and fill in the details.
-                </DialogDescription>
-              </DialogHeader>
-
-              {!selectedActivityTemplate ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">Select Activity Template</h3>
-                  <p className="text-sm text-gray-600">Choose a template to get started with your activity.</p>
-                  
-                  <div className="grid gap-3 max-h-[400px] overflow-y-auto">
-                    {activityTemplates && activityTemplates.length > 0 ? (
-                      activityTemplates.map((template) => (
-                        <Card 
-                          key={template.id} 
-                          className="cursor-pointer hover:bg-gray-50 hover:border-blue-300 transition-all duration-200 border-2"
-                          onClick={() => {
-                            console.log('Selected template:', template);
-                            setSelectedActivityTemplate(template);
-                            if (template) {
-                              // Initialize template field values
-                              const initialValues: Record<string, string> = {};
-                              if (template.fields && Array.isArray(template.fields)) {
-                                template.fields.forEach(field => {
-                                  initialValues[field.name] = '';
-                                });
-                              }
-                              console.log('Initial field values:', initialValues);
-                              setTemplateFieldValues(initialValues);
-                            }
-                          }}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <Briefcase className="w-4 h-4 text-blue-600" />
-                                  </div>
-                                  <h4 className="font-semibold text-gray-900">{template.name}</h4>
-                                </div>
-                                {template.description && (
-                                  <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                                )}
-                                <div className="flex items-center space-x-4 text-xs text-gray-500">
-                                  <span className="flex items-center space-x-1">
-                                    <FileText className="w-3 h-3" />
-                                    <span>{template.fields?.length || 0} fields</span>
-                                  </span>
-                                  {template.created_at && (
-                                    <span>Created {new Date(template.created_at).toLocaleDateString()}</span>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
-                                  <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    ) : (
-                      <div className="text-center py-12 text-gray-500">
-                        <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Activity Templates</h3>
-                        <p className="text-sm text-gray-600 mb-4">Create your first activity template to get started.</p>
-                        <Button variant="outline" size="sm">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Create Template
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">{selectedActivityTemplate?.name}</h3>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        setSelectedActivityTemplate(null);
-                        setTemplateFieldValues({});
-                      }}
-                    >
-                      ← Back
-                    </Button>
-                  </div>
-
-                  {console.log('Template fields:', selectedActivityTemplate.fields)}
-                  {selectedActivityTemplate?.fields && Array.isArray(selectedActivityTemplate.fields) && selectedActivityTemplate.fields.length > 0 ? (
-                    selectedActivityTemplate.fields.map((field, index) => (
-                      <div key={`${field.name}-${index}`} className="space-y-2">
-                        <Label htmlFor={field.name}>{field.name}</Label>
-                        {field.type === 'text' && (
-                          <Input
-                            id={field.name}
-                            value={templateFieldValues[field.name] || ''}
-                            onChange={(e) => setTemplateFieldValues(prev => ({
-                              ...prev,
-                              [field.name]: e.target.value
-                            }))}
-                            placeholder={`Enter ${field.name}`}
-                          />
-                        )}
-                        {field.type === 'textarea' && (
-                          <Textarea
-                            id={field.name}
-                            value={templateFieldValues[field.name] || ''}
-                            onChange={(e) => setTemplateFieldValues(prev => ({
-                              ...prev,
-                              [field.name]: e.target.value
-                            }))}
-                            placeholder={`Enter ${field.name}`}
-                            rows={3}
-                          />
-                        )}
-                        {field.type === 'select' && field.options && Array.isArray(field.options) && (
-                          <Select
-                            value={templateFieldValues[field.name] || ''}
-                            onValueChange={(value) => setTemplateFieldValues(prev => ({
-                              ...prev,
-                              [field.name]: value
-                            }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={`Select ${field.name}`} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {field.options.map((option, optIndex) => (
-                                <SelectItem key={`${option}-${optIndex}`} value={option}>
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No fields configured for this template.</p>
-                      <p className="text-sm mt-2">Go to Settings → Activity Templates to add fields.</p>
-                      {selectedActivityTemplate && (
-                        <div className="mt-4 p-3 bg-gray-100 rounded text-left">
-                          <p className="text-xs"><strong>Debug Info:</strong></p>
-                          <p className="text-xs">Template ID: {selectedActivityTemplate.id}</p>
-                          <p className="text-xs">Template Name: {selectedActivityTemplate.name}</p>
-                          <p className="text-xs">Fields: {JSON.stringify(selectedActivityTemplate.fields)}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowActivityForm(false)}>
-                  Cancel
-                </Button>
-                {selectedActivityTemplate && (
-                  <Button onClick={handleSubmitActivity}>
-                    Submit Activity
-                  </Button>
-                )}
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-
-        {/* Field Layout Customization Modal */}
-        <Dialog open={showFieldLayoutModal} onOpenChange={setShowFieldLayoutModal}>
-          <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Feldlayout anpassen</DialogTitle>
-              <DialogDescription>
-                Organisieren Sie Ihre Felder in Gruppen und passen Sie die Reihenfolge an.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6">
-              {/* Add New Group */}
-              <div className="flex items-center space-x-2">
-                <Input
-                  placeholder="Neue Gruppe hinzufügen..."
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleAddGroup} disabled={!newGroupName.trim()}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Hinzufügen
-                </Button>
-              </div>
-
-              {/* Field Groups */}
-              <div className="space-y-4">
-                {fieldGroups
-                  .sort((a, b) => a.order - b.order)
-                  .map((group, groupIndex) => (
-                    <Card key={group.id} className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-medium text-gray-900">{group.name}</h3>
-                        <div className="flex items-center space-x-2">
-                          {groupIndex > 0 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleReorderGroups(groupIndex, groupIndex - 1)}
-                            >
-                              <ArrowUpDown className="w-4 h-4" />
-                            </Button>
-                          )}
-                          {group.id !== 'about' && group.id !== 'custom_fields' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteGroup(group.id)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Fields in Group */}
-                      <div className="space-y-2">
-                        {group.fields.length > 0 ? (
-                          group.fields.map((fieldKey, fieldIndex) => (
-                            <div
-                              key={`${group.id}-${fieldKey}`}
-                              className="flex items-center justify-between p-2 bg-gray-50 rounded border"
-                              draggable
-                              onDragStart={() => setDraggedField(fieldKey)}
-                              onDragOver={(e) => e.preventDefault()}
-                              onDrop={(e) => {
-                                e.preventDefault();
-                                if (draggedField && draggedField !== fieldKey) {
-                                  // Find source group
-                                  const sourceGroup = fieldGroups.find(g => 
-                                    g.fields.includes(draggedField)
-                                  );
-                                  if (sourceGroup) {
-                                    handleMoveField(draggedField, sourceGroup.id, group.id);
-                                  }
-                                }
-                                setDraggedField(null);
-                              }}
-                            >
-                              <span className="text-sm font-medium">
-                                {getFieldDisplayName(fieldKey)}
-                              </span>
-                              <div className="flex items-center space-x-1">
-                                <Select
-                                  value={group.id}
-                                  onValueChange={(newGroupId) => {
-                                    if (newGroupId !== group.id) {
-                                      handleMoveField(fieldKey, group.id, newGroupId);
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger className="w-32 h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {fieldGroups.map((g) => (
-                                      <SelectItem key={g.id} value={g.id}>
-                                        {g.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-4 text-gray-500 text-sm">
-                            Keine Felder in dieser Gruppe
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Drop Zone for Fields */}
-                      <div
-                        className={cn(
-                          "mt-2 p-3 border-2 border-dashed rounded text-center text-sm transition-colors",
-                          draggedField 
-                            ? "border-blue-400 bg-blue-50 text-blue-700" 
-                            : "border-gray-300 text-gray-500"
-                        )}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.dataTransfer.dropEffect = 'move';
-                        }}
-                        onDragEnter={(e) => {
-                          e.preventDefault();
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          if (draggedField) {
-                            console.log('Dropping field:', draggedField, 'into group:', group.id);
-                            
-                            // Find source group (might be null if coming from available fields)
-                            const sourceGroup = fieldGroups.find(g => 
-                              g.fields.includes(draggedField)
-                            );
-                            
-                            if (sourceGroup && sourceGroup.id !== group.id) {
-                              // Move from one group to another
-                              handleMoveField(draggedField, sourceGroup.id, group.id);
-                            } else if (!sourceGroup) {
-                              // Move from available fields to group
-                              setFieldGroups(prev => prev.map(g => 
-                                g.id === group.id 
-                                  ? { ...g, fields: [...g.fields, draggedField] }
-                                  : g
-                              ));
-                            }
-                          }
-                          setDraggedField(null);
-                        }}
-                      >
-                        {draggedField 
-                          ? `"${getFieldDisplayName(draggedField)}" hier ablegen` 
-                          : "Felder hierher ziehen"
-                        }
-                      </div>
-                    </Card>
-                  ))}
-              </div>
-
-              {/* Available Fields (not in any group) */}
-              <Card className="p-4">
-                <h3 className="font-medium text-gray-900 mb-3">Verfügbare Felder</h3>
-                <div className="space-y-2">
-                  {/* Standard fields */}
-                  {['email', 'phone', 'website', 'address', 'description'].map(fieldKey => {
-                    const isAssigned = fieldGroups.some(g => g.fields.includes(fieldKey));
-                    if (isAssigned) return null;
-
-                    return (
-                      <div
-                        key={fieldKey}
-                        className="flex items-center justify-between p-2 bg-blue-50 rounded border cursor-move hover:bg-blue-100 transition-colors"
-                        draggable
-                        onDragStart={(e) => {
-                          setDraggedField(fieldKey);
-                          e.dataTransfer.effectAllowed = 'move';
-                        }}
-                        onDragEnd={() => setDraggedField(null)}
-                      >
-                        <span className="text-sm font-medium">
-                          {getFieldDisplayName(fieldKey)}
-                        </span>
-                        <Badge variant="secondary">Standard</Badge>
-                      </div>
-                    );
-                  })}
-
-                  {/* Custom fields */}
-                  {customFields?.filter(field => field.entity_type === 'lead').map(field => {
-                    const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                    const isAssigned = fieldGroups.some(g => g.fields.includes(fieldKey));
-                    if (isAssigned) return null;
-
-                    return (
-                      <div
-                        key={fieldKey}
-                        className="flex items-center justify-between p-2 bg-green-50 rounded border cursor-move hover:bg-green-100 transition-colors"
-                        draggable
-                        onDragStart={(e) => {
-                          setDraggedField(fieldKey);
-                          e.dataTransfer.effectAllowed = 'move';
-                        }}
-                        onDragEnd={() => setDraggedField(null)}
-                      >
-                        <span className="text-sm font-medium">{field.name}</span>
-                        <Badge variant="secondary">Custom</Badge>
-                      </div>
-                    );
-                  })}
-                </div>
-              </Card>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowFieldLayoutModal(false)}>
-                Abbrechen
-              </Button>
-              <Button onClick={() => setShowFieldLayoutModal(false)}>
-                Speichern
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-    </div>
-  );
-};
+                                      <div key={fieldName} className="border-l-2 border-gray
