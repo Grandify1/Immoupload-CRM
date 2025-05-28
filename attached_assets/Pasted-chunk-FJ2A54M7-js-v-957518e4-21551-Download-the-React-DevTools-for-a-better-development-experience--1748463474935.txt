@@ -1,0 +1,40 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?id=in.%28c6b3e582-4096-4220-aa3e-70c515ed492e%2Cd9f5692c-f970-4869-880b-09b837d3971c%2Ccc660fcf-3fa1-49a9-994f-eaaccf85f547%2C7508c757-a5f0-4c7a-b7da-2f9fe442cb49%2C45c640db-9271-4b22-86a7-8b4ecb539147%2C859dff00-b691-434a-b420-573b88af5bfd%2C04d5619f-c3d1-4d2c-baa9-f40d72bd3078%2C957360f8-3531-4f3a-a613-c6464713d736%2C9532064f-7532-43b5-9a77-8b19d9fe8f1e%2C43b7ed17-01a4-4e29-9976-f9b689c1cd60%2Ce0e524d8-0077-4a2c-93d8-0d2d10afa7ec%2C2bcd9240-0782-4c6c-89c8-b9022d9d9959%2Cdb980009-6426-401b-8b5c-fe2500cc289f%2Cec086eff-900e-4959-8dd9-03b52d18f065%2C484a7082-2190-4ecc-93a3-fc1e0b4175c8%29:1 
+        
+        
+       Failed to load resource: the server responded with a status of 409 ()
+LeadsView.tsx:493 Error deleting batch: Object
+handleBulkDelete @ LeadsView.tsx:493
+LeadsView.tsx:509 Unexpected error during bulk delete: Object
+handleBulkDelete @ LeadsView.tsx:509
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+@supabase_supabase-js.js?v=957518e4:3900 
+        
+        
+       DELETE https://eycydigvwfqapjxssvqc.supabase.co/rest/v1/leads?id=in.%28c6b3e582-4096-4220-aa3e-70c515ed492e%2Cd9f5692c-f970-4869-880b-09b837d3971c%2Ccc660fcf-3fa1-49a9-994f-eaaccf85f547%2C7508c757-a5f0-4c7a-b7da-2f9fe442cb49%2C45c640db-9271-4b22-86a7-8b4ecb539147%2C859dff00-b691-434a-b420-573b88af5bfd%2C04d5619f-c3d1-4d2c-baa9-f40d72bd3078%2C957360f8-3531-4f3a-a613-c6464713d736%2C9532064f-7532-43b5-9a77-8b19d9fe8f1e%2C43b7ed17-01a4-4e29-9976-f9b689c1cd60%2Ce0e524d8-0077-4a2c-93d8-0d2d10afa7ec%2C2bcd9240-0782-4c6c-89c8-b9022d9d9959%2Cdb980009-6426-401b-8b5c-fe2500cc289f%2Cec086eff-900e-4959-8dd9-03b52d18f065%2C484a7082-2190-4ecc-93a3-fc1e0b4175c8%29 409 (Conflict)
+(anonymous) @ @supabase_supabase-js.js?v=957518e4:3900
+(anonymous) @ @supabase_supabase-js.js?v=957518e4:3921
+fulfilled @ @supabase_supabase-js.js?v=957518e4:3873
+Promise.then (async)
+step @ @supabase_supabase-js.js?v=957518e4:3886
+(anonymous) @ @supabase_supabase-js.js?v=957518e4:3888
+__awaiter6 @ @supabase_supabase-js.js?v=957518e4:3870
+(anonymous) @ @supabase_supabase-js.js?v=957518e4:3911
+then @ @supabase_supabase-js.js?v=957518e4:89
+Show 8 more frames
+Show less
+LeadsView.tsx:493 Error deleting batch: {code: '23503', details: 'Key is still referenced from table "deals".', hint: null, message: 'update or delete on table "leads" violates foreign… constraint "deals_lead_id_fkey" on table "deals"'}code: "23503"details: "Key is still referenced from table \"deals\"."hint: nullmessage: "update or delete on table \"leads\" violates foreign key constraint \"deals_lead_id_fkey\" on table \"deals\""[[Prototype]]: Object
+handleBulkDelete @ LeadsView.tsx:493
+LeadsView.tsx:509 Unexpected error during bulk delete: {code: '23503', details: 'Key is still referenced from table "deals".', hint: null, message: 'update or delete on table "leads" violates foreign… constraint "deals_lead_id_fkey" on table "deals"'}code: "23503"details: "Key is still referenced from table \"deals\"."hint: nullmessage: "update or delete on table \"leads\" violates foreign key constraint \"deals_lead_id_fkey\" on table \"deals\""[[Prototype]]: Object
+handleBulkDelete @ LeadsView.tsx:509
