@@ -1,0 +1,32 @@
+KRITISCHE IMPLEMENTIERUNG: AllOrigins CORS-Proxy für echtes Google Maps Scraping
+Aufgabe:
+Ersetze die fehlerhafte iframe-Lösung durch eine funktionierende AllOrigins CORS-Proxy Implementierung, die echte Google-Daten scrapt und nahtlos in dein bestehendes CRM-UI integriert wird.
+Problem verstehen:
+Deine aktuelle iframe-Lösung scheitert an Google's X-Frame-Options Header. AllOrigins CORS-Proxy umgeht diese Beschränkung, indem es Google-Seiten server-seitig lädt und dir das HTML über eine CORS-freundliche API zurückgibt.
+Technische Umsetzung:
+Schritt 1: CORS-Proxy Integration
+Ersetze alle iframe-bezogenen Code-Teile durch fetch()-Requests an AllOrigins. Verwende die URL-Struktur: "https://api.allorigins.win/get?url=" + encodeURIComponent(deine-google-url). AllOrigins gibt dir ein JSON-Response mit dem contents-Feld, das das komplette HTML enthält.
+Schritt 2: Google Search URL konstruieren
+Anstatt Google Maps URLs zu verwenden, nutze Google Search URLs für lokale Businesses. Format: "https://www.google.com/search?q=" + encodeURIComponent(suchbegriff + " " + ort). Diese URLs enthalten strukturierte Business-Daten, die einfacher zu parsen sind.
+Schritt 3: HTML-Parsing implementieren
+Parse das erhaltene HTML mit DOMParser oder cheerio-ähnlichen Methoden. Suche nach spezifischen CSS-Selektoren für Business-Listings. Google Search Results haben vorhersagbare Strukturen für lokale Geschäfte.
+Schritt 4: Datenextraktion optimieren
+Extrahiere folgende Daten aus den Google Search Results: Business-Name aus Heading-Tags, Adresse aus Address-Spans, Telefonnummern aus Links mit "tel:" prefix, Ratings aus aria-label Attributen, und Website-URLs aus externen Links.
+Schritt 5: Anti-Detection Maßnahmen
+Implementiere zufällige Delays zwischen Requests (2-5 Sekunden), rotiere User-Agent Headers, verwende verschiedene Google-Domain-Varianten (google.de, google.com), und limitiere Requests pro Minute auf maximal 10-15.
+Schritt 6: Fehlerbehandlung
+Handle AllOrigins-Ausfälle durch Fallback auf alternative CORS-Proxies wie cors-anywhere oder thingproxy. Implementiere Retry-Logic mit exponential backoff. Zeige klare Fehlermeldungen wenn alle Proxy-Services nicht verfügbar sind.
+Schritt 7: Progress-Updates beibehalten
+Behalte das bestehende Progress-System bei. Sende Updates wie "CORS-Proxy lädt...", "HTML wird geparst...", "X Geschäfte gefunden...". Das UI soll sich nicht ändern, nur die Datenquelle.
+Schritt 8: Datenvalidierung
+Validiere extrahierte Daten auf Plausibilität. Prüfe ob Telefonnummern das richtige Format haben, ob Adressen sinnvoll sind, und ob Ratings im erwarteten Bereich liegen. Filtere offensichtlich falsche Daten heraus.
+Schritt 9: Rate Limiting
+Da AllOrigins kostenlos ist, implementiere vernünftige Rate Limits. Maximal eine Anfrage alle 3-5 Sekunden. Bei größeren Scraping-Jobs, teile sie in kleinere Batches auf.
+Schritt 10: Fallback-Strategien
+Falls Google die Struktur ändert oder Requests blockiert, implementiere Fallbacks auf andere Datenquellen wie Gelbe Seiten, Yelp, oder andere Business-Verzeichnisse über den gleichen CORS-Proxy.
+Code-Struktur:
+Modifiziere den bestehenden iframeScrapingService.ts zu corsProxyScrapingService.ts. Behalte die gleichen Interfaces und Events bei, sodass das Frontend keine Änderungen benötigt.
+Testing-Strategie:
+Teste mit verschiedenen Suchbegriffen und Orten. Prüfe die Erfolgsrate der Datenextraktion. Implementiere ausführliches Logging für Debugging. Teste das Verhalten bei AllOrigins-Ausfällen.
+Erwartetes Ergebnis:
+Eine funktionierende Scraping-Lösung, die echte Google-Geschäftsdaten extrahiert, ohne iframe-Probleme, mit dem bestehenden UI kompatibel ist, und zuverlässig hunderte von Businesses pro Job finden kann.
