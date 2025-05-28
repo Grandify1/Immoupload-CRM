@@ -922,7 +922,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           <thead className="bg-gray-50 border-b">
             <tr>
               {/* Checkbox-Spalte */}
-              <th className="text-left px-2 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider w-8 border-r border-gray-200"></th>
+              <th className="text-left px-2 py-2 font-medium text-gray-600 text-xs uppercase tracking-wider w-8 border-r border-gray-200">
                 <div className="flex items-center justify-center">
                   <Checkbox
                     checked={isAllSelected}
@@ -974,7 +974,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 )}
               >
                 {/* Checkbox-Zelle */}
-                <td className="px-2 py-2 border-r border-gray-200 w-8"></td>
+                <td className="px-2 py-2 border-r border-gray-200 w-8">
                   <div className="flex items-center justify-center">
                     <Checkbox
                       checked={selectedLeads.has(lead.id)}
