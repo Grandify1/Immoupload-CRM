@@ -28,7 +28,7 @@ const CRMLayout = () => {
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(([]);
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [activityTemplates, setActivityTemplates] = useState<ActivityTemplate[]>([]);
   const [loading, setLoading] = useState(false);
