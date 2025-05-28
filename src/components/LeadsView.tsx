@@ -197,17 +197,54 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     }
   };
 
-  // Verfügbare Spalten für die Tabellenansicht
-  const availableColumns = [
-    { key: 'name', label: 'Name', visible: true },
-    { key: 'email', label: 'Email', visible: true },
-    { key: 'phone', label: 'Phone', visible: true },
-    { key: 'website', label: 'Website', visible: false },
-    { key: 'status', label: 'Status', visible: true },
-    { key: 'owner', label: 'Owner', visible: false },
-    { key: 'created_at', label: 'Created', visible: false },
-    { key: 'updated_at', label: 'Updated', visible: false },
+  // State für die Spaltensuche
+  const [columnSearchTerm, setColumnSearchTerm] = useState('');
+
+  // Verfügbare Spalten für die Tabellenansicht (Standard-Felder)
+  const standardColumns = [
+    { key: 'name', label: 'Name', visible: true, isCustom: false },
+    { key: 'email', label: 'Email', visible: true, isCustom: false },
+    { key: 'phone', label: 'Phone', visible: true, isCustom: false },
+    { key: 'website', label: 'Website', visible: false, isCustom: false },
+    { key: 'address', label: 'Address', visible: false, isCustom: false },
+    { key: 'description', label: 'Description', visible: false, isCustom: false },
+    { key: 'status', label: 'Status', visible: true, isCustom: false },
+    { key: 'owner_id', label: 'Owner', visible: false, isCustom: false },
+    { key: 'created_at', label: 'Created', visible: false, isCustom: false },
+    { key: 'updated_at', label: 'Updated', visible: false, isCustom: false },
   ];
+
+  // Custom Fields als Spalten
+  const customFieldColumns = React.useMemo(() => {
+    if (!customFields || !Array.isArray(customFields)) {
+      return [];
+    }
+
+    return customFields
+      .filter(field => field && field.entity_type === 'lead')
+      .map(field => ({
+        key: field.name.toLowerCase().replace(/\s+/g, '_'),
+        label: field.name,
+        visible: false,
+        isCustom: true,
+        originalName: field.name,
+        fieldType: field.field_type
+      }));
+  }, [customFields]);
+
+  // Alle verfügbaren Spalten kombiniert
+  const availableColumns = React.useMemo(() => {
+    return [...standardColumns, ...customFieldColumns];
+  }, [customFieldColumns]);
+
+  // Gefilterte Spalten basierend auf Suchbegriff
+  const filteredAvailableColumns = React.useMemo(() => {
+    if (!columnSearchTerm) return availableColumns;
+    
+    return availableColumns.filter(column =>
+      column.label.toLowerCase().includes(columnSearchTerm.toLowerCase())
+    );
+  }, [availableColumns, columnSearchTerm]);
 
   // State für die sichtbaren Spalten
   // Laden der gespeicherten Spalteneinstellungen aus dem localStorage
@@ -420,25 +457,108 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
       {/* Column Selector Dropdown */}
       {showColumnSelector && (
-        <div className="absolute right-6 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-          <div className="p-2 border-b border-gray-200">
-            <h3 className="font-medium">Show Columns</h3>
+        <div className="absolute right-6 mt-2 w-80 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+          <div className="p-3 border-b border-gray-200">
+            <h3 className="font-medium mb-3">Show Columns</h3>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search..."
+                value={columnSearchTerm}
+                onChange={(e) => setColumnSearchTerm(e.target.value)}
+                className="pl-10 h-8 text-sm"
+              />
+            </div>
           </div>
-          <div className="p-2 max-h-60 overflow-y-auto">
-            {availableColumns.map(column => (
-              <div key={column.key} className="flex items-center p-1">
-                <input
-                  type="checkbox"
-                  id={`column-${column.key}`}
-                  checked={visibleColumns.some(col => col.key === column.key)}
-                  onChange={() => toggleColumnVisibility(column.key)}
-                  className="mr-2"
-                />
-                <label htmlFor={`column-${column.key}`} className="text-sm">
-                  {column.label}
-                </label>
+          
+          <div className="max-h-80 overflow-y-auto">
+            {/* Standard Fields Section */}
+            <div className="p-3">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                <span>Leads</span>
+                <button className="ml-auto text-gray-400 hover:text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </h4>
+              <div className="space-y-1">
+                {filteredAvailableColumns
+                  .filter(column => !column.isCustom)
+                  .map(column => (
+                    <div key={column.key} className="flex items-center p-1 hover:bg-gray-50 rounded">
+                      <Checkbox
+                        id={`column-${column.key}`}
+                        checked={visibleColumns.some(col => col.key === column.key)}
+                        onCheckedChange={() => toggleColumnVisibility(column.key)}
+                        className="mr-3"
+                      />
+                      <label 
+                        htmlFor={`column-${column.key}`} 
+                        className="text-sm flex-1 cursor-pointer"
+                      >
+                        {column.label}
+                      </label>
+                    </div>
+                  ))}
               </div>
-            ))}
+            </div>
+
+            {/* Custom Fields Section */}
+            {customFieldColumns.length > 0 && (
+              <div className="p-3 border-t border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                  <span>Lead Custom Fields</span>
+                  <button className="ml-auto text-gray-400 hover:text-gray-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </h4>
+                <div className="space-y-1">
+                  {filteredAvailableColumns
+                    .filter(column => column.isCustom)
+                    .map(column => (
+                      <div key={column.key} className="flex items-center p-1 hover:bg-gray-50 rounded">
+                        <Checkbox
+                          id={`column-${column.key}`}
+                          checked={visibleColumns.some(col => col.key === column.key)}
+                          onCheckedChange={() => toggleColumnVisibility(column.key)}
+                          className="mr-3"
+                        />
+                        <label 
+                          htmlFor={`column-${column.key}`} 
+                          className="text-sm flex-1 cursor-pointer"
+                        >
+                          {column.label}
+                        </label>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* No results message */}
+            {filteredAvailableColumns.length === 0 && columnSearchTerm && (
+              <div className="p-4 text-center text-gray-500 text-sm">
+                No columns found for "{columnSearchTerm}"
+              </div>
+            )}
+          </div>
+
+          {/* Footer with close button */}
+          <div className="p-2 border-t border-gray-200 bg-gray-50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowColumnSelector(false);
+                setColumnSearchTerm('');
+              }}
+              className="w-full h-7"
+            >
+              Close
+            </Button>
           </div>
         </div>
       )}
@@ -610,6 +730,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 onClick={() => onLeadSelect(lead)}
               >
                 {visibleColumns.map(column => {
+                  // Render standard fields
                   if (column.key === 'name') {
                     return <td key={column.key} className="px-3 py-2 font-medium text-gray-900">{lead.name}</td>;
                   } else if (column.key === 'email') {
@@ -633,6 +754,16 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                             {lead.website}
                           </a>
                         ) : '-'}
+                      </td>
+                    );
+                  } else if (column.key === 'address') {
+                    return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.address || '-'}</td>;
+                  } else if (column.key === 'description') {
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 max-w-xs">
+                        <div className="truncate" title={lead.description || ''}>
+                          {lead.description || '-'}
+                        </div>
                       </td>
                     );
                   } else if (column.key === 'status') {
@@ -675,9 +806,21 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     return <td key={column.key} className="px-3 py-2 text-gray-600">{formatDate(lead.created_at)}</td>;
                   } else if (column.key === 'updated_at') {
                     return <td key={column.key} className="px-3 py-2 text-gray-600">{formatDate(lead.updated_at)}</td>;
-                  } else if (column.key === 'owner') {
+                  } else if (column.key === 'owner_id') {
                     return <td key={column.key} className="px-3 py-2 text-gray-600">{lead.owner_id || '-'}</td>;
                   }
+                  // Render custom fields
+                  else if (column.isCustom) {
+                    const customFieldValue = lead.custom_fields?.[column.key];
+                    return (
+                      <td key={column.key} className="px-3 py-2 text-gray-600 max-w-xs">
+                        <div className="truncate" title={String(customFieldValue || '')}>
+                          {customFieldValue !== null && customFieldValue !== undefined ? String(customFieldValue) : '-'}
+                        </div>
+                      </td>
+                    );
+                  }
+                  
                   return <td key={column.key} className="px-3 py-2">-</td>;
                 })}
                 <td className="px-3 py-2">
