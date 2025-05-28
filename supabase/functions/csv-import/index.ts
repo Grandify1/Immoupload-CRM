@@ -25,6 +25,7 @@ serve(async (req) => {
     console.log('User ID:', userId)
     console.log('Duplicate config:', duplicateConfig)
     console.log('Mappings received:', mappings.length)
+    console.log('Sample mapping:', mappings[0])
 
     // Update job status to processing
     if (jobId) {
@@ -56,6 +57,8 @@ serve(async (req) => {
           const value = row[index]?.trim()
           if (!value) return
 
+          console.log(`Processing field: ${mapping.fieldName} = ${value}`)
+
           // Check if it's a standard field
           if (standardFields.includes(mapping.fieldName)) {
             if (mapping.fieldName === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
@@ -63,9 +66,11 @@ serve(async (req) => {
             } else {
               lead[mapping.fieldName] = value
             }
+            console.log(`Mapped standard field: ${mapping.fieldName} = ${value}`)
           } else {
             // All non-standard fields go to custom_fields
             lead.custom_fields[mapping.fieldName] = value
+            console.log(`Mapped custom field: ${mapping.fieldName} = ${value}`)
           }
         }
       })
@@ -73,6 +78,9 @@ serve(async (req) => {
       // Ensure we have at least a name to create the lead
       if (lead.name && lead.name.trim()) {
         leads.push(lead)
+        console.log(`Added lead: ${lead.name} with ${Object.keys(lead.custom_fields).length} custom fields`)
+      } else {
+        console.log('Skipped lead without name:', lead)
       }
     }
 
@@ -179,6 +187,8 @@ serve(async (req) => {
           } else {
             // Insert new lead
             console.log(`Inserting lead: ${lead.name}`)
+            console.log('Lead data to insert:', JSON.stringify(lead, null, 2))
+            
             const { error: insertError, data: insertedData } = await supabaseAdmin
               .from('leads')
               .insert([lead])
@@ -186,6 +196,7 @@ serve(async (req) => {
 
             if (insertError) {
               console.error('Insert error for lead:', lead.name, insertError)
+              console.error('Full insert error details:', insertError)
               if (insertError.code === '23505') {
                 duplicateRecords++
               } else {
@@ -193,6 +204,7 @@ serve(async (req) => {
               }
             } else {
               console.log(`Successfully inserted lead: ${lead.name}`)
+              console.log('Inserted data:', insertedData)
               processedRecords++
             }
           }

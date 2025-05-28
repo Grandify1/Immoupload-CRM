@@ -341,7 +341,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           // Erweiterte Zuordnungsregeln für verschiedene Sprachen und Formate
             const fieldMappings = {
               // Standard Lead Felder - Deutsch
-              'name': ['name', 'namen', 'firmenname', 'firma', 'unternehmen', 'company', 'business_name'],
+              'name': ['name', 'namen', 'firmenname', 'firma', 'unternehmen', 'company', 'business_name', 'title'],
               'email': ['email', 'e_mail', 'e-mail', 'mail', 'kontakt_email'],
               'phone': ['phone', 'telefon', 'tel', 'telephone', 'handy', 'mobile', 'contact_phone'],
               'website': ['website', 'webseite', 'homepage', 'url', 'web'],
@@ -466,10 +466,11 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     const hasNameMapping = mappings.some(m => m.fieldName === 'name');
 
     if (!hasNameMapping) {
-      setError('You must map the "Name" field to continue.');
+      setError('Sie müssen das "Name" Feld zuordnen, um fortzufahren. Wählen Sie eine Spalte aus, die als Name verwendet werden soll.');
       return;
     }
 
+    console.log('Name mapping found:', mappings.filter(m => m.fieldName === 'name'));
     setError(null);
     setStep('duplicates');
   };
