@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import DOMPurify from 'dompurify';
 
 interface EmailAccount {
   id: string;
@@ -45,6 +46,148 @@ interface Email {
 }
 
 type EmailFolder = 'inbox' | 'sent' | 'drafts' | 'junk' | 'archived' | 'deleted';
+
+// Email Body Renderer Component
+const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
+  if (!body) {
+    return (
+      <div className="text-muted-foreground italic">
+        Keine Nachricht verfügbar
+      </div>
+    );
+  }
+
+  // Check if content looks like HTML
+  const isHTML = body.includes('<html') || body.includes('<!DOCTYPE') || body.includes('<div') || body.includes('<p') || body.includes('<br');
+
+  if (isHTML) {
+    // Pre-clean the HTML to remove unwanted elements
+    const preCleanedHTML = body
+      // Remove DOCTYPE and HTML structure tags
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<\/?html[^>]*>/gi, '')
+      .replace(/<\/?head[^>]*>/gi, '')
+      .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '')
+      .replace(/<\/?body[^>]*>/gi, '')
+      // Remove style tags but preserve inline styles
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+
+    // Use DOMPurify for thorough sanitization
+    const cleanHTML = DOMPurify.sanitize(preCleanedHTML, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'div', 'span', 'strong', 'b', 'em', 'i', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li', 'blockquote', 'a', 'img', 'table', 'tr', 'td', 'th', 'thead', 'tbody',
+        'font', 'center', 'pre', 'code', 'hr'
+      ],
+      ALLOWED_ATTR: [
+        'href', 'src', 'alt', 'title', 'width', 'height', 'style', 'color', 'bgcolor', 
+        'align', 'valign', 'border', 'cellpadding', 'cellspacing', 'class'
+      ],
+      ALLOW_DATA_ATTR: false,
+      SANITIZE_DOM: true
+    });
+
+    return (
+      <div className="email-content">
+        <style>{`
+          .email-content {
+            max-width: 100%;
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+          }
+          .email-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+          }
+          .email-content table {
+            max-width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+          }
+          .email-content td, .email-content th {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            vertical-align: top;
+          }
+          .email-content a {
+            color: #3b82f6;
+            text-decoration: underline;
+          }
+          .email-content a:hover {
+            color: #1d4ed8;
+          }
+          .email-content p {
+            margin: 8px 0;
+            line-height: 1.6;
+          }
+          .email-content h1, .email-content h2, .email-content h3, .email-content h4, .email-content h5, .email-content h6 {
+            margin: 16px 0 8px 0;
+            font-weight: bold;
+            line-height: 1.4;
+          }
+          .email-content h1 { font-size: 1.5em; }
+          .email-content h2 { font-size: 1.3em; }
+          .email-content h3 { font-size: 1.1em; }
+          .email-content ul, .email-content ol {
+            margin: 8px 0;
+            padding-left: 20px;
+          }
+          .email-content li {
+            margin: 4px 0;
+          }
+          .email-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 16px;
+            margin: 16px 0;
+            font-style: italic;
+            color: #6b7280;
+            background: #f9fafb;
+            border-radius: 4px;
+          }
+          .email-content pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, consolas, 'DejaVu Sans Mono', monospace;
+          }
+          .email-content code {
+            background: #f3f4f6;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, consolas, 'DejaVu Sans Mono', monospace;
+          }
+          .email-content hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 16px 0;
+          }
+          /* Handle font tags common in old emails */
+          .email-content font {
+            display: inline;
+          }
+          .email-content center {
+            text-align: center;
+          }
+        `}</style>
+        <div 
+          dangerouslySetInnerHTML={{ __html: cleanHTML }}
+          className="prose prose-sm max-w-none"
+        />
+      </div>
+    );
+  } else {
+    // Handle plain text emails
+    return (
+      <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
+        {body}
+      </div>
+    );
+  }
+};
 
 export function EmailView() {
   const { user } = useAuth();
@@ -762,9 +905,7 @@ export function EmailView() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="whitespace-pre-wrap">
-                      {selectedEmail.body}
-                    </div>
+                    <EmailBodyRenderer body={selectedEmail.body} />
                   </CardContent>
                 </Card>
               ) : (
