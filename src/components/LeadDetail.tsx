@@ -1417,22 +1417,48 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
                       {/* Drop Zone for Fields */}
                       <div
-                        className="mt-2 p-3 border-2 border-dashed border-gray-300 rounded text-center text-sm text-gray-500"
-                        onDragOver={(e) => e.preventDefault()}
+                        className={cn(
+                          "mt-2 p-3 border-2 border-dashed rounded text-center text-sm transition-colors",
+                          draggedField 
+                            ? "border-blue-400 bg-blue-50 text-blue-700" 
+                            : "border-gray-300 text-gray-500"
+                        )}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                        }}
+                        onDragEnter={(e) => {
+                          e.preventDefault();
+                        }}
                         onDrop={(e) => {
                           e.preventDefault();
                           if (draggedField) {
+                            console.log('Dropping field:', draggedField, 'into group:', group.id);
+                            
+                            // Find source group (might be null if coming from available fields)
                             const sourceGroup = fieldGroups.find(g => 
                               g.fields.includes(draggedField)
                             );
+                            
                             if (sourceGroup && sourceGroup.id !== group.id) {
+                              // Move from one group to another
                               handleMoveField(draggedField, sourceGroup.id, group.id);
+                            } else if (!sourceGroup) {
+                              // Move from available fields to group
+                              setFieldGroups(prev => prev.map(g => 
+                                g.id === group.id 
+                                  ? { ...g, fields: [...g.fields, draggedField] }
+                                  : g
+                              ));
                             }
                           }
                           setDraggedField(null);
                         }}
                       >
-                        Felder hierher ziehen
+                        {draggedField 
+                          ? `"${getFieldDisplayName(draggedField)}" hier ablegen` 
+                          : "Felder hierher ziehen"
+                        }
                       </div>
                     </Card>
                   ))}
@@ -1450,9 +1476,13 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                     return (
                       <div
                         key={fieldKey}
-                        className="flex items-center justify-between p-2 bg-blue-50 rounded border"
+                        className="flex items-center justify-between p-2 bg-blue-50 rounded border cursor-move hover:bg-blue-100 transition-colors"
                         draggable
-                        onDragStart={() => setDraggedField(fieldKey)}
+                        onDragStart={(e) => {
+                          setDraggedField(fieldKey);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        onDragEnd={() => setDraggedField(null)}
                       >
                         <span className="text-sm font-medium">
                           {getFieldDisplayName(fieldKey)}
@@ -1471,9 +1501,13 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                     return (
                       <div
                         key={fieldKey}
-                        className="flex items-center justify-between p-2 bg-green-50 rounded border"
+                        className="flex items-center justify-between p-2 bg-green-50 rounded border cursor-move hover:bg-green-100 transition-colors"
                         draggable
-                        onDragStart={() => setDraggedField(fieldKey)}
+                        onDragStart={(e) => {
+                          setDraggedField(fieldKey);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        onDragEnd={() => setDraggedField(null)}
                       >
                         <span className="text-sm font-medium">{field.name}</span>
                         <Badge variant="secondary">Custom</Badge>
