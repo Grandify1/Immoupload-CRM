@@ -409,15 +409,14 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
     const templateData = {
       template_id: selectedActivityTemplate.id,
       template_name: selectedActivityTemplate.name,
-      questions: selectedActivityTemplate.questions || [],
+      fields: selectedActivityTemplate.fields || [],
       responses: activityResponses
     };
 
     // Create content for the activity
     const content = `${selectedActivityTemplate.name}\n\n${Object.entries(activityResponses)
-      .map(([questionId, answer]) => {
-        const question = (selectedActivityTemplate.questions || []).find(q => q.id === questionId);
-        return `${question?.text || 'Question'}: ${answer}`;
+      .map(([fieldName, answer]) => {
+        return `${fieldName}: ${answer}`;
       })
       .join('\n')}`;
 
@@ -1258,40 +1257,60 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
                 </Button>
               </div>
               
-              {selectedActivityTemplate.questions && selectedActivityTemplate.questions.length > 0 ? (
+              {selectedActivityTemplate.fields && selectedActivityTemplate.fields.length > 0 ? (
                 <div className="space-y-4">
-                  {selectedActivityTemplate.questions.map((question) => (
-                    <div key={question.id} className="space-y-2">
-                      <Label className="text-sm font-medium">{question.text}</Label>
-                      {question.type === 'text' && (
+                  {selectedActivityTemplate.fields.map((field, index) => (
+                    <div key={`${field.name}-${index}`} className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        {field.name}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
+                      </Label>
+                      {field.type === 'text' && (
                         <Input
-                          value={activityResponses[question.id] || ''}
-                          onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
-                          placeholder={question.placeholder || ''}
+                          value={activityResponses[field.name] || ''}
+                          onChange={(e) => handleActivityResponseChange(field.name, e.target.value)}
+                          placeholder={`Enter ${field.name.toLowerCase()}...`}
                         />
                       )}
-                      {question.type === 'textarea' && (
-                        <Textarea
-                          value={activityResponses[question.id] || ''}
-                          onChange={(e) => handleActivityResponseChange(question.id, e.target.value)}
-                          placeholder={question.placeholder || ''}
-                          rows={3}
+                      {field.type === 'number' && (
+                        <Input
+                          type="number"
+                          value={activityResponses[field.name] || ''}
+                          onChange={(e) => handleActivityResponseChange(field.name, e.target.value)}
+                          placeholder={`Enter ${field.name.toLowerCase()}...`}
                         />
                       )}
-                      {question.type === 'select' && (
+                      {field.type === 'date' && (
+                        <Input
+                          type="date"
+                          value={activityResponses[field.name] || ''}
+                          onChange={(e) => handleActivityResponseChange(field.name, e.target.value)}
+                        />
+                      )}
+                      {field.type === 'select' && (
                         <Select
-                          value={activityResponses[question.id] || ''}
-                          onValueChange={(value) => handleActivityResponseChange(question.id, value)}
+                          value={activityResponses[field.name] || ''}
+                          onValueChange={(value) => handleActivityResponseChange(field.name, value)}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder={question.placeholder || 'Select an option'} />
+                            <SelectValue placeholder={`Select ${field.name.toLowerCase()}...`} />
                           </SelectTrigger>
                           <SelectContent>
-                            {question.options?.map((option, index) => (
+                            {field.options?.map((option, index) => (
                               <SelectItem key={index} value={option}>{option}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                      )}
+                      {field.type === 'checkbox' && (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={field.name}
+                            checked={!!activityResponses[field.name]}
+                            onCheckedChange={(checked) => handleActivityResponseChange(field.name, checked ? 'true' : 'false')}
+                          />
+                          <Label htmlFor={field.name} className="text-sm text-gray-700">{field.name}</Label>
+                        </div>
                       )}
                     </div>
                   ))}
