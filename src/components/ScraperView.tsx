@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,10 +11,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { create } from 'zustand';
-import { Search, Download, Play, Square, Trash2, MapPin, Phone, Globe, Star, Clock } from 'lucide-react';
+import { Search, Download, Play, Square, Trash2, MapPin, Phone, Globe, Star, Clock, Bug, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { iframeScrapingService } from '@/services/iframeScrapingService';
 
 // Zod Schema für Form Validation
 const scraperFormSchema = z.object({
@@ -58,21 +59,57 @@ interface ScrapingJob {
   errorMessage?: string;
 }
 
+// Debug State Interface
+interface DebugInfo {
+  timestamp: string;
+  level: 'info' | 'warn' | 'error' | 'debug';
+  message: string;
+  data?: any;
+}
+
 // Zustand Store
 interface ScraperStore {
   currentJob: ScrapingJob | null;
   jobHistory: ScrapingJob[];
   isRunning: boolean;
+  showIframeModal: boolean;
+  debugLogs: DebugInfo[];
+  iframeUrl: string;
   startJob: (formData: ScraperFormData) => void;
   stopJob: () => void;
   clearResults: () => void;
   exportToCsv: (results: BusinessData[]) => void;
+  setShowIframeModal: (show: boolean) => void;
+  addDebugLog: (log: DebugInfo) => void;
+  clearDebugLogs: () => void;
+  setIframeUrl: (url: string) => void;
 }
 
 const useScraperStore = create<ScraperStore>((set, get) => ({
   currentJob: null,
   jobHistory: [],
   isRunning: false,
+  showIframeModal: false,
+  debugLogs: [],
+  iframeUrl: '',
+
+  addDebugLog: (log: DebugInfo) => {
+    set(state => ({
+      debugLogs: [log, ...state.debugLogs.slice(0, 99)] // Keep last 100 logs
+    }));
+  },
+
+  clearDebugLogs: () => {
+    set({ debugLogs: [] });
+  },
+
+  setShowIframeModal: (show: boolean) => {
+    set({ showIframeModal: show });
+  },
+
+  setIframeUrl: (url: string) => {
+    set({ iframeUrl: url });
+  },
 
   startJob: async (formData: ScraperFormData) => {
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -80,6 +117,16 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
       toast.error('Benutzer nicht authentifiziert');
       return;
     }
+
+    const store = get();
+    store.clearDebugLogs();
+    
+    store.addDebugLog({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      message: '🚀 Starte iframe-basiertes Scraping',
+      data: formData
+    });
 
     const jobId = Date.now().toString();
     const newJob: ScrapingJob = {
@@ -95,30 +142,64 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
       startTime: new Date()
     };
 
-    set({ currentJob: newJob, isRunning: true });
+    const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(formData.searchQuery + ' ' + formData.location)}/`;
+    
+    set({ 
+      currentJob: newJob, 
+      isRunning: true, 
+      showIframeModal: true,
+      iframeUrl: googleMapsUrl
+    });
+
+    store.addDebugLog({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      message: '📍 Google Maps URL erstellt',
+      data: { url: googleMapsUrl }
+    });
 
     try {
-      // Call the edge function for real scraping
-      const { data, error } = await supabase.functions.invoke('google-maps-scraper', {
-        body: {
-          searchQuery: formData.searchQuery,
-          location: formData.location,
-          resultLimit: formData.resultLimit,
-          userId: user.id
-        }
-      });
+      // Use iframe scraping service
+      const results = await iframeScrapingService.startScraping(
+        formData.searchQuery,
+        formData.location,
+        formData.resultLimit,
+        (progress) => {
+          store.addDebugLog({
+            timestamp: new Date().toISOString(),
+            level: 'debug',
+            message: `📊 Progress Update: ${progress.type}`,
+            data: progress
+          });
 
-      if (error) {
-        throw error;
-      }
+          const currentState = get();
+          if (currentState.currentJob) {
+            set({
+              currentJob: {
+                ...currentState.currentJob,
+                progress: progress.progress || 0,
+                currentCount: progress.businesses?.length || 0,
+                results: progress.businesses || currentState.currentJob.results
+              }
+            });
+          }
+        }
+      );
+
+      store.addDebugLog({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        message: `✅ Scraping abgeschlossen: ${results.length} Ergebnisse`,
+        data: { resultCount: results.length, results: results.slice(0, 3) }
+      });
 
       const completedJob: ScrapingJob = {
         ...newJob,
         status: 'completed',
         progress: 100,
-        totalFound: data.totalFound,
-        currentCount: data.totalFound,
-        results: data.results,
+        totalFound: results.length,
+        currentCount: results.length,
+        results: results,
         endTime: new Date()
       };
 
@@ -128,10 +209,17 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
         jobHistory: [completedJob, ...state.jobHistory.slice(0, 9)]
       }));
 
-      toast.success(`Scraping abgeschlossen! ${data.totalFound} Unternehmen gefunden.`);
+      toast.success(`Iframe-Scraping abgeschlossen! ${results.length} Unternehmen gefunden.`);
 
     } catch (error: any) {
       console.error('❌ Iframe scraping failed:', error);
+
+      store.addDebugLog({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: '❌ Iframe-Scraping fehlgeschlagen',
+        data: { error: error.message, stack: error.stack }
+      });
 
       const failedJob: ScrapingJob = {
         ...newJob,
@@ -142,14 +230,25 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
       };
 
       set({ currentJob: failedJob, isRunning: false });
-      toast.error('Scraping fehlgeschlagen: ' + (error.message || 'Iframe-Scraping Fehler'));
+      toast.error('Iframe-Scraping fehlgeschlagen: ' + (error.message || 'Iframe-Scraping Fehler'));
     }
   },
 
   stopJob: () => {
+    const store = get();
+    store.addDebugLog({
+      timestamp: new Date().toISOString(),
+      level: 'warn',
+      message: '⏹️ Scraping gestoppt durch Benutzer'
+    });
+    
     // Stop the iframe scraping if it's running
-    // iframeScrapingService.stopScraping(); - removed because iframeScrapingService is not defined
-    set({ currentJob: null, isRunning: false });
+    iframeScrapingService.stopScraping();
+    set({ 
+      currentJob: null, 
+      isRunning: false,
+      showIframeModal: false
+    });
   },
 
   clearResults: () => {
@@ -190,8 +289,24 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
 
 export default function ScraperView() {
   const { user } = useAuth();
-  const { currentJob, jobHistory, isRunning, startJob, stopJob, clearResults, exportToCsv } = useScraperStore();
+  const { 
+    currentJob, 
+    jobHistory, 
+    isRunning, 
+    showIframeModal,
+    debugLogs,
+    iframeUrl,
+    startJob, 
+    stopJob, 
+    clearResults, 
+    exportToCsv,
+    setShowIframeModal,
+    addDebugLog,
+    clearDebugLogs
+  } = useScraperStore();
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessData | null>(null);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const form = useForm<ScraperFormData>({
     resolver: zodResolver(scraperFormSchema),
@@ -351,6 +466,82 @@ export default function ScraperView() {
           </CardContent>
         </Card>
       )}
+
+      {/* Debug Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bug className="w-5 h-5" />
+              Debug Panel
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowDebugPanel(!showDebugPanel)} 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Eye className="w-4 h-4" />
+                {showDebugPanel ? 'Verbergen' : 'Anzeigen'}
+              </Button>
+              <Button 
+                onClick={clearDebugLogs} 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Logs löschen
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        {showDebugPanel && (
+          <CardContent>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {debugLogs.length === 0 ? (
+                <p className="text-gray-500 italic">Keine Debug-Logs verfügbar</p>
+              ) : (
+                debugLogs.map((log, index) => (
+                  <div 
+                    key={index} 
+                    className={`p-2 rounded text-sm border-l-4 ${
+                      log.level === 'error' ? 'border-red-500 bg-red-50' :
+                      log.level === 'warn' ? 'border-yellow-500 bg-yellow-50' :
+                      log.level === 'info' ? 'border-blue-500 bg-blue-50' :
+                      'border-gray-500 bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="font-mono text-xs text-gray-600">
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                      </span>
+                      <span className={`text-xs px-1 rounded ${
+                        log.level === 'error' ? 'bg-red-200 text-red-800' :
+                        log.level === 'warn' ? 'bg-yellow-200 text-yellow-800' :
+                        log.level === 'info' ? 'bg-blue-200 text-blue-800' :
+                        'bg-gray-200 text-gray-800'
+                      }`}>
+                        {log.level.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="mt-1">{log.message}</div>
+                    {log.data && (
+                      <details className="mt-1">
+                        <summary className="cursor-pointer text-xs text-gray-600">Data anzeigen</summary>
+                        <pre className="mt-1 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+                          {JSON.stringify(log.data, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        )}
+      </Card>
 
       {/* Results Table */}
       {currentJob?.results && currentJob.results.length > 0 && (
@@ -539,6 +730,83 @@ export default function ScraperView() {
               )}
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Iframe Debug Modal */}
+      {showIframeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-6xl h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Google Maps Iframe Debug</h2>
+              <div className="flex items-center gap-2">
+                <Badge variant={isRunning ? "default" : "secondary"}>
+                  {isRunning ? 'Scraping läuft...' : 'Bereit'}
+                </Badge>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowIframeModal(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex-1 p-4">
+              <div className="mb-4">
+                <Label>Aktuelle URL:</Label>
+                <Input value={iframeUrl} readOnly className="mt-1" />
+              </div>
+              
+              <div className="border rounded-lg h-full">
+                <iframe
+                  ref={iframeRef}
+                  src={iframeUrl}
+                  className="w-full h-full rounded-lg"
+                  sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
+                  onLoad={() => {
+                    addDebugLog({
+                      timestamp: new Date().toISOString(),
+                      level: 'info',
+                      message: '📱 Iframe geladen',
+                      data: { url: iframeUrl }
+                    });
+                  }}
+                  onError={(e) => {
+                    addDebugLog({
+                      timestamp: new Date().toISOString(),
+                      level: 'error',
+                      message: '❌ Iframe Ladefehler',
+                      data: { error: e }
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            
+            <div className="p-4 border-t bg-gray-50">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-600">
+                  Status: {currentJob?.status || 'Unbekannt'} | 
+                  Fortschritt: {Math.round(currentJob?.progress || 0)}% | 
+                  Gefunden: {currentJob?.currentCount || 0} Unternehmen
+                </div>
+                <div className="flex gap-2">
+                  {isRunning ? (
+                    <Button variant="destructive" onClick={stopJob}>
+                      <Square className="w-4 h-4 mr-2" />
+                      Stoppen
+                    </Button>
+                  ) : (
+                    <Button onClick={() => setShowIframeModal(false)}>
+                      Schließen
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
       </div>
