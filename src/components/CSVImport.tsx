@@ -108,23 +108,69 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     { name: 'owner_id', label: 'Owner' },
   ];
 
-  // Custom Fields für Leads mit verbesserter Verarbeitung
+  // Custom Fields für Leads mit verbesserter Verarbeitung und Error Handling
   const leadCustomFields = React.useMemo(() => {
-    if (!customFields || !Array.isArray(customFields)) {
+    try {
+      console.log('=== PROCESSING LEAD CUSTOM FIELDS ===');
+      console.log('Raw customFields:', customFields);
+      
+      if (!customFields || !Array.isArray(customFields)) {
+        console.log('No custom fields or not array');
+        return [];
+      }
+
+      const leadFields = customFields
+        .filter(field => {
+          const isValid = field && field.entity_type === 'lead' && field.name;
+          if (!isValid) {
+            console.log('Filtering out invalid field:', field);
+          }
+          return isValid;
+        })
+        .map((field, index) => {
+          try {
+            // Safe field name processing
+            const safeName = field.name
+              .replace(/[äöüÄÖÜß]/g, (match) => {
+                const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss' };
+                return replacements[match] || match;
+              })
+              .toLowerCase()
+              .replace(/\s+/g, '_')
+              .replace(/[^\w\-_.]/g, '_')
+              .replace(/_+/g, '_')
+              .replace(/^_|_$/g, '');
+
+            const processedField = {
+              name: safeName || `custom_field_${index}`,
+              label: `${field.name} (Custom)`,
+              isCustom: true,
+              originalName: field.name,
+              fieldType: field.field_type
+            };
+            
+            console.log('Processed custom field:', processedField);
+            return processedField;
+          } catch (error) {
+            console.error('Error processing custom field:', field, error);
+            return {
+              name: `error_field_${index}`,
+              label: `Error Field ${index} (Custom)`,
+              isCustom: true,
+              originalName: `Error Field ${index}`,
+              fieldType: 'text'
+            };
+          }
+        });
+
+      console.log('Final lead custom fields:', leadFields);
+      console.log('=== END PROCESSING LEAD CUSTOM FIELDS ===');
+      return leadFields;
+    } catch (error) {
+      console.error('❌ Critical error in leadCustomFields memo:', error);
+      console.error('Error stack:', error.stack);
       return [];
     }
-
-    const leadFields = customFields
-      .filter(field => field && field.entity_type === 'lead')
-      .map(field => ({
-        name: field.name.toLowerCase().replace(/\s+/g, '_'),
-        label: `${field.name} (Custom)`,
-        isCustom: true,
-        originalName: field.name,
-        fieldType: field.field_type
-      }));
-
-    return leadFields;
   }, [customFields]);
 
   const allAvailableFields = React.useMemo(() => {
@@ -441,16 +487,52 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   };
 
   const handleMappingChange = (index: number, fieldName: string | null) => {
-    const newMappings = [...mappings];
-    
-    // Sanitize fieldName to prevent URI malformed errors
-    const sanitizedFieldName = fieldName ? 
-      fieldName.replace(/[^\w\-_.]/g, '_').toLowerCase() : 
-      null;
-    
-    newMappings[index].fieldName = sanitizedFieldName;
-    newMappings[index].createCustomField = false;
-    setMappings(newMappings);
+    try {
+      console.log('=== HANDLE MAPPING CHANGE DEBUG ===');
+      console.log('Original fieldName:', fieldName);
+      console.log('Index:', index);
+      
+      const newMappings = [...mappings];
+      
+      // Enhanced sanitization to prevent URI malformed errors
+      let sanitizedFieldName = null;
+      if (fieldName && fieldName !== '__skip__') {
+        // More aggressive sanitization
+        sanitizedFieldName = fieldName
+          .replace(/[äöüÄÖÜß]/g, (match) => {
+            const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss' };
+            return replacements[match] || match;
+          })
+          .replace(/[^\w\-_.]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '')
+          .toLowerCase();
+        
+        // Ensure it's not empty after sanitization
+        if (!sanitizedFieldName) {
+          sanitizedFieldName = `field_${index}`;
+        }
+      }
+      
+      console.log('Sanitized fieldName:', sanitizedFieldName);
+      
+      newMappings[index].fieldName = sanitizedFieldName;
+      newMappings[index].createCustomField = false;
+      
+      console.log('Updated mapping:', newMappings[index]);
+      console.log('=== END HANDLE MAPPING CHANGE DEBUG ===');
+      
+      setMappings(newMappings);
+    } catch (error) {
+      console.error('❌ Error in handleMappingChange:', error);
+      console.error('Error stack:', error.stack);
+      
+      // Fallback: Set safe default
+      const newMappings = [...mappings];
+      newMappings[index].fieldName = `safe_field_${index}`;
+      newMappings[index].createCustomField = false;
+      setMappings(newMappings);
+    }
   };
 
   const handleCustomFieldToggle = (index: number, checked: boolean) => {
@@ -826,14 +908,34 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                           value={mapping.fieldName || ''}
                           onValueChange={(value) => {
                             try {
-                              console.log('Field mapping changed:', { csvColumn: mapping.csvHeader, selectedField: value });
-                              handleMappingChange(index, value === '__skip__' ? null : value);
+                              console.log('=== SELECT FIELD MAPPING DEBUG ===');
+                              console.log('Raw select value:', value);
+                              console.log('CSV column:', mapping.csvHeader);
+                              console.log('Current mapping:', mapping);
+                              
+                              const processedValue = value === '__skip__' ? null : value;
+                              console.log('Processed value:', processedValue);
+                              
+                              handleMappingChange(index, processedValue);
+                              console.log('=== END SELECT FIELD MAPPING DEBUG ===');
                             } catch (error) {
-                              console.error('Error in field mapping:', error);
-                              // Fallback to safe handling
-                              const safeValue = value === '__skip__' ? null : 
-                                value.replace(/[^\w\-_.]/g, '_').toLowerCase();
-                              handleMappingChange(index, safeValue);
+                              console.error('❌ CRITICAL ERROR in Select onValueChange:', error);
+                              console.error('Error details:', {
+                                value,
+                                index,
+                                csvHeader: mapping.csvHeader,
+                                stack: error.stack
+                              });
+                              
+                              // Emergency fallback
+                              try {
+                                const emergencyValue = value === '__skip__' ? null : `emergency_field_${index}`;
+                                handleMappingChange(index, emergencyValue);
+                              } catch (fallbackError) {
+                                console.error('❌ Even fallback failed:', fallbackError);
+                                setError('Kritischer Fehler bei der Feldzuordnung. Seite wird neu geladen.');
+                                setTimeout(() => window.location.reload(), 2000);
+                              }
                             }
                           }}
                         >
@@ -879,16 +981,37 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                               value={mapping.fieldName || ''}
                               onChange={(e) => {
                                 try {
+                                  console.log('=== CUSTOM FIELD INPUT DEBUG ===');
+                                  console.log('Input value:', e.target.value);
+                                  
                                   const newMappings = [...mappings];
-                                  // Sanitize input value to prevent URI errors
+                                  
+                                  // Enhanced sanitization to prevent URI errors
                                   const sanitizedValue = e.target.value
-                                    .replace(/[äöüß]/g, (match) => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[match] || match))
+                                    .replace(/[äöüÄÖÜß]/g, (match) => {
+                                      const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'Ä': 'Ae', 'Ö': 'Oe', 'Ü': 'Ue', 'ß': 'ss' };
+                                      return replacements[match] || match;
+                                    })
                                     .replace(/[^\w\-_.]/g, '_')
+                                    .replace(/_+/g, '_')
+                                    .replace(/^_|_$/g, '')
                                     .toLowerCase();
+                                  
+                                  console.log('Sanitized value:', sanitizedValue);
+                                  
                                   newMappings[index].fieldName = sanitizedValue;
                                   setMappings(newMappings);
+                                  
+                                  console.log('Updated mapping:', newMappings[index]);
+                                  console.log('=== END CUSTOM FIELD INPUT DEBUG ===');
                                 } catch (error) {
-                                  console.error('Error in custom field input:', error);
+                                  console.error('❌ Error in custom field input:', error);
+                                  console.error('Error stack:', error.stack);
+                                  
+                                  // Set safe fallback
+                                  const newMappings = [...mappings];
+                                  newMappings[index].fieldName = `custom_field_${index}`;
+                                  setMappings(newMappings);
                                 }
                               }}
                               placeholder="Feldname"
