@@ -1,0 +1,25 @@
+CRITICAL BUG FIX REQUIRED: Supabase Edge Function CORS Error
+
+Problem Analysis: The application is trying to call a Supabase Edge Function but getting a CORS error with "It does not have HTTP ok status". This means either the Edge Function doesn't exist, has configuration issues, or is throwing an error before returning proper CORS headers.
+
+IMMEDIATE SOLUTION STEPS:
+
+Step 1: Verify Edge Function Exists Log into your Supabase dashboard, go to the Edge Functions section, and check if the "google-maps-scraper" function actually exists. If it doesn't exist, this is your root cause.
+
+Step 2: Create or Fix the Edge Function You need to create a new Edge Function called "google-maps-scraper" that properly handles CORS. The function must include CORS headers in every response and handle OPTIONS requests for preflight checks. Start with a simple mock response that returns test data to verify the connection works.
+
+Step 3: Essential CORS Configuration The Edge Function MUST include these CORS headers in every response: Access-Control-Allow-Origin set to asterisk, Access-Control-Allow-Headers including authorization and content-type, and Access-Control-Allow-Methods for GET POST OPTIONS. Handle OPTIONS requests by returning an immediate response with just the CORS headers.
+
+Step 4: Deploy and Test Deploy the Edge Function using the Supabase CLI command "supabase functions deploy google-maps-scraper". Test the deployment by calling the function from your frontend and checking that the CORS error disappears.
+
+Step 5: Error Handling Wrap all Edge Function logic in try-catch blocks and ensure that even error responses include the CORS headers. Otherwise, the browser will still show CORS errors even when the function is working.
+
+Step 6: Verify Frontend Integration Make sure your frontend code is correctly calling the Edge Function using the supabase.functions.invoke method with the correct function name and parameters.
+
+Expected Result: After implementing this fix, the CORS error should completely disappear and you should receive a successful response from the Edge Function. Once this basic connection works, you can then implement the actual scraping logic inside the function.
+
+If Still Not Working: Check the Supabase dashboard for Edge Function logs, verify your project URL and API keys are correct, and ensure the function is properly deployed and showing as active in the dashboard.
+
+
+
+
