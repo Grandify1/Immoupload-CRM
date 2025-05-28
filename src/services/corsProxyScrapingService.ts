@@ -9,21 +9,23 @@ export interface CorsProxyScrapingConfig {
 }
 
 export class CorsProxyScrapingService {
-  private config: CorsProxyScrapingConfig;
-  private isRunning = false;
-  private abortController?: AbortController;
-  
-  constructor(config: CorsProxyScrapingConfig) {
-    this.config = config;
-  }
+  private static isRunning = false;
+  private static abortController?: AbortController;
+  private static currentConfig: CorsProxyScrapingConfig | null = null;
 
-  async startScraping(): Promise<BusinessData[]> {
+  static async startScraping(
+    searchQuery: string,
+    location: string,
+    resultLimit: number,
+    onProgress?: (progress: ScrapingProgress) => void
+  ): Promise<BusinessData[]> {
     if (this.isRunning) {
       throw new Error('Scraping bereits aktiv');
     }
 
     this.isRunning = true;
     this.abortController = new AbortController();
+    this.currentConfig = { searchQuery, location, resultLimit, onProgress };
     
     try {
       this.sendProgress({
@@ -51,10 +53,13 @@ export class CorsProxyScrapingService {
     } finally {
       this.isRunning = false;
       this.abortController = undefined;
+      this.currentConfig = null;
     }
   }
 
-  private async scrapeWithCorsProxy(): Promise<BusinessData[]> {
+  private static async scrapeWithCorsProxy(): Promise<BusinessData[]> {
+    if (!this.currentConfig) throw new Error('No config available');
+    
     const businesses: BusinessData[] = [];
     const proxies = [
       'https://api.allorigins.win/get?url=',
@@ -65,7 +70,7 @@ export class CorsProxyScrapingService {
     // Verschiedene Google-Domains für bessere Erfolgsrate
     const googleDomains = ['google.com', 'google.de', 'google.co.uk'];
     
-    for (let attempt = 0; attempt < 3 && businesses.length < this.config.resultLimit; attempt++) {
+    for (let attempt = 0; attempt < 3 && businesses.length < this.currentConfig.resultLimit; attempt++) {
       const domain = googleDomains[attempt % googleDomains.length];
       const proxy = proxies[attempt % proxies.length];
       
@@ -86,7 +91,7 @@ export class CorsProxyScrapingService {
           progress: 40 + (attempt * 20)
         });
 
-        if (businesses.length >= this.config.resultLimit) break;
+        if (businesses.length >= this.currentConfig.resultLimit) break;
         
       } catch (error) {
         console.warn(`Proxy ${proxy} failed:`, error);
@@ -109,11 +114,13 @@ export class CorsProxyScrapingService {
       return this.generateEnhancedMockData();
     }
 
-    return businesses.slice(0, this.config.resultLimit);
+    return businesses.slice(0, this.currentConfig.resultLimit);
   }
 
-  private async scrapeGoogleSearch(proxyUrl: string, domain: string): Promise<BusinessData[]> {
-    const query = encodeURIComponent(`${this.config.searchQuery} ${this.config.location}`);
+  private static async scrapeGoogleSearch(proxyUrl: string, domain: string): Promise<BusinessData[]> {
+    if (!this.currentConfig) throw new Error('No config available');
+    
+    const query = encodeURIComponent(`${this.currentConfig.searchQuery} ${this.currentConfig.location}`);
     const searchUrl = `https://www.${domain}/search?q=${query}&tbm=lcl`;
     
     const requestUrl = proxyUrl.includes('allorigins') 
@@ -153,7 +160,7 @@ export class CorsProxyScrapingService {
     return this.parseGoogleSearchResults(html);
   }
 
-  private parseGoogleSearchResults(html: string): BusinessData[] {
+  private static parseGoogleSearchResults(html: string): BusinessData[] {
     const businesses: BusinessData[] = [];
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -199,7 +206,8 @@ export class CorsProxyScrapingService {
     return businesses;
   }
 
-  private extractBusinessFromElement(element: Element, index: number): BusinessData | null {
+  private static extractBusinessFromElement(element: Element, index: number): BusinessData | null {
+    if (!this.currentConfig) throw new Error('No config available');
     const nameSelectors = [
       '.OSrXXb', // Hauptname
       '.DUwDvf', // Alternative Namen
@@ -229,10 +237,10 @@ export class CorsProxyScrapingService {
     ];
 
     const name = this.extractTextFromSelectors(element, nameSelectors) 
-      || `${this.config.searchQuery} Business ${index + 1}`;
+      || `${this.currentConfig.searchQuery} Business ${index + 1}`;
     
     const address = this.extractTextFromSelectors(element, addressSelectors)
-      || `${this.config.location}, Address ${index + 1}`;
+      || `${this.currentConfig.location}, Address ${index + 1}`;
     
     const phone = this.extractPhoneNumber(element, phoneSelectors);
     const rating = this.extractRating(element, ratingSelectors);
@@ -253,7 +261,7 @@ export class CorsProxyScrapingService {
     };
   }
 
-  private extractTextFromSelectors(element: Element, selectors: string[]): string | null {
+  private static extractTextFromSelectors(element: Element, selectors: string[]): string | null {
     for (const selector of selectors) {
       try {
         const found = element.querySelector(selector);
@@ -267,7 +275,7 @@ export class CorsProxyScrapingService {
     return null;
   }
 
-  private extractPhoneNumber(element: Element, selectors: string[]): string | undefined {
+  private static extractPhoneNumber(element: Element, selectors: string[]): string | undefined {
     for (const selector of selectors) {
       try {
         const phoneElement = element.querySelector(selector);
@@ -285,7 +293,7 @@ export class CorsProxyScrapingService {
     return this.generatePhoneNumber();
   }
 
-  private extractRating(element: Element, selectors: string[]): number | undefined {
+  private static extractRating(element: Element, selectors: string[]): number | undefined {
     for (const selector of selectors) {
       try {
         const ratingElement = element.querySelector(selector);
@@ -303,7 +311,7 @@ export class CorsProxyScrapingService {
     return Math.round((Math.random() * 1.5 + 3.5) * 10) / 10;
   }
 
-  private extractWebsite(element: Element): string | undefined {
+  private static extractWebsite(element: Element): string | undefined {
     const linkElements = element.querySelectorAll('a[href]');
     for (const link of linkElements) {
       const href = link.getAttribute('href');
@@ -314,15 +322,16 @@ export class CorsProxyScrapingService {
     return undefined;
   }
 
-  private cleanText(text: string): string {
+  private static cleanText(text: string): string {
     return text
       .replace(/\s+/g, ' ')
       .replace(/[^\w\s\-\.]/g, '')
       .trim();
   }
 
-  private determineCategory(): string {
-    const query = this.config.searchQuery.toLowerCase();
+  private static determineCategory(): string {
+    if (!this.currentConfig) throw new Error('No config available');
+    const query = this.currentConfig.searchQuery.toLowerCase();
     
     if (query.includes('restaurant') || query.includes('essen')) return 'Restaurant';
     if (query.includes('friseur') || query.includes('salon')) return 'Friseursalon';
@@ -337,12 +346,13 @@ export class CorsProxyScrapingService {
     return 'Dienstleistung';
   }
 
-  private generateEnhancedMockData(): BusinessData[] {
+  private static generateEnhancedMockData(): BusinessData[] {
+    if (!this.currentConfig) throw new Error('No config available');
     const businesses: BusinessData[] = [];
     const categories = this.getBusinessCategories();
     const baseNames = this.getBusinessNames();
     
-    const limit = Math.min(this.config.resultLimit, 20);
+    const limit = Math.min(this.currentConfig.resultLimit, 20);
     
     for (let i = 0; i < limit; i++) {
       const businessName = `${baseNames[i % baseNames.length]} ${i > baseNames.length ? i : ''}`.trim();
@@ -351,7 +361,7 @@ export class CorsProxyScrapingService {
         id: `enhanced_mock_${Date.now()}_${i}`,
         name: businessName,
         category: categories[i % categories.length],
-        address: `${this.getStreetName()} ${Math.floor(Math.random() * 200) + 1}, ${this.config.location}`,
+        address: `${this.getStreetName()} ${Math.floor(Math.random() * 200) + 1}, ${this.currentConfig.location}`,
         phone: this.generatePhoneNumber(),
         website: this.generateWebsite(businessName),
         rating: Math.round((Math.random() * 1.5 + 3.5) * 10) / 10,
@@ -364,8 +374,9 @@ export class CorsProxyScrapingService {
     return businesses;
   }
 
-  private getBusinessCategories(): string[] {
-    const query = this.config.searchQuery.toLowerCase();
+  private static getBusinessCategories(): string[] {
+    if (!this.currentConfig) throw new Error('No config available');
+    const query = this.currentConfig.searchQuery.toLowerCase();
     
     if (query.includes('restaurant')) return ['Restaurant', 'Pizzeria', 'Café', 'Bistro'];
     if (query.includes('friseur')) return ['Friseursalon', 'Beautysalon', 'Barbershop'];
@@ -375,8 +386,9 @@ export class CorsProxyScrapingService {
     return ['Dienstleistung', 'Einzelhandel', 'Service'];
   }
 
-  private getBusinessNames(): string[] {
-    const query = this.config.searchQuery.toLowerCase();
+  private static getBusinessNames(): string[] {
+    if (!this.currentConfig) throw new Error('No config available');
+    const query = this.currentConfig.searchQuery.toLowerCase();
     
     if (query.includes('restaurant')) {
       return ['Zur Goldenen Gans', 'Bella Vista', 'Gasthaus Schmidt', 'Ristorante Milano'];
@@ -391,12 +403,12 @@ export class CorsProxyScrapingService {
     return ['Meisterbetrieb Wagner', 'Service Center', 'Fachgeschäft Weber', 'Profi Service'];
   }
 
-  private getStreetName(): string {
+  private static getStreetName(): string {
     const streets = ['Hauptstraße', 'Bahnhofstraße', 'Kirchgasse', 'Marktplatz', 'Bergstraße'];
     return streets[Math.floor(Math.random() * streets.length)];
   }
 
-  private generatePhoneNumber(): string {
+  private static generatePhoneNumber(): string {
     const areaCodes = ['030', '089', '040', '0221', '0711'];
     const areaCode = areaCodes[Math.floor(Math.random() * areaCodes.length)];
     const number = Math.floor(Math.random() * 90000000) + 10000000;
@@ -404,7 +416,7 @@ export class CorsProxyScrapingService {
     return `${areaCode} ${numberStr.substring(0, 3)} ${numberStr.substring(3, 6)}`;
   }
 
-  private generateWebsite(businessName: string): string {
+  private static generateWebsite(businessName: string): string {
     const cleanName = businessName.toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[äöü]/g, (match) => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue' }[match] || match))
@@ -414,11 +426,11 @@ export class CorsProxyScrapingService {
     return `https://www.${cleanName}.de`;
   }
 
-  private generateReviewCount(): number {
+  private static generateReviewCount(): number {
     return Math.floor(Math.random() * 500) + 10;
   }
 
-  private generateOpeningHours(): string {
+  private static generateOpeningHours(): string {
     const options = [
       'Mo-Fr: 9:00-18:00',
       'Mo-Fr: 8:00-19:00, Sa: 10:00-16:00',
@@ -428,7 +440,7 @@ export class CorsProxyScrapingService {
     return options[Math.floor(Math.random() * options.length)];
   }
 
-  private generateCoordinates(): { lat: number; lng: number } {
+  private static generateCoordinates(): { lat: number; lng: number } {
     const cityCoords = this.getCityCoordinates();
     return {
       lat: cityCoords.lat + (Math.random() - 0.5) * 0.02,
@@ -436,7 +448,7 @@ export class CorsProxyScrapingService {
     };
   }
 
-  private getCityCoordinates(): { lat: number; lng: number } {
+  private static getCityCoordinates(): { lat: number; lng: number } {
     const coordinates: { [key: string]: { lat: number; lng: number } } = {
       'münchen': { lat: 48.1351, lng: 11.5820 },
       'berlin': { lat: 52.5200, lng: 13.4050 },
@@ -445,11 +457,12 @@ export class CorsProxyScrapingService {
       'frankfurt': { lat: 50.1109, lng: 8.6821 }
     };
     
-    const cityKey = this.config.location.toLowerCase();
+    if (!this.currentConfig) throw new Error('No config available');
+    const cityKey = this.currentConfig.location.toLowerCase();
     return coordinates[cityKey] || { lat: 52.5200, lng: 13.4050 };
   }
 
-  private getRandomUserAgent(): string {
+  private static getRandomUserAgent(): string {
     const userAgents = [
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -458,25 +471,26 @@ export class CorsProxyScrapingService {
     return userAgents[Math.floor(Math.random() * userAgents.length)];
   }
 
-  private async randomDelay(): Promise<void> {
+  private static async randomDelay(): Promise<void> {
     const delay = Math.random() * 3000 + 2000; // 2-5 Sekunden
     await new Promise(resolve => setTimeout(resolve, delay));
   }
 
-  private sendProgress(progress: ScrapingProgress): void {
-    if (this.config.onProgress) {
-      this.config.onProgress(progress);
+  private static sendProgress(progress: ScrapingProgress): void {
+    if (this.currentConfig?.onProgress) {
+      this.currentConfig.onProgress(progress);
     }
   }
 
-  stop(): void {
+  static stopScraping(): void {
     if (this.abortController) {
       this.abortController.abort();
     }
     this.isRunning = false;
+    this.currentConfig = null;
   }
 
-  isScrapingActive(): boolean {
+  static isScrapingActive(): boolean {
     return this.isRunning;
   }
 }
