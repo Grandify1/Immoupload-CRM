@@ -1,0 +1,30 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+iframeScrapingService.ts:46 🚀 Starting iframe-based Google Maps scraping
+iframeScrapingService.ts:47 📊 Parameters: Object
+iframeScrapingService.ts:119 An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+createIframe @ iframeScrapingService.ts:119
+iframeScrapingService.ts:99 📱 Iframe loaded successfully
+iframeScrapingService.ts:120 📱 Visible iframe created for debugging
+iframeScrapingService.ts:144 👂 Message listener setup complete
+iframeScrapingService.ts:153 🔄 Starting scraping execution...
+iframeScrapingService.ts:224 🌐 Loading Google Maps URL: https://www.google.com/maps/search/Makler%20Berlin/
+iframeScrapingService.ts:228 📍 Google Maps iframe loaded
+iframeScrapingService.ts:239 ⏳ Attempting to inject scraping script...
+iframeScrapingService.ts:261 ❌ Script injection failed: Error: Iframe content not accessible - CORS blocked
+    at iframeScrapingService.ts:258:23
+(anonymous) @ iframeScrapingService.ts:261
+iframeScrapingService.ts:264 🔄 Falling back to mock data generation...
+iframeScrapingService.ts:565 🎭 Generating mock data as fallback
+iframeScrapingService.ts:65 ✅ Scraping completed with results: 20
+iframeScrapingService.ts:561 🧹 Iframe scraping cleanup completed

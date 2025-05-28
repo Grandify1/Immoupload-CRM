@@ -1,0 +1,121 @@
+2:17:42 AM
+INFO
+✅ Scraping abgeschlossen: 20 Ergebnisse
+Data anzeigen
+{
+  "resultCount": 20,
+  "results": [
+    {
+      "id": "mock_1748456260052_0",
+      "name": "Makler 1",
+      "category": "Dienstleistung",
+      "address": "Musterstraße 1, Berlin",
+      "phone": "030 7679445",
+      "website": "https://www.makler-1.de",
+      "rating": 4.7,
+      "reviewCount": 115,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 52.47236708258192,
+        "lng": 13.412690764365216
+      }
+    },
+    {
+      "id": "mock_1748456260052_1",
+      "name": "Makler 2",
+      "category": "Einzelhandel",
+      "address": "Musterstraße 2, Berlin",
+      "phone": "030 7164881",
+      "website": "https://www.makler-2.de",
+      "rating": 5,
+      "reviewCount": 34,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 52.49559547021946,
+        "lng": 13.406657746457718
+      }
+    },
+    {
+      "id": "mock_1748456260052_2",
+      "name": "Makler 3",
+      "category": "Dienstleistung",
+      "address": "Musterstraße 3, Berlin",
+      "phone": "030 7414148",
+      "website": "https://www.makler-3.de",
+      "rating": 4.4,
+      "reviewCount": 140,
+      "openingHours": "Mo-Fr: 9:00-18:00",
+      "coordinates": {
+        "lat": 52.507363843306635,
+        "lng": 13.417019746367304
+      }
+    }
+  ]
+}
+2:17:40 AM
+DEBUG
+📊 Progress Update: scraping_progress
+Data anzeigen
+{
+  "type": "scraping_progress",
+  "progress": 100,
+  "data": {
+    "message": "Fallback zu Mock-Daten (CORS-Beschränkung)"
+  }
+}
+2:17:37 AM
+INFO
+📱 Iframe geladen
+Data anzeigen
+{
+  "url": "https://www.google.com/maps/search/Makler%20Berlin/"
+}
+2:17:35 AM
+DEBUG
+📊 Progress Update: scraping_progress
+Data anzeigen
+{
+  "type": "scraping_progress",
+  "progress": 20,
+  "data": {
+    "message": "Google Maps geladen, injiziere Scraping-Script..."
+  }
+}
+2:17:31 AM
+DEBUG
+📊 Progress Update: scraping_progress
+Data anzeigen
+{
+  "type": "scraping_progress",
+  "progress": 10,
+  "data": {
+    "message": "Iframe geladen, warte auf Google Maps..."
+  }
+}
+2:17:31 AM
+DEBUG
+📊 Progress Update: scraping_started
+Data anzeigen
+{
+  "type": "scraping_started",
+  "progress": 0,
+  "data": {
+    "message": "Iframe wird erstellt..."
+  }
+}
+2:17:31 AM
+INFO
+📍 Google Maps URL erstellt
+Data anzeigen
+{
+  "url": "https://www.google.com/maps/search/Makler%20Berlin/"
+}
+2:17:31 AM
+INFO
+🚀 Starte iframe-basiertes Scraping
+Data anzeigen
+{
+  "searchQuery": "Makler",
+  "location": "Berlin",
+  "resultLimit": 50
+}
