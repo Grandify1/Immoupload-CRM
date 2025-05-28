@@ -497,16 +497,6 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         totalDeleted += batch.length;
       }
 
-      if (error) {
-        console.error('Error deleting leads:', error);
-        toast({
-          title: "Fehler",
-          description: "Beim Löschen der Leads ist ein Fehler aufgetreten.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       toast({
         title: "Leads gelöscht",
         description: `${totalDeleted} Lead(s) wurden erfolgreich gelöscht.`,
