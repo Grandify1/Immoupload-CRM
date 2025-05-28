@@ -76,8 +76,8 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
   isRunning: false,
 
   startJob: async (formData: ScraperFormData) => {
-    const { user } = await supabase.auth.getUser();
-    if (!user.data.user) {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
       toast.error('Benutzer nicht authentifiziert');
       return;
     }
@@ -105,7 +105,7 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
           searchQuery: formData.searchQuery,
           location: formData.location,
           resultLimit: formData.resultLimit,
-          userId: user.data.user.id
+          userId: user.id
         }
       });
 
