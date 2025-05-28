@@ -1,0 +1,33 @@
+chunk-FJ2A54M7.js?v=0c5845e9:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: TOKEN_REFRESHED 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:39 CRMLayout: Initial fetchData call
+CRMLayout.tsx:56 fetchData: Starting data fetch...
+CRMLayout.tsx:137 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:125 fetchData: Finished data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx:112 Loading emails from database...
+2EmailView.tsx:106 Skipping email load - too recent
+EmailView.tsx:127 Loaded 43 emails from database
+EmailView.tsx:243 Starting email deletion: 785cf8f5-a215-4a99-af84-25be4d23790b, permanent: false
+OpportunitiesView.tsx:296 loadAllowedStatuses: Start
+OpportunitiesView.tsx:317 loadAllowedStatuses: Geladene Stati: Array(5)
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx:112 Loading emails from database...
+2EmailView.tsx:106 Skipping email load - too recent
+EmailView.tsx:127 Loaded 43 emails from database
+EmailView.tsx:258 Email deletion result: Object
+EmailView.tsx:321 Marked email 785cf8f5-a215-4a99-af84-25be4d23790b as deleted. Updated emails: Array(1)
+EmailView.tsx:112 Loading emails from database...
+EmailView.tsx:106 Skipping email load - too recent
+EmailView.tsx:127 Loaded 43 emails from database
+EmailView.tsx:112 Loading emails from database...
+EmailView.tsx:106 Skipping email load - too recent
+EmailView.tsx:127 Loaded 43 emails from database
+EmailView.tsx:112 Loading emails from database...
+EmailView.tsx:106 Skipping email load - too recent
+EmailView.tsx:127 Loaded 43 emails from database
