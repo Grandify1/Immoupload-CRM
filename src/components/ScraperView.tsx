@@ -759,12 +759,11 @@ export default function ScraperView() {
                 <Input value={iframeUrl} readOnly className="mt-1" />
               </div>
               
-              <div className="border rounded-lg h-full">
+              <div className="border rounded-lg h-full relative">
                 <iframe
                   ref={iframeRef}
                   src={iframeUrl}
                   className="w-full h-full rounded-lg"
-                  sandbox="allow-scripts allow-same-origin allow-top-navigation allow-forms"
                   onLoad={() => {
                     addDebugLog({
                       timestamp: new Date().toISOString(),
@@ -772,6 +771,36 @@ export default function ScraperView() {
                       message: '📱 Iframe geladen',
                       data: { url: iframeUrl }
                     });
+                    
+                    // Try to detect if Google Maps loaded
+                    setTimeout(() => {
+                      try {
+                        const iframe = iframeRef.current;
+                        if (iframe?.contentDocument) {
+                          const title = iframe.contentDocument.title;
+                          addDebugLog({
+                            timestamp: new Date().toISOString(),
+                            level: 'info',
+                            message: `📄 Iframe Title: ${title}`,
+                            data: { title, accessible: true }
+                          });
+                        } else {
+                          addDebugLog({
+                            timestamp: new Date().toISOString(),
+                            level: 'warn',
+                            message: '🚫 Iframe Content nicht zugreifbar (CORS)',
+                            data: { accessible: false, reason: 'CORS Policy' }
+                          });
+                        }
+                      } catch (error) {
+                        addDebugLog({
+                          timestamp: new Date().toISOString(),
+                          level: 'error',
+                          message: '❌ Iframe Zugriffsfehler',
+                          data: { error: error.message }
+                        });
+                      }
+                    }, 2000);
                   }}
                   onError={(e) => {
                     addDebugLog({
@@ -782,6 +811,13 @@ export default function ScraperView() {
                     });
                   }}
                 />
+                
+                {/* Overlay with debugging info */}
+                <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white text-xs p-2 rounded">
+                  <div>URL: {iframeUrl.substring(0, 50)}...</div>
+                  <div>Status: {isRunning ? 'Läuft' : 'Gestoppt'}</div>
+                  <div>CORS: Erwartet blockiert</div>
+                </div>
               </div>
             </div>
             
