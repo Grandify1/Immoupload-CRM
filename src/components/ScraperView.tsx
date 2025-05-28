@@ -1,29 +1,31 @@
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import { Play, Square, Download, Eye, MapPin, Phone, Globe, Star, Clock } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { create } from 'zustand';
+import { Search, Download, Play, Square, Trash2, MapPin, Phone, Globe, Star, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
+// Zod Schema für Form Validation
 const scraperFormSchema = z.object({
-  query: z.string().min(1, 'Suchbegriff ist erforderlich'),
+  searchQuery: z.string().min(1, 'Suchbegriff ist erforderlich'),
   location: z.string().min(1, 'Standort ist erforderlich'),
-  limit: z.number().min(10).max(1000),
+  resultLimit: z.number().min(1).max(1000, 'Maximal 1000 Ergebnisse erlaubt')
 });
 
 type ScraperFormData = z.infer<typeof scraperFormSchema>;
 
-interface ScrapedBusiness {
+// Business Data Interface
+interface BusinessData {
   id: string;
   name: string;
   category: string;
@@ -33,464 +35,535 @@ interface ScrapedBusiness {
   rating?: number;
   reviewCount?: number;
   openingHours?: string;
-  coordinates?: { lat: number; lng: number };
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 }
 
+// Job Interface
 interface ScrapingJob {
   id: string;
-  query: string;
+  searchQuery: string;
   location: string;
-  limit: number;
-  status: 'idle' | 'running' | 'completed' | 'error' | 'stopped';
+  resultLimit: number;
+  status: 'idle' | 'running' | 'completed' | 'error';
   progress: number;
-  scrapedCount: number;
+  totalFound: number;
+  currentCount: number;
+  results: BusinessData[];
   startTime?: Date;
   endTime?: Date;
-  results: ScrapedBusiness[];
+  errorMessage?: string;
 }
 
-export const ScraperView: React.FC = () => {
-  const { toast } = useToast();
-  const [currentJob, setCurrentJob] = useState<ScrapingJob | null>(null);
-  const [jobHistory, setJobHistory] = useState<ScrapingJob[]>([]);
-  const [selectedBusiness, setSelectedBusiness] = useState<ScrapedBusiness | null>(null);
+// Zustand Store
+interface ScraperStore {
+  currentJob: ScrapingJob | null;
+  jobHistory: ScrapingJob[];
+  isRunning: boolean;
+  startJob: (formData: ScraperFormData) => void;
+  stopJob: () => void;
+  clearResults: () => void;
+  exportToCsv: (results: BusinessData[]) => void;
+}
 
-  const form = useForm<ScraperFormData>({
-    resolver: zodResolver(scraperFormSchema),
-    defaultValues: {
-      query: '',
-      location: '',
-      limit: 100,
-    },
-  });
+const useScraperStore = create<ScraperStore>((set, get) => ({
+  currentJob: null,
+  jobHistory: [],
+  isRunning: false,
 
-  // Simulated scraping function (in real app, this would use Playwright via Electron)
-  const simulateScraping = async (formData: ScraperFormData) => {
-    const jobId = `job_${Date.now()}`;
-    const job: ScrapingJob = {
+  startJob: (formData: ScraperFormData) => {
+    const jobId = Date.now().toString();
+    const newJob: ScrapingJob = {
       id: jobId,
-      query: formData.query,
+      searchQuery: formData.searchQuery,
       location: formData.location,
-      limit: formData.limit,
+      resultLimit: formData.resultLimit,
       status: 'running',
       progress: 0,
-      scrapedCount: 0,
-      startTime: new Date(),
+      totalFound: 0,
+      currentCount: 0,
       results: [],
+      startTime: new Date()
     };
 
-    setCurrentJob(job);
+    set({ currentJob: newJob, isRunning: true });
+    
+    // Simulate scraping process
+    simulateScraping(newJob, set);
+  },
 
-    // Simulate scraping progress
-    for (let i = 0; i < formData.limit; i++) {
-      if (job.status === 'stopped') break;
-
-      // Simulate delay
-      await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
-
-      // Generate mock business data
-      const business: ScrapedBusiness = {
-        id: `business_${i}`,
-        name: `${formData.query} Business ${i + 1}`,
-        category: getRandomCategory(formData.query),
-        address: `${formData.location}, Musterstraße ${i + 1}, 80331 München`,
-        phone: Math.random() > 0.3 ? `+49 89 ${Math.floor(Math.random() * 9000000) + 1000000}` : undefined,
-        website: Math.random() > 0.4 ? `https://www.business${i + 1}.de` : undefined,
-        rating: Math.random() > 0.2 ? Math.round((3 + Math.random() * 2) * 10) / 10 : undefined,
-        reviewCount: Math.random() > 0.2 ? Math.floor(Math.random() * 500) + 1 : undefined,
-        openingHours: Math.random() > 0.3 ? 'Mo-Fr: 9:00-18:00, Sa: 9:00-14:00' : undefined,
-        coordinates: {
-          lat: 48.1351 + (Math.random() - 0.5) * 0.1,
-          lng: 11.5820 + (Math.random() - 0.5) * 0.1,
-        },
-      };
-
-      job.results.push(business);
-      job.scrapedCount = i + 1;
-      job.progress = Math.round((i + 1) / formData.limit * 100);
-
-      setCurrentJob({ ...job });
-    }
-
-    job.status = 'completed';
-    job.endTime = new Date();
-    setCurrentJob({ ...job });
-    setJobHistory(prev => [job, ...prev]);
-
-    toast({
-      title: "Scraping abgeschlossen",
-      description: `${job.scrapedCount} Unternehmen erfolgreich extrahiert`,
-    });
-  };
-
-  const getRandomCategory = (query: string) => {
-    const categories = [
-      'Restaurant', 'Dienstleistung', 'Einzelhandel', 'Gesundheit', 
-      'Bildung', 'Unterhaltung', 'Technologie', 'Beratung'
-    ];
-    return categories[Math.floor(Math.random() * categories.length)];
-  };
-
-  const onSubmit = (data: ScraperFormData) => {
-    if (currentJob?.status === 'running') {
-      toast({
-        title: "Scraping läuft bereits",
-        description: "Bitte warten Sie, bis der aktuelle Job abgeschlossen ist.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    simulateScraping(data);
-  };
-
-  const stopScraping = () => {
+  stopJob: () => {
+    const { currentJob } = get();
     if (currentJob) {
-      setCurrentJob({ ...currentJob, status: 'stopped' });
-      toast({
-        title: "Scraping gestoppt",
-        description: "Der Scraping-Vorgang wurde vom Benutzer gestoppt.",
-      });
+      const stoppedJob = {
+        ...currentJob,
+        status: 'completed' as const,
+        endTime: new Date()
+      };
+      
+      set(state => ({
+        currentJob: stoppedJob,
+        isRunning: false,
+        jobHistory: [stoppedJob, ...state.jobHistory.slice(0, 9)] // Keep last 10 jobs
+      }));
     }
-  };
+  },
 
-  const exportToCsv = () => {
-    if (!currentJob?.results.length) return;
+  clearResults: () => {
+    set({ currentJob: null, isRunning: false });
+  },
 
+  exportToCsv: (results: BusinessData[]) => {
     const headers = ['Name', 'Kategorie', 'Adresse', 'Telefon', 'Website', 'Bewertung', 'Bewertungen', 'Öffnungszeiten'];
     const csvContent = [
       headers.join(','),
-      ...currentJob.results.map(business => [
-        `"${business.name}"`,
-        `"${business.category}"`,
-        `"${business.address}"`,
-        `"${business.phone || ''}"`,
-        `"${business.website || ''}"`,
-        business.rating || '',
-        business.reviewCount || '',
-        `"${business.openingHours || ''}"`
+      ...results.map(item => [
+        `"${item.name}"`,
+        `"${item.category}"`,
+        `"${item.address}"`,
+        `"${item.phone || ''}"`,
+        `"${item.website || ''}"`,
+        item.rating || '',
+        item.reviewCount || '',
+        `"${item.openingHours || ''}"`
       ].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `google_maps_scraping_${currentJob.query.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `google-maps-scraper-${Date.now()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+    
+    toast.success('CSV-Export erfolgreich!');
+  }
+}));
+
+// Mock-Daten für Simulation
+const getMockBusinessData = (query: string, location: string): BusinessData[] => {
+  const businesses = [
+    { name: 'Salon Schmidt', category: 'Friseur', phone: '+49 89 123456', website: 'www.salon-schmidt.de', rating: 4.5, reviewCount: 89 },
+    { name: 'Haar & Style', category: 'Friseur', phone: '+49 89 234567', website: 'www.haar-style.de', rating: 4.2, reviewCount: 156 },
+    { name: 'Beauty Lounge', category: 'Friseur', phone: '+49 89 345678', rating: 4.8, reviewCount: 203 },
+    { name: 'Cut & Color', category: 'Friseur', phone: '+49 89 456789', website: 'www.cutcolor.de', rating: 4.1, reviewCount: 74 },
+    { name: 'Trend Friseure', category: 'Friseur', phone: '+49 89 567890', rating: 4.6, reviewCount: 128 }
+  ];
+
+  return businesses.map((business, index) => ({
+    id: `business_${index}`,
+    ...business,
+    address: `${business.name} Straße ${index + 1}, 80331 ${location}`,
+    openingHours: 'Mo-Fr: 9:00-18:00, Sa: 9:00-16:00',
+    coordinates: {
+      lat: 48.1351 + (Math.random() - 0.5) * 0.1,
+      lng: 11.5820 + (Math.random() - 0.5) * 0.1
+    }
+  }));
+};
+
+// Simulation der Scraping-Funktionalität
+const simulateScraping = async (job: ScrapingJob, set: any) => {
+  const mockData = getMockBusinessData(job.searchQuery, job.location);
+  const totalToScrape = Math.min(job.resultLimit, mockData.length);
+  
+  for (let i = 0; i < totalToScrape; i++) {
+    // Simulate delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    
+    const progress = ((i + 1) / totalToScrape) * 100;
+    const updatedJob = {
+      ...job,
+      progress,
+      currentCount: i + 1,
+      totalFound: totalToScrape,
+      results: mockData.slice(0, i + 1)
+    };
+    
+    set({ currentJob: updatedJob });
+    
+    // Check if job was stopped
+    const currentState = set.getState?.() || {};
+    if (!currentState.isRunning) {
+      break;
+    }
+  }
+  
+  // Complete job
+  const finalJob = {
+    ...job,
+    status: 'completed' as const,
+    progress: 100,
+    currentCount: totalToScrape,
+    totalFound: totalToScrape,
+    results: mockData.slice(0, totalToScrape),
+    endTime: new Date()
+  };
+  
+  set(state => ({
+    currentJob: finalJob,
+    isRunning: false,
+    jobHistory: [finalJob, ...state.jobHistory.slice(0, 9)]
+  }));
+  
+  toast.success(`Scraping abgeschlossen! ${totalToScrape} Unternehmen gefunden.`);
+};
+
+export default function ScraperView() {
+  const { currentJob, jobHistory, isRunning, startJob, stopJob, clearResults, exportToCsv } = useScraperStore();
+  const [selectedBusiness, setSelectedBusiness] = useState<BusinessData | null>(null);
+
+  const form = useForm<ScraperFormData>({
+    resolver: zodResolver(scraperFormSchema),
+    defaultValues: {
+      searchQuery: '',
+      location: '',
+      resultLimit: 50
+    }
+  });
+
+  const onSubmit = (data: ScraperFormData) => {
+    startJob(data);
+    toast.success('Scraping gestartet...');
+  };
+
+  const handleStop = () => {
+    stopJob();
+    toast.info('Scraping gestoppt');
+  };
+
+  const formatDuration = (start?: Date, end?: Date) => {
+    if (!start) return '';
+    const endTime = end || new Date();
+    const duration = Math.round((endTime.getTime() - start.getTime()) / 1000);
+    return `${duration}s`;
   };
 
   return (
-    <div className="flex-1 p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Google Maps Scraper</h1>
-          <p className="text-gray-600">Extrahieren Sie Unternehmensdaten aus Google Maps</p>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Google Maps Scraper</h1>
+        <Badge variant={isRunning ? "default" : "secondary"}>
+          {isRunning ? 'Läuft' : 'Bereit'}
+        </Badge>
+      </div>
 
-        {/* Scraping Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Neuen Scraping-Job erstellen</CardTitle>
-            <CardDescription>
-              Geben Sie Ihre Suchkriterien ein, um Unternehmensdaten zu extrahieren
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="query">Suchbegriff</Label>
-                  <Input
-                    id="query"
-                    placeholder="z.B. Friseur, Restaurant, Zahnarzt"
-                    {...form.register('query')}
-                  />
-                  {form.formState.errors.query && (
-                    <p className="text-sm text-red-600">{form.formState.errors.query.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="location">Standort</Label>
-                  <Input
-                    id="location"
-                    placeholder="z.B. München, Berlin, Hamburg"
-                    {...form.register('location')}
-                  />
-                  {form.formState.errors.location && (
-                    <p className="text-sm text-red-600">{form.formState.errors.location.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="limit">Anzahl Ergebnisse</Label>
-                  <Select onValueChange={(value) => form.setValue('limit', parseInt(value))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Wählen Sie die Anzahl" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="50">50</SelectItem>
-                      <SelectItem value="100">100</SelectItem>
-                      <SelectItem value="200">200</SelectItem>
-                      <SelectItem value="500">500</SelectItem>
-                      <SelectItem value="1000">1000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  type="submit" 
-                  disabled={currentJob?.status === 'running'}
-                  className="flex items-center gap-2"
-                >
-                  <Play className="h-4 w-4" />
-                  Scraping starten
-                </Button>
-                
-                {currentJob?.status === 'running' && (
-                  <Button 
-                    type="button" 
-                    variant="destructive" 
-                    onClick={stopScraping}
-                    className="flex items-center gap-2"
-                  >
-                    <Square className="h-4 w-4" />
-                    Stoppen
-                  </Button>
+      {/* Scraping Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="w-5 h-5" />
+            Neuen Scraping-Job starten
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="searchQuery">Suchbegriff</Label>
+                <Input
+                  id="searchQuery"
+                  placeholder="z.B. Friseur, Restaurant, Zahnarzt..."
+                  {...form.register('searchQuery')}
+                  disabled={isRunning}
+                />
+                {form.formState.errors.searchQuery && (
+                  <p className="text-sm text-red-500">{form.formState.errors.searchQuery.message}</p>
                 )}
               </div>
-            </form>
+              
+              <div className="space-y-2">
+                <Label htmlFor="location">Standort</Label>
+                <Input
+                  id="location"
+                  placeholder="z.B. München, Berlin, Hamburg..."
+                  {...form.register('location')}
+                  disabled={isRunning}
+                />
+                {form.formState.errors.location && (
+                  <p className="text-sm text-red-500">{form.formState.errors.location.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="resultLimit">Anzahl Ergebnisse</Label>
+              <Select
+                value={form.watch('resultLimit')?.toString()}
+                onValueChange={(value) => form.setValue('resultLimit', parseInt(value))}
+                disabled={isRunning}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Wähle die Anzahl..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="50">50 Ergebnisse</SelectItem>
+                  <SelectItem value="100">100 Ergebnisse</SelectItem>
+                  <SelectItem value="200">200 Ergebnisse</SelectItem>
+                  <SelectItem value="500">500 Ergebnisse</SelectItem>
+                  <SelectItem value="1000">1000 Ergebnisse</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex gap-2">
+              {!isRunning ? (
+                <Button type="submit" className="flex items-center gap-2">
+                  <Play className="w-4 h-4" />
+                  Scraping starten
+                </Button>
+              ) : (
+                <Button type="button" variant="destructive" onClick={handleStop} className="flex items-center gap-2">
+                  <Square className="w-4 h-4" />
+                  Stoppen
+                </Button>
+              )}
+              
+              {currentJob && !isRunning && (
+                <Button type="button" variant="outline" onClick={clearResults} className="flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  Ergebnisse löschen
+                </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Job Status */}
+      {currentJob && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Aktueller Job</span>
+              <Badge variant={currentJob.status === 'completed' ? 'default' : 'secondary'}>
+                {currentJob.status === 'running' ? 'Läuft' : 
+                 currentJob.status === 'completed' ? 'Abgeschlossen' : 
+                 currentJob.status === 'error' ? 'Fehler' : 'Bereit'}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <strong>Suche:</strong> {currentJob.searchQuery} in {currentJob.location}
+              </div>
+              <div>
+                <strong>Fortschritt:</strong> {currentJob.currentCount} / {currentJob.resultLimit}
+              </div>
+              <div>
+                <strong>Gefunden:</strong> {currentJob.totalFound} Unternehmen
+              </div>
+              <div>
+                <strong>Dauer:</strong> {formatDuration(currentJob.startTime, currentJob.endTime)}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Fortschritt</span>
+                <span>{Math.round(currentJob.progress)}%</span>
+              </div>
+              <Progress value={currentJob.progress} />
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Current Job Status */}
-        {currentJob && (
-          <Card>
+      {/* Results Table */}
+      {currentJob?.results && currentJob.results.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Ergebnisse ({currentJob.results.length})</span>
+              <Button 
+                onClick={() => exportToCsv(currentJob.results)} 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                CSV Export
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Kategorie</TableHead>
+                    <TableHead>Adresse</TableHead>
+                    <TableHead>Telefon</TableHead>
+                    <TableHead>Bewertung</TableHead>
+                    <TableHead>Website</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentJob.results.map((business) => (
+                    <TableRow 
+                      key={business.id} 
+                      className="cursor-pointer hover:bg-gray-50"
+                      onClick={() => setSelectedBusiness(business)}
+                    >
+                      <TableCell className="font-medium">{business.name}</TableCell>
+                      <TableCell>{business.category}</TableCell>
+                      <TableCell className="max-w-xs truncate">{business.address}</TableCell>
+                      <TableCell>
+                        {business.phone && (
+                          <div className="flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {business.phone}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {business.rating && (
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            {business.rating} ({business.reviewCount})
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {business.website && (
+                          <div className="flex items-center gap-1">
+                            <Globe className="w-3 h-3" />
+                            <span className="truncate max-w-xs">{business.website}</span>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Job History */}
+      {jobHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Job-Verlauf</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {jobHistory.map((job) => (
+                <div key={job.id} className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex-1">
+                    <div className="font-medium">{job.searchQuery} in {job.location}</div>
+                    <div className="text-sm text-gray-500">
+                      {job.results.length} Ergebnisse • {formatDuration(job.startTime, job.endTime)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={job.status === 'completed' ? 'default' : 'secondary'}>
+                      {job.status}
+                    </Badge>
+                    {job.results.length > 0 && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => exportToCsv(job.results)}
+                      >
+                        Export
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Business Detail Modal */}
+      {selectedBusiness && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>Aktueller Job</span>
-                <Badge variant={
-                  currentJob.status === 'running' ? 'default' :
-                  currentJob.status === 'completed' ? 'secondary' :
-                  currentJob.status === 'error' ? 'destructive' : 'outline'
-                }>
-                  {currentJob.status === 'running' ? 'Läuft' :
-                   currentJob.status === 'completed' ? 'Abgeschlossen' :
-                   currentJob.status === 'error' ? 'Fehler' :
-                   currentJob.status === 'stopped' ? 'Gestoppt' : 'Bereit'}
-                </Badge>
+                <span>{selectedBusiness.name}</span>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedBusiness(null)}>
+                  ✕
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="font-medium">Suchbegriff</p>
-                  <p className="text-gray-600">{currentJob.query}</p>
+                  <Label>Kategorie</Label>
+                  <p>{selectedBusiness.category}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Standort</p>
-                  <p className="text-gray-600">{currentJob.location}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Fortschritt</p>
-                  <p className="text-gray-600">{currentJob.scrapedCount} / {currentJob.limit}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Status</p>
-                  <p className="text-gray-600">{currentJob.progress}% abgeschlossen</p>
+                  <Label>Bewertung</Label>
+                  {selectedBusiness.rating && (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      {selectedBusiness.rating} ({selectedBusiness.reviewCount} Bewertungen)
+                    </div>
+                  )}
                 </div>
               </div>
               
-              <Progress value={currentJob.progress} className="w-full" />
+              <div>
+                <Label>Adresse</Label>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 mt-1" />
+                  <p>{selectedBusiness.address}</p>
+                </div>
+              </div>
               
-              {currentJob.status === 'completed' && (
-                <div className="flex gap-2">
-                  <Button onClick={exportToCsv} variant="outline" className="flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Als CSV exportieren
-                  </Button>
+              {selectedBusiness.phone && (
+                <div>
+                  <Label>Telefon</Label>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    <a href={`tel:${selectedBusiness.phone}`} className="text-blue-600 hover:underline">
+                      {selectedBusiness.phone}
+                    </a>
+                  </div>
+                </div>
+              )}
+              
+              {selectedBusiness.website && (
+                <div>
+                  <Label>Website</Label>
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    <a 
+                      href={`https://${selectedBusiness.website}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {selectedBusiness.website}
+                    </a>
+                  </div>
+                </div>
+              )}
+              
+              {selectedBusiness.openingHours && (
+                <div>
+                  <Label>Öffnungszeiten</Label>
+                  <div className="flex items-start gap-2">
+                    <Clock className="w-4 h-4 mt-1" />
+                    <p>{selectedBusiness.openingHours}</p>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
-        )}
-
-        {/* Results Table */}
-        {currentJob?.results.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Extrahierte Unternehmen ({currentJob.results.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Kategorie</TableHead>
-                      <TableHead>Adresse</TableHead>
-                      <TableHead>Bewertung</TableHead>
-                      <TableHead>Kontakt</TableHead>
-                      <TableHead>Aktionen</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentJob.results.slice(0, 20).map((business) => (
-                      <TableRow key={business.id}>
-                        <TableCell className="font-medium">{business.name}</TableCell>
-                        <TableCell>{business.category}</TableCell>
-                        <TableCell className="max-w-[200px] truncate">{business.address}</TableCell>
-                        <TableCell>
-                          {business.rating && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span>{business.rating}</span>
-                              {business.reviewCount && (
-                                <span className="text-gray-500">({business.reviewCount})</span>
-                              )}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-1">
-                            {business.phone && (
-                              <Badge variant="outline" className="text-xs">
-                                <Phone className="h-3 w-3 mr-1" />
-                                Tel
-                              </Badge>
-                            )}
-                            {business.website && (
-                              <Badge variant="outline" className="text-xs">
-                                <Globe className="h-3 w-3 mr-1" />
-                                Web
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" onClick={() => setSelectedBusiness(business)}>
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle>{business.name}</DialogTitle>
-                                <DialogDescription>{business.category}</DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div className="space-y-3">
-                                    <div className="flex items-start gap-2">
-                                      <MapPin className="h-4 w-4 mt-1 text-gray-500" />
-                                      <div>
-                                        <p className="font-medium">Adresse</p>
-                                        <p className="text-sm text-gray-600">{business.address}</p>
-                                      </div>
-                                    </div>
-                                    
-                                    {business.phone && (
-                                      <div className="flex items-start gap-2">
-                                        <Phone className="h-4 w-4 mt-1 text-gray-500" />
-                                        <div>
-                                          <p className="font-medium">Telefon</p>
-                                          <p className="text-sm text-gray-600">{business.phone}</p>
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {business.website && (
-                                      <div className="flex items-start gap-2">
-                                        <Globe className="h-4 w-4 mt-1 text-gray-500" />
-                                        <div>
-                                          <p className="font-medium">Website</p>
-                                          <a 
-                                            href={business.website} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-sm text-blue-600 hover:underline"
-                                          >
-                                            {business.website}
-                                          </a>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="space-y-3">
-                                    {business.rating && (
-                                      <div className="flex items-start gap-2">
-                                        <Star className="h-4 w-4 mt-1 text-yellow-500" />
-                                        <div>
-                                          <p className="font-medium">Bewertung</p>
-                                          <p className="text-sm text-gray-600">
-                                            {business.rating} Sterne 
-                                            {business.reviewCount && ` (${business.reviewCount} Bewertungen)`}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )}
-                                    
-                                    {business.openingHours && (
-                                      <div className="flex items-start gap-2">
-                                        <Clock className="h-4 w-4 mt-1 text-gray-500" />
-                                        <div>
-                                          <p className="font-medium">Öffnungszeiten</p>
-                                          <p className="text-sm text-gray-600">{business.openingHours}</p>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                
-                {currentJob.results.length > 20 && (
-                  <div className="p-4 text-center text-sm text-gray-600">
-                    Zeige 20 von {currentJob.results.length} Ergebnissen. 
-                    Exportieren Sie als CSV, um alle Daten zu sehen.
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Job History */}
-        {jobHistory.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Job-Historie</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {jobHistory.slice(0, 5).map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-medium">{job.query} in {job.location}</p>
-                      <p className="text-sm text-gray-600">
-                        {job.startTime?.toLocaleDateString()} - {job.scrapedCount} Ergebnisse
-                      </p>
-                    </div>
-                    <Badge variant={job.status === 'completed' ? 'secondary' : 'outline'}>
-                      {job.status === 'completed' ? 'Abgeschlossen' : job.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
-};
+}
