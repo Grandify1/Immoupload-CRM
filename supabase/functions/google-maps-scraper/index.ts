@@ -176,7 +176,7 @@ serve(async (req) => {
     } catch (error) {
       console.error('❌ Error generating business data:', error);
       
-      // Update job with error status
+      // Update job with error status - FIX: Use 'failed' instead of 'error'
       try {
         await supabaseAdmin
           .from('scraping_jobs')
