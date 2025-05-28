@@ -442,7 +442,13 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   const handleMappingChange = (index: number, fieldName: string | null) => {
     const newMappings = [...mappings];
-    newMappings[index].fieldName = fieldName;
+    
+    // Sanitize fieldName to prevent URI malformed errors
+    const sanitizedFieldName = fieldName ? 
+      fieldName.replace(/[^\w\-_.]/g, '_').toLowerCase() : 
+      null;
+    
+    newMappings[index].fieldName = sanitizedFieldName;
     newMappings[index].createCustomField = false;
     setMappings(newMappings);
   };
@@ -451,7 +457,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     const newMappings = [...mappings];
     newMappings[index].createCustomField = checked;
     if (checked && !newMappings[index].fieldName) {
-      newMappings[index].fieldName = newMappings[index].csvHeader.toLowerCase().replace(/\s+/g, '_');
+      // Properly sanitize field name to prevent URI errors
+      const sanitizedName = newMappings[index].csvHeader
+        .toLowerCase()
+        .replace(/[äöüß]/g, (match) => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[match] || match))
+        .replace(/[^\w\-_.]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      newMappings[index].fieldName = sanitizedName;
     }
     setMappings(newMappings);
   };
@@ -812,8 +825,16 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                         <Select
                           value={mapping.fieldName || ''}
                           onValueChange={(value) => {
-                            console.log('Field mapping changed:', { csvColumn: mapping.csvHeader, selectedField: value });
-                            handleMappingChange(index, value === '__skip__' ? null : value);
+                            try {
+                              console.log('Field mapping changed:', { csvColumn: mapping.csvHeader, selectedField: value });
+                              handleMappingChange(index, value === '__skip__' ? null : value);
+                            } catch (error) {
+                              console.error('Error in field mapping:', error);
+                              // Fallback to safe handling
+                              const safeValue = value === '__skip__' ? null : 
+                                value.replace(/[^\w\-_.]/g, '_').toLowerCase();
+                              handleMappingChange(index, safeValue);
+                            }
                           }}
                         >
                           <SelectTrigger className="w-full">
@@ -857,9 +878,18 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                             <Input
                               value={mapping.fieldName || ''}
                               onChange={(e) => {
-                                const newMappings = [...mappings];
-                                newMappings[index].fieldName = e.target.value;
-                                setMappings(newMappings);
+                                try {
+                                  const newMappings = [...mappings];
+                                  // Sanitize input value to prevent URI errors
+                                  const sanitizedValue = e.target.value
+                                    .replace(/[äöüß]/g, (match) => ({ 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss' }[match] || match))
+                                    .replace(/[^\w\-_.]/g, '_')
+                                    .toLowerCase();
+                                  newMappings[index].fieldName = sanitizedValue;
+                                  setMappings(newMappings);
+                                } catch (error) {
+                                  console.error('Error in custom field input:', error);
+                                }
                               }}
                               placeholder="Feldname"
                               className="w-40"
