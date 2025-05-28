@@ -791,16 +791,26 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         // Check if the response indicates success
         if (functionResponse && functionResponse.success) {
-          // Dismiss loading toast and show success
+          // Dismiss loading toast and show detailed success
           toast.dismiss(loadingToastId);
-          toast.success('Import erfolgreich abgeschlossen!', {
-            description: `${functionResponse.newRecords || functionResponse.processedRecords || csvData.length} Leads wurden erfolgreich importiert.`,
-            duration: 4000,
-          });
+          
+          const { processedRecords, newRecords, updatedRecords, failedRecords } = functionResponse;
+          
+          if (failedRecords > 0) {
+            toast.warning('Import mit Fehlern abgeschlossen', {
+              description: `${processedRecords} Leads verarbeitet (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert, ${failedRecords} Fehler)`,
+              duration: 6000,
+            });
+          } else {
+            toast.success('Import erfolgreich abgeschlossen!', {
+              description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
+              duration: 5000,
+            });
+          }
         } else {
           toast.dismiss(loadingToastId);
-          toast.error('Import unvollständig', {
-            description: 'Der Import wurde verarbeitet, aber möglicherweise traten Fehler auf.',
+          toast.error('Import fehlgeschlagen', {
+            description: 'Der Import konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
             duration: 4000,
           });
         }
