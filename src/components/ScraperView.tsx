@@ -15,7 +15,8 @@ import { Search, Download, Play, Square, Trash2, MapPin, Phone, Globe, Star, Clo
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { iframeScrapingService } from '@/services/iframeScrapingService';
+import { CorsProxyScrapingService } from '../services/corsProxyScrapingService';
+import { BusinessData, ScrapingProgress } from '../types/scraping';
 
 // Zod Schema für Form Validation
 const scraperFormSchema = z.object({
@@ -120,7 +121,7 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
 
     const store = get();
     store.clearDebugLogs();
-    
+
     store.addDebugLog({
       timestamp: new Date().toISOString(),
       level: 'info',
@@ -143,7 +144,7 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
     };
 
     const googleMapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(formData.searchQuery + ' ' + formData.location)}/`;
-    
+
     set({ 
       currentJob: newJob, 
       isRunning: true, 
@@ -160,7 +161,7 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
 
     try {
       // Use iframe scraping service
-      const results = await iframeScrapingService.startScraping(
+      const results = await CorsProxyScrapingService.startScraping(
         formData.searchQuery,
         formData.location,
         formData.resultLimit,
@@ -241,9 +242,9 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
       level: 'warn',
       message: '⏹️ Scraping gestoppt durch Benutzer'
     });
-    
+
     // Stop the iframe scraping if it's running
-    iframeScrapingService.stopScraping();
+    CorsProxyScrapingService.stopScraping();
     set({ 
       currentJob: null, 
       isRunning: false,
@@ -306,7 +307,6 @@ export default function ScraperView() {
   } = useScraperStore();
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessData | null>(null);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const form = useForm<ScraperFormData>({
     resolver: zodResolver(scraperFormSchema),
@@ -350,7 +350,7 @@ export default function ScraperView() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
-            Neuen Scraping-Job starten
+            Google Maps Scraper (CORS Proxy)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -730,119 +730,6 @@ export default function ScraperView() {
               )}
             </CardContent>
           </Card>
-        </div>
-      )}
-
-      {/* Iframe Debug Modal */}
-      {showIframeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-6xl h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Google Maps Iframe Debug</h2>
-              <div className="flex items-center gap-2">
-                <Badge variant={isRunning ? "default" : "secondary"}>
-                  {isRunning ? 'Scraping läuft...' : 'Bereit'}
-                </Badge>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setShowIframeModal(false)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex-1 p-4">
-              <div className="mb-4">
-                <Label>Aktuelle URL:</Label>
-                <Input value={iframeUrl} readOnly className="mt-1" />
-              </div>
-              
-              <div className="border rounded-lg h-full relative">
-                <iframe
-                  ref={iframeRef}
-                  src={iframeUrl}
-                  className="w-full h-full rounded-lg"
-                  onLoad={() => {
-                    addDebugLog({
-                      timestamp: new Date().toISOString(),
-                      level: 'info',
-                      message: '📱 Iframe geladen',
-                      data: { url: iframeUrl }
-                    });
-                    
-                    // Try to detect if Google Maps loaded
-                    setTimeout(() => {
-                      try {
-                        const iframe = iframeRef.current;
-                        if (iframe?.contentDocument) {
-                          const title = iframe.contentDocument.title;
-                          addDebugLog({
-                            timestamp: new Date().toISOString(),
-                            level: 'info',
-                            message: `📄 Iframe Title: ${title}`,
-                            data: { title, accessible: true }
-                          });
-                        } else {
-                          addDebugLog({
-                            timestamp: new Date().toISOString(),
-                            level: 'warn',
-                            message: '🚫 Iframe Content nicht zugreifbar (CORS)',
-                            data: { accessible: false, reason: 'CORS Policy' }
-                          });
-                        }
-                      } catch (error) {
-                        addDebugLog({
-                          timestamp: new Date().toISOString(),
-                          level: 'error',
-                          message: '❌ Iframe Zugriffsfehler',
-                          data: { error: error.message }
-                        });
-                      }
-                    }, 2000);
-                  }}
-                  onError={(e) => {
-                    addDebugLog({
-                      timestamp: new Date().toISOString(),
-                      level: 'error',
-                      message: '❌ Iframe Ladefehler',
-                      data: { error: e }
-                    });
-                  }}
-                />
-                
-                {/* Overlay with debugging info */}
-                <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white text-xs p-2 rounded">
-                  <div>URL: {iframeUrl.substring(0, 50)}...</div>
-                  <div>Status: {isRunning ? 'Läuft' : 'Gestoppt'}</div>
-                  <div>CORS: Erwartet blockiert</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4 border-t bg-gray-50">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  Status: {currentJob?.status || 'Unbekannt'} | 
-                  Fortschritt: {Math.round(currentJob?.progress || 0)}% | 
-                  Gefunden: {currentJob?.currentCount || 0} Unternehmen
-                </div>
-                <div className="flex gap-2">
-                  {isRunning ? (
-                    <Button variant="destructive" onClick={stopJob}>
-                      <Square className="w-4 h-4 mr-2" />
-                      Stoppen
-                    </Button>
-                  ) : (
-                    <Button onClick={() => setShowIframeModal(false)}>
-                      Schließen
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
       </div>
