@@ -1,0 +1,35 @@
+CRITICAL REQUIREMENT: Implement Real Google Maps Scraping WITHOUT Paid APIs
+Current Problem:
+Your Edge Function is only returning mock data and the suggested solution uses Google Places API which costs money. You specifically need FREE scraping without any paid APIs.
+SOLUTION: Implement Web Scraping in Supabase Edge Function
+Step 1: Understanding the Challenge
+Supabase Edge Functions run on Deno runtime, not Node.js. This means you cannot use Playwright directly. However, you CAN use web scraping techniques that work in Deno environment.
+Step 2: Use Deno-Compatible Web Scraping
+Replace the mock data generation with actual web scraping using Deno's built-in fetch and DOM parsing capabilities. You need to:
+
+Fetch Google Maps search results directly via HTTP requests
+Parse the HTML response to extract business data
+Handle Google's anti-bot measures with proper headers and delays
+
+Step 3: Implement HTML Parsing
+Use Deno's HTML parsing libraries like "deno-dom" or "cheerio" equivalent for Deno to parse the Google Maps HTML and extract business information like names, addresses, phone numbers, ratings, and websites.
+Step 4: Add Stealth Techniques
+Implement anti-detection measures in your Edge Function:
+
+Rotate user agents for each request
+Add random delays between requests
+Use proper HTTP headers to mimic real browser requests
+Handle rate limiting by spacing out requests
+
+Step 5: Handle Google Maps URLs
+Instead of using the Places API, construct direct Google Maps search URLs and scrape the results pages. Google Maps has predictable URL patterns for searches that you can exploit.
+Step 6: Data Extraction Strategy
+Focus on scraping the publicly visible Google Maps search results page, not individual business pages. Extract the business cards that appear in search results which contain most of the essential information.
+Alternative Approach: Hybrid Solution
+If direct HTML scraping proves too complex due to Google's JavaScript-heavy interface, consider implementing a headless browser solution using Puppeteer for Deno or similar Deno-compatible browser automation tools.
+Implementation Priority:
+Start with simple HTTP requests and HTML parsing. If that doesn't work due to JavaScript requirements, then move to browser automation solutions that work in Deno environment.
+Expected Outcome:
+Your Edge Function should be able to take a search query like "restaurants in Munich" and return real business data scraped directly from Google Maps without using any paid APIs or services.
+Testing Strategy:
+Test with simple searches first, then gradually increase complexity. Make sure to handle errors gracefully and implement proper retry logic for failed requests.
