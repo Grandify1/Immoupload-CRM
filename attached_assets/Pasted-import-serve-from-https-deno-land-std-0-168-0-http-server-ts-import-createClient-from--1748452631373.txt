@@ -1,0 +1,209 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { launch } from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+};
+serve(async (req)=>{
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', {
+      headers: corsHeaders
+    });
+  }
+  try {
+    const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    const { searchQuery, location, resultLimit, userId } = await req.json();
+    console.log(`🔍 Starting REAL Google Maps scraping for: "${searchQuery}" in "${location}"`);
+    // Create scraping job record
+    const { data: job, error: jobError } = await supabaseAdmin.from('scraping_jobs').insert({
+      user_id: userId,
+      search_query: searchQuery,
+      location: location,
+      result_limit: resultLimit,
+      status: 'running',
+      progress: 0,
+      started_at: new Date().toISOString()
+    }).select().single();
+    if (jobError) {
+      throw jobError;
+    }
+    // Update job progress to 10%
+    await supabaseAdmin.from('scraping_jobs').update({
+      progress: 10
+    }).eq('id', job.id);
+    // Perform real Google Maps scraping
+    const results = await performRealGoogleMapsScraping(searchQuery, location, resultLimit, async (progress)=>{
+      // Update progress in database
+      await supabaseAdmin.from('scraping_jobs').update({
+        progress
+      }).eq('id', job.id);
+    });
+    // Update job with final results
+    const { error: updateError } = await supabaseAdmin.from('scraping_jobs').update({
+      status: 'completed',
+      progress: 100,
+      total_found: results.length,
+      results: results,
+      completed_at: new Date().toISOString()
+    }).eq('id', job.id);
+    if (updateError) {
+      throw updateError;
+    }
+    console.log(`✅ Successfully scraped ${results.length} businesses`);
+    return new Response(JSON.stringify({
+      success: true,
+      jobId: job.id,
+      results: results,
+      totalFound: results.length
+    }), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Google Maps scraping error:', error);
+    return new Response(JSON.stringify({
+      error: error.message
+    }), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      },
+      status: 400
+    });
+  }
+});
+async function performRealGoogleMapsScraping(searchQuery, location, resultLimit, progressCallback) {
+  console.log(`🚀 Launching Puppeteer for real scraping...`);
+  const browser = await launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  });
+  try {
+    const page = await browser.newPage();
+    // Set realistic user agent and viewport
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+    await page.setViewport({
+      width: 1366,
+      height: 768
+    });
+    await progressCallback(20);
+    // Navigate to Google Maps
+    const searchUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchQuery + ' ' + location)}`;
+    console.log(`📍 Navigating to: ${searchUrl}`);
+    await page.goto(searchUrl, {
+      waitUntil: 'networkidle2',
+      timeout: 30000
+    });
+    await progressCallback(30);
+    // Wait for search results to load
+    console.log(`⏳ Waiting for search results...`);
+    await page.waitForSelector('[data-value="Search results"]', {
+      timeout: 15000
+    });
+    await progressCallback(40);
+    // Accept cookies if popup appears
+    try {
+      const cookieButton = await page.$('button[aria-label*="Accept"], button[aria-label*="Akzeptieren"]');
+      if (cookieButton) {
+        await cookieButton.click();
+        await page.waitForTimeout(1000);
+      }
+    } catch (e) {
+      console.log('No cookie popup found or already accepted');
+    }
+    const businesses = [];
+    let scrollAttempts = 0;
+    const maxScrollAttempts = Math.ceil(resultLimit / 5) // Estimate ~5 results per scroll
+    ;
+    console.log(`📋 Starting to extract business data...`);
+    while(businesses.length < resultLimit && scrollAttempts < maxScrollAttempts){
+      // Extract business data from current view
+      const newBusinesses = await page.evaluate((existingCount)=>{
+        const results = [];
+        // Find all business result elements
+        const businessElements = document.querySelectorAll('[data-result-index]');
+        businessElements.forEach((element, index)=>{
+          if (index < existingCount) return; // Skip already processed
+          try {
+            const nameElement = element.querySelector('[class*="fontHeadlineSmall"]');
+            const addressElement = element.querySelector('[data-value="Address"]');
+            const ratingElement = element.querySelector('[data-value="Rating"]');
+            const phoneElement = element.querySelector('[data-value="Phone"]');
+            const websiteElement = element.querySelector('[data-value="Website"]');
+            const categoryElement = element.querySelector('[class*="fontBodyMedium"] span');
+            const name = nameElement?.textContent?.trim();
+            const address = addressElement?.textContent?.trim();
+            const ratingText = ratingElement?.textContent?.trim();
+            const phone = phoneElement?.textContent?.trim();
+            const website = websiteElement?.getAttribute('href');
+            const category = categoryElement?.textContent?.trim();
+            if (name && address) {
+              // Parse rating and review count
+              let rating;
+              let reviewCount;
+              if (ratingText) {
+                const ratingMatch = ratingText.match(/(\d+[.,]\d+)/);
+                const reviewMatch = ratingText.match(/\((\d+(?:[.,]\d+)*)\)/);
+                rating = ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : undefined;
+                reviewCount = reviewMatch ? parseInt(reviewMatch[1].replace(/[.,]/g, '')) : undefined;
+              }
+              results.push({
+                id: `business_${Date.now()}_${index}`,
+                name,
+                category: category || 'Unbekannt',
+                address,
+                phone: phone || undefined,
+                website: website || undefined,
+                rating,
+                reviewCount,
+                openingHours: undefined,
+                coordinates: undefined // Would need additional processing
+              });
+            }
+          } catch (error) {
+            console.error('Error extracting business data:', error);
+          }
+        });
+        return results;
+      }, businesses.length);
+      businesses.push(...newBusinesses);
+      // Update progress
+      const progress = Math.min(40 + scrollAttempts / maxScrollAttempts * 50, 90);
+      await progressCallback(progress);
+      console.log(`📊 Found ${businesses.length} businesses so far...`);
+      // Scroll down to load more results
+      if (businesses.length < resultLimit) {
+        await page.evaluate(()=>{
+          const resultsPanel = document.querySelector('[data-value="Search results"]');
+          if (resultsPanel) {
+            resultsPanel.scrollTop = resultsPanel.scrollHeight;
+          }
+        });
+        await page.waitForTimeout(2000) // Wait for new results to load
+        ;
+      }
+      scrollAttempts++;
+    }
+    await progressCallback(95);
+    // Limit results to requested amount
+    const finalResults = businesses.slice(0, resultLimit);
+    console.log(`✅ Scraping completed: ${finalResults.length} businesses found`);
+    return finalResults;
+  } catch (error) {
+    console.error('❌ Error during scraping:', error);
+    throw new Error(`Scraping failed: ${error.message}`);
+  } finally{
+    await browser.close();
+  }
+}
