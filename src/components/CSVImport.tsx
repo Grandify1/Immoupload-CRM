@@ -684,18 +684,31 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         if (functionError) {
           console.error('❌ Edge Function error:', functionError);
-          setError(`Edge Function Fehler: ${functionError.message}`);
+          toast.dismiss(loadingToastId);
+          toast.error('Import fehlgeschlagen', {
+            description: `Edge Function Fehler: ${functionError.message}`,
+            duration: 4000,
+          });
           return;
         }
 
         console.log('✅ Edge Function response:', functionResponse);
 
-        // Dismiss loading toast and show success
-        toast.dismiss(loadingToastId);
-        toast.success('Import gestartet!', {
-          description: `${csvData.length} Leads werden im Hintergrund importiert. Sie können den Fortschritt in der Status-Bar verfolgen.`,
-          duration: 3000,
-        });
+        // Check if the response indicates success
+        if (functionResponse && functionResponse.success) {
+          // Dismiss loading toast and show success
+          toast.dismiss(loadingToastId);
+          toast.success('Import erfolgreich abgeschlossen!', {
+            description: `${functionResponse.newRecords || functionResponse.processedRecords || csvData.length} Leads wurden erfolgreich importiert.`,
+            duration: 4000,
+          });
+        } else {
+          toast.dismiss(loadingToastId);
+          toast.error('Import unvollständig', {
+            description: 'Der Import wurde verarbeitet, aber möglicherweise traten Fehler auf.',
+            duration: 4000,
+          });
+        }
 
         // Trigger refresh of leads data after a short delay
         if (onRefresh) {

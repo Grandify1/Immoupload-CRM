@@ -13,26 +13,51 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🚀 Starting CSV import Edge Function')
+    
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = await req.json()
+    let requestBody
+    try {
+      requestBody = await req.json()
+    } catch (error) {
+      console.error('❌ Invalid JSON in request:', error)
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
 
-    console.log(`Starting background import: ${csvData.length} rows, job ${jobId}`)
+    const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = requestBody
+
+    if (!csvData || !mappings || !teamId || !userId) {
+      console.error('❌ Missing required parameters')
+      return new Response(
+        JSON.stringify({ error: 'Missing required parameters' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    console.log(`✅ Request validated: ${csvData.length} rows, ${mappings.length} mappings`)
     console.log('Team ID:', teamId)
     console.log('User ID:', userId)
-    console.log('Duplicate config:', duplicateConfig)
-    console.log('Mappings received:', mappings.length)
-    console.log('Sample mapping:', mappings[0])
+    console.log('Job ID:', jobId)
 
     // Update job status to processing
     if (jobId) {
-      await supabaseAdmin
+      const { error: jobUpdateError } = await supabaseAdmin
         .from('import_jobs')
         .update({ status: 'processing' })
         .eq('id', jobId)
+      
+      if (jobUpdateError) {
+        console.warn('⚠️ Could not update job status:', jobUpdateError)
+      } else {
+        console.log('✅ Job status updated to processing')
+      }
     }
 
     let processedRecords = 0
@@ -43,33 +68,35 @@ serve(async (req) => {
     // Standard fields mapping
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id']
 
-    // Load all custom fields for the team to properly handle existing custom fields
-    console.log('Loading custom fields for team:', teamId)
+    // Load all custom fields for the team
+    console.log('📋 Loading custom fields for team:', teamId)
     const { data: customFields, error: customFieldsError } = await supabaseAdmin
       .from('custom_fields')
       .select('*')
       .eq('entity_type', 'lead')
-      .eq('team_id', teamId)
 
     if (customFieldsError) {
-      console.error('Error loading custom fields:', customFieldsError)
+      console.error('❌ Error loading custom fields:', customFieldsError)
     } else {
-      console.log('Loaded custom fields:', customFields?.length || 0)
+      console.log(`✅ Loaded ${customFields?.length || 0} custom fields`)
     }
 
     const customFieldsMap = new Map()
     if (customFields) {
       customFields.forEach(field => {
-        // Create multiple keys for better matching
         const normalizedName = field.name.toLowerCase().replace(/\s+/g, '_')
         customFieldsMap.set(field.name, field)
         customFieldsMap.set(normalizedName, field)
         customFieldsMap.set(field.id, field)
       })
+      console.log('Custom fields map created with', customFieldsMap.size, 'entries')
     }
 
-    // Convert CSV data to leads with improved field mapping
+    // Convert CSV data to leads
+    console.log('🔄 Converting CSV data to leads...')
     const leads = []
+    let rowsProcessed = 0
+
     for (const row of csvData) {
       const lead = {
         custom_fields: {},
@@ -82,8 +109,6 @@ serve(async (req) => {
           const value = row[index]?.trim()
           if (!value) return
 
-          console.log(`Processing mapping: ${mapping.csvHeader} -> ${mapping.fieldName} = ${value}`)
-
           // Check if it's a standard field
           if (standardFields.includes(mapping.fieldName)) {
             if (mapping.fieldName === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
@@ -91,27 +116,19 @@ serve(async (req) => {
             } else {
               lead[mapping.fieldName] = value
             }
-            console.log(`✅ Mapped standard field: ${mapping.fieldName} = ${value}`)
           } else {
-            // Handle custom fields - check if this is a new custom field or existing one
+            // Handle custom fields
             if (mapping.createCustomField) {
-              // New custom field
               lead.custom_fields[mapping.fieldName] = value
-              console.log(`✅ Mapped NEW custom field: ${mapping.fieldName} = ${value}`)
             } else {
-              // Existing custom field - check various name formats
               const customField = customFieldsMap.get(mapping.fieldName) ||
                                 customFieldsMap.get(mapping.fieldName.toLowerCase()) ||
                                 customFieldsMap.get(mapping.fieldName.toLowerCase().replace(/\s+/g, '_'))
 
               if (customField) {
-                // Use the original field name from database
                 lead.custom_fields[customField.name] = value
-                console.log(`✅ Mapped EXISTING custom field: ${customField.name} = ${value}`)
               } else {
-                // Fallback: treat as new custom field
                 lead.custom_fields[mapping.fieldName] = value
-                console.log(`⚠️  Mapped as fallback custom field: ${mapping.fieldName} = ${value}`)
               }
             }
           }
@@ -121,25 +138,28 @@ serve(async (req) => {
       // Ensure we have at least a name to create the lead
       if (lead.name && lead.name.trim()) {
         leads.push(lead)
-        console.log(`✅ Added lead: ${lead.name} with ${Object.keys(lead.custom_fields).length} custom fields`)
-        console.log(`Custom fields for ${lead.name}:`, lead.custom_fields)
       } else {
-        console.log('❌ Skipped lead without name:', lead)
         failedRecords++
+      }
+      
+      rowsProcessed++
+      if (rowsProcessed % 1000 === 0) {
+        console.log(`Processed ${rowsProcessed}/${csvData.length} rows`)
       }
     }
 
-    console.log(`Converted ${leads.length} leads with proper field mapping`)
-    if (leads.length > 0) {
-      console.log('Sample converted lead:', JSON.stringify(leads[0], null, 2))
-    }
-
-    console.log(`Processed ${leads.length} valid leads from CSV data`)
+    console.log(`✅ Converted ${leads.length} valid leads from ${csvData.length} CSV rows`)
 
     // Process leads with duplicate handling
-    const batchSize = 50
+    console.log('💾 Starting database inserts...')
+    const batchSize = 100
+    let batchNumber = 0
+    
     for (let i = 0; i < leads.length; i += batchSize) {
       const batch = leads.slice(i, i + batchSize)
+      batchNumber++
+      
+      console.log(`Processing batch ${batchNumber} (${batch.length} leads)`)
       
       for (const lead of batch) {
         try {
@@ -165,9 +185,8 @@ serve(async (req) => {
               }
 
               const { data, error } = await query.single()
-              if (!error || error.code !== 'PGRST116') {
+              if (!error && data) {
                 existingLead = data
-                console.log(`Found existing lead for ${detectionField}: ${detectionValue}`)
               }
             }
           }
@@ -175,14 +194,10 @@ serve(async (req) => {
           if (existingLead) {
             // Handle duplicate
             if (duplicateConfig.duplicateAction === 'skip') {
-              console.log(`Skipping duplicate: ${existingLead.name}`)
               duplicateRecords++
               continue
             } else if (duplicateConfig.duplicateAction === 'update') {
-              // Update existing lead
-              const updateData = {
-                updated_at: new Date().toISOString()
-              }
+              const updateData = { updated_at: new Date().toISOString() }
 
               if (lead.name && lead.name !== existingLead.name) updateData.name = lead.name
               if (lead.email && lead.email !== existingLead.email) updateData.email = lead.email
@@ -199,9 +214,6 @@ serve(async (req) => {
                 }
               }
 
-              console.log(`Updating existing lead: ${existingLead.name}`)
-              console.log('Update data:', updateData)
-
               const { error: updateError } = await supabaseAdmin
                 .from('leads')
                 .update(updateData)
@@ -211,79 +223,65 @@ serve(async (req) => {
                 console.error('Update error:', updateError)
                 failedRecords++
               } else {
-                console.log(`✅ Updated lead: ${existingLead.name}`)
                 updatedRecords++
                 processedRecords++
               }
             } else if (duplicateConfig.duplicateAction === 'create_new') {
-              // Insert new lead anyway
-              console.log(`Creating new lead despite duplicate: ${lead.name}`)
-              console.log('Lead data to insert:', JSON.stringify(lead, null, 2))
-              
-              const { error: insertError, data: insertedData } = await supabaseAdmin
+              const { error: insertError } = await supabaseAdmin
                 .from('leads')
                 .insert([lead])
-                .select()
 
               if (insertError) {
-                console.error('Insert error for duplicate handling:', lead.name, insertError)
-                console.error('Full insert error details:', insertError)
+                console.error('Insert error for duplicate handling:', insertError)
                 if (insertError.code === '23505') {
                   duplicateRecords++
                 } else {
                   failedRecords++
                 }
               } else {
-                console.log(`✅ Successfully created new lead: ${lead.name}`)
-                console.log('Inserted data:', insertedData)
                 processedRecords++
               }
             }
           } else {
             // Insert new lead
-            console.log(`Inserting new lead: ${lead.name}`)
-            console.log('Lead data to insert:', JSON.stringify(lead, null, 2))
-            
-            const { error: insertError, data: insertedData } = await supabaseAdmin
+            const { error: insertError } = await supabaseAdmin
               .from('leads')
               .insert([lead])
-              .select()
 
             if (insertError) {
-              console.error('❌ Insert error for lead:', lead.name, insertError)
-              console.error('Full insert error details:', insertError)
-              console.error('Failed lead data:', JSON.stringify(lead, null, 2))
-              
+              console.error('Insert error:', insertError)
               if (insertError.code === '23505') {
                 duplicateRecords++
               } else {
                 failedRecords++
               }
             } else {
-              console.log(`✅ Successfully inserted lead: ${lead.name}`)
-              console.log('Inserted data:', insertedData)
               processedRecords++
             }
           }
 
         } catch (error) {
-          console.error('❌ Processing error for lead:', lead.name, error)
+          console.error('Processing error for lead:', error)
           failedRecords++
         }
       }
 
       // Update progress periodically
-      if (jobId && (i % 100 === 0 || i + batchSize >= leads.length)) {
-        const currentProgress = Math.round((i / leads.length) * 100)
-        console.log(`Progress update: ${currentProgress}% (${i}/${leads.length})`)
+      if (jobId && batchNumber % 5 === 0) {
+        const currentProgress = Math.round(((i + batchSize) / leads.length) * 100)
+        console.log(`Progress: ${currentProgress}%`)
         
-        await supabaseAdmin
-          .from('import_jobs')
-          .update({ 
-            processed_records: processedRecords,
-            failed_records: failedRecords 
-          })
-          .eq('id', jobId)
+        try {
+          await supabaseAdmin
+            .from('import_jobs')
+            .update({ 
+              processed_records: processedRecords,
+              failed_records: failedRecords 
+            })
+            .eq('id', jobId)
+        } catch (progressError) {
+          console.warn('Could not update progress:', progressError)
+        }
       }
     }
 
@@ -292,51 +290,69 @@ serve(async (req) => {
     const newRecords = processedRecords - updatedRecords
     
     console.log('=== FINAL IMPORT RESULTS ===')
-    console.log(`Total leads processed: ${processedRecords}`)
-    console.log(`New records: ${newRecords}`)
-    console.log(`Updated records: ${updatedRecords}`)
-    console.log(`Duplicate records skipped: ${duplicateRecords}`)
-    console.log(`Failed records: ${failedRecords}`)
-    console.log(`Final status: ${finalStatus}`)
+    console.log(`✅ Import completed successfully!`)
+    console.log(`📊 Total leads processed: ${processedRecords}`)
+    console.log(`🆕 New records: ${newRecords}`)
+    console.log(`🔄 Updated records: ${updatedRecords}`)
+    console.log(`⏭️ Duplicate records skipped: ${duplicateRecords}`)
+    console.log(`❌ Failed records: ${failedRecords}`)
+    console.log(`📈 Final status: ${finalStatus}`)
     
     if (jobId) {
-      await supabaseAdmin
-        .from('import_jobs')
-        .update({
-          status: finalStatus,
-          processed_records: processedRecords,
-          failed_records: failedRecords,
-          error_details: {
-            new_records: newRecords,
-            updated_records: updatedRecords,
-            duplicate_records: duplicateRecords,
+      try {
+        await supabaseAdmin
+          .from('import_jobs')
+          .update({
+            status: finalStatus,
+            processed_records: processedRecords,
             failed_records: failedRecords,
-            summary: `Import completed: ${newRecords} new, ${updatedRecords} updated, ${duplicateRecords} skipped, ${failedRecords} failed`
-          },
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId)
+            error_details: {
+              new_records: newRecords,
+              updated_records: updatedRecords,
+              duplicate_records: duplicateRecords,
+              failed_records: failedRecords,
+              summary: `Import completed successfully: ${newRecords} new, ${updatedRecords} updated, ${duplicateRecords} skipped, ${failedRecords} failed`
+            },
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', jobId)
+      } catch (finalUpdateError) {
+        console.warn('Could not update final job status:', finalUpdateError)
+      }
     }
 
-    console.log(`Import completed: ${processedRecords} processed, ${failedRecords} failed`)
+    console.log(`🎉 CSV Import completed successfully!`)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
+        message: 'Import completed successfully',
         processedRecords, 
         failedRecords, 
         duplicateRecords, 
         updatedRecords,
-        newRecords 
+        newRecords,
+        status: finalStatus
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
     )
 
   } catch (error) {
-    console.error('❌ Edge Function error:', error)
+    console.error('❌ Critical Edge Function error:', error)
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      JSON.stringify({ 
+        error: 'Internal server error',
+        message: error.message,
+        details: error.stack
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
     )
   }
 })
