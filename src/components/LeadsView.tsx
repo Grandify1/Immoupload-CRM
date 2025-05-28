@@ -477,11 +477,25 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     try {
       const leadsToDelete = Array.from(selectedLeads);
       
-      // Leads aus der Datenbank löschen
-      const { error } = await supabase
-        .from('leads')
-        .delete()
-        .in('id', leadsToDelete);
+      // Leads in kleineren Batches löschen um URL-Längenbeschränkungen zu vermeiden
+      const batchSize = 50; // Kleinere Batches verwenden
+      let totalDeleted = 0;
+      
+      for (let i = 0; i < leadsToDelete.length; i += batchSize) {
+        const batch = leadsToDelete.slice(i, i + batchSize);
+        
+        const { error } = await supabase
+          .from('leads')
+          .delete()
+          .in('id', batch);
+          
+        if (error) {
+          console.error('Error deleting batch:', error);
+          throw error;
+        }
+        
+        totalDeleted += batch.length;
+      }
 
       if (error) {
         console.error('Error deleting leads:', error);
@@ -495,7 +509,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
       toast({
         title: "Leads gelöscht",
-        description: `${selectedLeads.size} Lead(s) wurden erfolgreich gelöscht.`,
+        description: `${totalDeleted} Lead(s) wurden erfolgreich gelöscht.`,
       });
       
       setSelectedLeads(new Set());
