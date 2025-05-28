@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { launch } from "https://deno.land/x/puppeteer@16.2.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,7 +44,7 @@ serve(async (req) => {
 
     const { searchQuery, location, resultLimit, userId }: ScrapingRequest = await req.json()
 
-    console.log(`Starting Google Maps scraping for: ${searchQuery} in ${location}`)
+    console.log(`🔍 Starting REAL Google Maps scraping for: "${searchQuery}" in "${location}"`)
 
     // Create scraping job record
     const { data: job, error: jobError } = await supabaseAdmin
@@ -64,11 +65,27 @@ serve(async (req) => {
       throw jobError
     }
 
-    // Real Google Maps scraping logic would go here
-    // For now, we'll simulate the process and return mock data
-    const results: BusinessData[] = await performGoogleMapsScraping(searchQuery, location, resultLimit)
+    // Update job progress to 10%
+    await supabaseAdmin
+      .from('scraping_jobs')
+      .update({ progress: 10 })
+      .eq('id', job.id)
 
-    // Update job with results
+    // Perform real Google Maps scraping
+    const results: BusinessData[] = await performRealGoogleMapsScraping(
+      searchQuery, 
+      location, 
+      resultLimit,
+      async (progress: number) => {
+        // Update progress in database
+        await supabaseAdmin
+          .from('scraping_jobs')
+          .update({ progress })
+          .eq('id', job.id)
+      }
+    )
+
+    // Update job with final results
     const { error: updateError } = await supabaseAdmin
       .from('scraping_jobs')
       .update({
@@ -84,6 +101,8 @@ serve(async (req) => {
       throw updateError
     }
 
+    console.log(`✅ Successfully scraped ${results.length} businesses`)
+
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -95,7 +114,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Google Maps scraping error:', error)
+    console.error('❌ Google Maps scraping error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
@@ -103,83 +122,164 @@ serve(async (req) => {
   }
 })
 
-async function performGoogleMapsScraping(
+async function performRealGoogleMapsScraping(
   searchQuery: string, 
   location: string, 
-  resultLimit: number
+  resultLimit: number,
+  progressCallback: (progress: number) => Promise<void>
 ): Promise<BusinessData[]> {
-  // In production, this would use Puppeteer/Playwright or Google Places API
-  // For now, return enhanced mock data based on the search parameters
   
-  console.log(`Scraping ${searchQuery} in ${location} (limit: ${resultLimit})`)
+  console.log(`🚀 Launching Puppeteer for real scraping...`)
   
-  const categories = ['Restaurant', 'Friseur', 'Zahnarzt', 'Apotheke', 'Supermarkt', 'Café', 'Bank', 'Tankstelle']
-  const actualCategory = categories.find(cat => 
-    searchQuery.toLowerCase().includes(cat.toLowerCase())
-  ) || searchQuery
+  const browser = await launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  })
 
-  const mockBusinesses: BusinessData[] = []
-  
-  for (let i = 0; i < Math.min(resultLimit, 50); i++) {
-    const businessName = generateBusinessName(actualCategory, i)
+  try {
+    const page = await browser.newPage()
     
-    mockBusinesses.push({
-      id: `business_${Date.now()}_${i}`,
-      name: businessName,
-      category: actualCategory,
-      address: `${businessName} Straße ${i + 1}, ${Math.floor(Math.random() * 99999)} ${location}`,
-      phone: Math.random() > 0.3 ? `+49 ${Math.floor(Math.random() * 89) + 10} ${Math.floor(Math.random() * 900000) + 100000}` : undefined,
-      website: Math.random() > 0.4 ? `www.${businessName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.de` : undefined,
-      rating: Math.random() > 0.2 ? Math.round((Math.random() * 2 + 3) * 10) / 10 : undefined,
-      reviewCount: Math.random() > 0.2 ? Math.floor(Math.random() * 500) + 10 : undefined,
-      openingHours: Math.random() > 0.3 ? generateOpeningHours() : undefined,
-      coordinates: {
-        lat: 48.1351 + (Math.random() - 0.5) * 0.2,
-        lng: 11.5820 + (Math.random() - 0.5) * 0.2
+    // Set realistic user agent and viewport
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
+    await page.setViewport({ width: 1366, height: 768 })
+
+    await progressCallback(20)
+
+    // Navigate to Google Maps
+    const searchUrl = `https://www.google.com/maps/search/${encodeURIComponent(searchQuery + ' ' + location)}`
+    console.log(`📍 Navigating to: ${searchUrl}`)
+    
+    await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 })
+    
+    await progressCallback(30)
+
+    // Wait for search results to load
+    console.log(`⏳ Waiting for search results...`)
+    await page.waitForSelector('[data-value="Search results"]', { timeout: 15000 })
+    
+    await progressCallback(40)
+
+    // Accept cookies if popup appears
+    try {
+      const cookieButton = await page.$('button[aria-label*="Accept"], button[aria-label*="Akzeptieren"]')
+      if (cookieButton) {
+        await cookieButton.click()
+        await page.waitForTimeout(1000)
       }
-    })
-  }
-  
-  // Simulate processing time
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  return mockBusinesses
-}
+    } catch (e) {
+      console.log('No cookie popup found or already accepted')
+    }
 
-function generateBusinessName(category: string, index: number): string {
-  const prefixes = ['Premium', 'Royal', 'Modern', 'Classic', 'Elite', 'Best', 'Top', 'Quality']
-  const suffixes = ['Center', 'Studio', 'Shop', 'Store', 'Service', 'House', 'Place', 'Point']
-  
-  const businessNames = {
-    'Friseur': ['Salon Schmidt', 'Haar & Style', 'Cut & Color', 'Beauty Lounge', 'Trend Friseure'],
-    'Restaurant': ['Bella Vista', 'Gasthaus zur Post', 'Zum Goldenen Löwen', 'La Piazza', 'Bräustüberl'],
-    'Zahnarzt': ['Praxis Dr. Müller', 'Dental Care', 'Zahnklinik', 'Smile Center', 'Dentalhygiene Plus']
-  }
-  
-  const baseNames = businessNames[category] || [`${category} ${index + 1}`]
-  const baseName = baseNames[index % baseNames.length] || `${category} ${index + 1}`
-  
-  if (Math.random() > 0.7) {
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)]
-    return `${prefix} ${baseName}`
-  }
-  
-  if (Math.random() > 0.7) {
-    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)]
-    return `${baseName} ${suffix}`
-  }
-  
-  return baseName
-}
+    const businesses: BusinessData[] = []
+    let scrollAttempts = 0
+    const maxScrollAttempts = Math.ceil(resultLimit / 5) // Estimate ~5 results per scroll
 
-function generateOpeningHours(): string {
-  const options = [
-    'Mo-Fr: 9:00-18:00, Sa: 9:00-16:00',
-    'Mo-Fr: 8:00-17:00, Sa: 9:00-14:00',
-    'Mo-Sa: 10:00-19:00',
-    'Täglich: 11:00-22:00',
-    'Mo-Fr: 7:00-20:00, Sa-So: 8:00-18:00'
-  ]
-  
-  return options[Math.floor(Math.random() * options.length)]
+    console.log(`📋 Starting to extract business data...`)
+
+    while (businesses.length < resultLimit && scrollAttempts < maxScrollAttempts) {
+      // Extract business data from current view
+      const newBusinesses = await page.evaluate((existingCount: number) => {
+        const results: any[] = []
+        
+        // Find all business result elements
+        const businessElements = document.querySelectorAll('[data-result-index]')
+        
+        businessElements.forEach((element, index) => {
+          if (index < existingCount) return // Skip already processed
+          
+          try {
+            const nameElement = element.querySelector('[class*="fontHeadlineSmall"]')
+            const addressElement = element.querySelector('[data-value="Address"]')
+            const ratingElement = element.querySelector('[data-value="Rating"]')
+            const phoneElement = element.querySelector('[data-value="Phone"]')
+            const websiteElement = element.querySelector('[data-value="Website"]')
+            const categoryElement = element.querySelector('[class*="fontBodyMedium"] span')
+            
+            const name = nameElement?.textContent?.trim()
+            const address = addressElement?.textContent?.trim()
+            const ratingText = ratingElement?.textContent?.trim()
+            const phone = phoneElement?.textContent?.trim()
+            const website = websiteElement?.getAttribute('href')
+            const category = categoryElement?.textContent?.trim()
+
+            if (name && address) {
+              // Parse rating and review count
+              let rating: number | undefined
+              let reviewCount: number | undefined
+              
+              if (ratingText) {
+                const ratingMatch = ratingText.match(/(\d+[.,]\d+)/)
+                const reviewMatch = ratingText.match(/\((\d+(?:[.,]\d+)*)\)/)
+                
+                rating = ratingMatch ? parseFloat(ratingMatch[1].replace(',', '.')) : undefined
+                reviewCount = reviewMatch ? parseInt(reviewMatch[1].replace(/[.,]/g, '')) : undefined
+              }
+
+              results.push({
+                id: `business_${Date.now()}_${index}`,
+                name,
+                category: category || 'Unbekannt',
+                address,
+                phone: phone || undefined,
+                website: website || undefined,
+                rating,
+                reviewCount,
+                openingHours: undefined, // Would need additional click to get this
+                coordinates: undefined // Would need additional processing
+              })
+            }
+          } catch (error) {
+            console.error('Error extracting business data:', error)
+          }
+        })
+        
+        return results
+      }, businesses.length)
+
+      businesses.push(...newBusinesses)
+      
+      // Update progress
+      const progress = Math.min(40 + (scrollAttempts / maxScrollAttempts) * 50, 90)
+      await progressCallback(progress)
+
+      console.log(`📊 Found ${businesses.length} businesses so far...`)
+
+      // Scroll down to load more results
+      if (businesses.length < resultLimit) {
+        await page.evaluate(() => {
+          const resultsPanel = document.querySelector('[data-value="Search results"]')
+          if (resultsPanel) {
+            resultsPanel.scrollTop = resultsPanel.scrollHeight
+          }
+        })
+        
+        await page.waitForTimeout(2000) // Wait for new results to load
+      }
+
+      scrollAttempts++
+    }
+
+    await progressCallback(95)
+
+    // Limit results to requested amount
+    const finalResults = businesses.slice(0, resultLimit)
+    
+    console.log(`✅ Scraping completed: ${finalResults.length} businesses found`)
+    
+    return finalResults
+
+  } catch (error) {
+    console.error('❌ Error during scraping:', error)
+    throw new Error(`Scraping failed: ${error.message}`)
+  } finally {
+    await browser.close()
+  }
 }
