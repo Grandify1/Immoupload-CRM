@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -97,7 +96,7 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
     };
 
     set({ currentJob: newJob, isRunning: true });
-    
+
     try {
       // Call the edge function for real scraping
       const { data, error } = await supabase.functions.invoke('google-maps-scraper', {
@@ -131,42 +130,26 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
 
       toast.success(`Scraping abgeschlossen! ${data.totalFound} Unternehmen gefunden.`);
 
-    } catch (error) {
-      console.error('Scraping error:', error);
-      
-      const errorJob: ScrapingJob = {
+    } catch (error: any) {
+      console.error('❌ Iframe scraping failed:', error);
+
+      const failedJob: ScrapingJob = {
         ...newJob,
         status: 'error',
         progress: 0,
-        errorMessage: error.message || 'Unbekannter Fehler',
+        errorMessage: error.message || 'Iframe-Scraping fehlgeschlagen',
         endTime: new Date()
       };
 
-      set(state => ({
-        currentJob: errorJob,
-        isRunning: false,
-        jobHistory: [errorJob, ...state.jobHistory.slice(0, 9)]
-      }));
-
-      toast.error(`Scraping fehlgeschlagen: ${error.message}`);
+      set({ currentJob: failedJob, isRunning: false });
+      toast.error('Scraping fehlgeschlagen: ' + (error.message || 'Iframe-Scraping Fehler'));
     }
   },
 
   stopJob: () => {
-    const { currentJob } = get();
-    if (currentJob) {
-      const stoppedJob = {
-        ...currentJob,
-        status: 'completed' as const,
-        endTime: new Date()
-      };
-      
-      set(state => ({
-        currentJob: stoppedJob,
-        isRunning: false,
-        jobHistory: [stoppedJob, ...state.jobHistory.slice(0, 9)] // Keep last 10 jobs
-      }));
-    }
+    // Stop the iframe scraping if it's running
+    // iframeScrapingService.stopScraping(); - removed because iframeScrapingService is not defined
+    set({ currentJob: null, isRunning: false });
   },
 
   clearResults: () => {
@@ -198,7 +181,7 @@ const useScraperStore = create<ScraperStore>((set, get) => ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast.success('CSV-Export erfolgreich!');
   }
 }));
@@ -270,7 +253,7 @@ export default function ScraperView() {
                   <p className="text-sm text-red-500">{form.formState.errors.searchQuery.message}</p>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="location">Standort</Label>
                 <Input
@@ -317,7 +300,7 @@ export default function ScraperView() {
                   Stoppen
                 </Button>
               )}
-              
+
               {currentJob && !isRunning && (
                 <Button type="button" variant="outline" onClick={clearResults} className="flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />
@@ -357,7 +340,7 @@ export default function ScraperView() {
                 <strong>Dauer:</strong> {formatDuration(currentJob.startTime, currentJob.endTime)}
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Fortschritt</span>
@@ -507,7 +490,7 @@ export default function ScraperView() {
                   )}
                 </div>
               </div>
-              
+
               <div>
                 <Label>Adresse</Label>
                 <div className="flex items-start gap-2">
@@ -515,7 +498,7 @@ export default function ScraperView() {
                   <p>{selectedBusiness.address}</p>
                 </div>
               </div>
-              
+
               {selectedBusiness.phone && (
                 <div>
                   <Label>Telefon</Label>
@@ -527,7 +510,7 @@ export default function ScraperView() {
                   </div>
                 </div>
               )}
-              
+
               {selectedBusiness.website && (
                 <div>
                   <Label>Website</Label>
@@ -544,7 +527,7 @@ export default function ScraperView() {
                   </div>
                 </div>
               )}
-              
+
               {selectedBusiness.openingHours && (
                 <div>
                   <Label>Öffnungszeiten</Label>
