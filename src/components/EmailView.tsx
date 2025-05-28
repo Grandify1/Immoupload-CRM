@@ -89,7 +89,7 @@ const decodeBase64Email = (text: string): string => {
       .replace(/=C3=96/gi, 'Ö')
       .replace(/=C3=9C/gi, 'Ü')
       .replace(/=C3=9F/gi, 'ß')
-      .replace(/=E2=80=99/gi, ''') // Right single quotation mark
+      .replace(/=E2=80=99/gi, "'") // Right single quotation mark
       .replace(/=E2=80=9C/gi, '"') // Left double quotation mark
       .replace(/=E2=80=9D/gi, '"'); // Right double quotation mark
 
@@ -166,12 +166,13 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
             background: #ffffff;
             padding: 24px;
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.47;
-            color: #000000;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #1d1d1f;
             max-width: 100%;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            min-height: 100%;
           }
           
           .apple-mail-container * {
@@ -339,12 +340,13 @@ const EmailBodyRenderer: React.FC<{ body?: string }> = ({ body }) => {
             background: #ffffff;
             padding: 24px;
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.47;
-            color: #000000;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #1d1d1f;
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            min-height: 100%;
           }
           
           .apple-mail-plain-text a {
@@ -1129,8 +1131,8 @@ export function EmailView() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="flex-1 overflow-y-auto p-0">
-                    <div className="max-h-full overflow-y-auto">
+                  <CardContent className="flex-1 p-0">
+                    <div className="h-full overflow-y-auto">
                       <EmailBodyRenderer body={selectedEmail.body} />
                     </div>
                   </CardContent>
