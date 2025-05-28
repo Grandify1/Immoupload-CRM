@@ -104,11 +104,201 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
 
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [templateFieldValues, setTemplateFieldValues] = useState<Record<string, string>>({});
+  
+  // Field layout customization states
+  const [showFieldLayoutModal, setShowFieldLayoutModal] = useState(false);
+  const [fieldGroups, setFieldGroups] = useState([
+    {
+      id: 'about',
+      name: 'ABOUT',
+      fields: ['email', 'phone', 'website', 'address', 'description'],
+      order: 0
+    },
+    {
+      id: 'custom_fields',
+      name: 'CUSTOM FIELDS',
+      fields: [], // Will be populated with custom field keys
+      order: 1
+    }
+  ]);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [draggedField, setDraggedField] = useState<string | null>(null);
 
   useEffect(() => {
     setEditForm(lead);
     setIsEditing(false);
-  }, [lead]);
+    
+    // Update custom fields group with actual custom field keys
+    if (customFields) {
+      const customFieldKeys = customFields
+        .filter(field => field.entity_type === 'lead')
+        .map(field => field.name.toLowerCase().replace(/\s+/g, '_'));
+      
+      setFieldGroups(prev => prev.map(group => 
+        group.id === 'custom_fields' 
+          ? { ...group, fields: customFieldKeys }
+          : group
+      ));
+    }
+  }, [lead, customFields]);
+
+  // Field layout management functions
+  const handleAddGroup = () => {
+    if (!newGroupName.trim()) return;
+    
+    const newGroup = {
+      id: `group_${Date.now()}`,
+      name: newGroupName.trim().toUpperCase(),
+      fields: [],
+      order: fieldGroups.length
+    };
+    
+    setFieldGroups([...fieldGroups, newGroup]);
+    setNewGroupName('');
+  };
+
+  const handleDeleteGroup = (groupId: string) => {
+    if (groupId === 'about' || groupId === 'custom_fields') return; // Prevent deletion of default groups
+    
+    const groupToDelete = fieldGroups.find(g => g.id === groupId);
+    if (!groupToDelete) return;
+    
+    // Move fields from deleted group to "about" group
+    setFieldGroups(prev => {
+      const filtered = prev.filter(g => g.id !== groupId);
+      return filtered.map(g => 
+        g.id === 'about' 
+          ? { ...g, fields: [...g.fields, ...groupToDelete.fields] }
+          : g
+      );
+    });
+  };
+
+  const handleMoveField = (fieldKey: string, fromGroupId: string, toGroupId: string) => {
+    setFieldGroups(prev => prev.map(group => {
+      if (group.id === fromGroupId) {
+        return { ...group, fields: group.fields.filter(f => f !== fieldKey) };
+      }
+      if (group.id === toGroupId) {
+        return { ...group, fields: [...group.fields, fieldKey] };
+      }
+      return group;
+    }));
+  };
+
+  const handleReorderGroups = (startIndex: number, endIndex: number) => {
+    const result = Array.from(fieldGroups);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    
+    setFieldGroups(result.map((group, index) => ({ ...group, order: index })));
+  };
+
+  const getFieldDisplayName = (fieldKey: string) => {
+    if (fieldKey === 'email') return 'Email';
+    if (fieldKey === 'phone') return 'Phone';
+    if (fieldKey === 'website') return 'Website';
+    if (fieldKey === 'address') return 'Address';
+    if (fieldKey === 'description') return 'Description';
+    
+    const customField = customFields?.find(cf => 
+      cf.name.toLowerCase().replace(/\s+/g, '_') === fieldKey
+    );
+    return customField?.name || fieldKey;
+  };
+
+  const getFieldValue = (fieldKey: string) => {
+    if (fieldKey === 'email') return lead.email;
+    if (fieldKey === 'phone') return lead.phone;
+    if (fieldKey === 'website') return lead.website;
+    if (fieldKey === 'address') return lead.address;
+    if (fieldKey === 'description') return lead.description;
+    
+    return lead.custom_fields?.[fieldKey];
+  };
+
+  const renderFieldContent = (fieldKey: string) => {
+    const value = getFieldValue(fieldKey);
+    if (!value) return null;
+
+    if (fieldKey === 'email') {
+      return (
+        <div className="flex items-center text-sm">
+          <Mail className="w-4 h-4 mr-3 text-gray-400" />
+          <a href={`mailto:${value}`} className="text-blue-600 hover:underline">
+            {value}
+          </a>
+        </div>
+      );
+    }
+
+    if (fieldKey === 'phone') {
+      return (
+        <div className="flex items-center text-sm">
+          <Phone className="w-4 h-4 mr-3 text-gray-400" />
+          <a href={`tel:${value}`} className="text-gray-900 hover:underline">
+            {value}
+          </a>
+        </div>
+      );
+    }
+
+    if (fieldKey === 'website') {
+      return (
+        <div className="flex items-center text-sm">
+          <Globe className="w-4 h-4 mr-3 text-gray-400" />
+          <a 
+            href={value.startsWith('http') ? value : `https://${value}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            {value}
+          </a>
+        </div>
+      );
+    }
+
+    if (fieldKey === 'address') {
+      return (
+        <div className="flex items-center text-sm">
+          <MapPin className="w-4 h-4 mr-3 text-gray-400" />
+          <span className="text-gray-900">{value}</span>
+        </div>
+      );
+    }
+
+    if (fieldKey === 'description') {
+      return (
+        <div className="flex items-start text-sm">
+          <FileText className="w-4 h-4 mr-3 text-gray-400 mt-0.5" />
+          <p className="text-gray-900">{value}</p>
+        </div>
+      );
+    }
+
+    // Custom field
+    const customField = customFields?.find(cf => 
+      cf.name.toLowerCase().replace(/\s+/g, '_') === fieldKey
+    );
+    
+    if (customField) {
+      return (
+        <div className="text-sm">
+          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            {customField.name}
+          </div>
+          <div className="text-gray-900">
+            {customField.field_type === 'checkbox' ? (value ? 'Yes' : 'No') : 
+             customField.field_type === 'date' ? new Date(value as string).toLocaleDateString() : 
+             String(value)}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   const handleToggleEdit = () => {
     if (!isEditing) {
@@ -483,88 +673,50 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
           </div>
         ) : (
           <>
-            {/* Left Sidebar - ABOUT Section */}
+            {/* Left Sidebar - Dynamic Field Groups */}
             <div className="w-80 border-r border-gray-200 bg-white overflow-y-auto">
               <div className="p-6">
-                <div className="mb-6">
-                  <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">ABOUT</h2>
+                {fieldGroups
+                  .sort((a, b) => a.order - b.order)
+                  .map((group) => {
+                    const hasVisibleFields = group.fields.some(fieldKey => {
+                      const value = getFieldValue(fieldKey);
+                      return value !== undefined && value !== null && value !== '';
+                    });
 
-                  <div className="space-y-3">
-                    {lead.email && (
-                      <div className="flex items-center text-sm">
-                        <Mail className="w-4 h-4 mr-3 text-gray-400" />
-                        <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">
-                          {lead.email}
-                        </a>
+                    if (!hasVisibleFields) return null;
+
+                    return (
+                      <div key={group.id} className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                            {group.name}
+                          </h2>
+                          {group.id === 'about' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowFieldLayoutModal(true)}
+                              className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 h-auto"
+                            >
+                              Anpassen
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="space-y-3">
+                          {group.fields.map(fieldKey => {
+                            const fieldContent = renderFieldContent(fieldKey);
+                            return fieldContent ? (
+                              <div key={fieldKey}>
+                                {fieldContent}
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
                       </div>
-                    )}
-
-                    {lead.phone && (
-                      <div className="flex items-center text-sm">
-                        <Phone className="w-4 h-4 mr-3 text-gray-400" />
-                        <a href={`tel:${lead.phone}`} className="text-gray-900 hover:underline">
-                          {lead.phone}
-                        </a>
-                      </div>
-                    )}
-
-                    {lead.website && (
-                      <div className="flex items-center text-sm">
-                        <Globe className="w-4 h-4 mr-3 text-gray-400" />
-                        <a 
-                          href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {lead.website}
-                        </a>
-                      </div>
-                    )}
-
-                    {lead.address && (
-                      <div className="flex items-center text-sm">
-                        <MapPin className="w-4 h-4 mr-3 text-gray-400" />
-                        <span className="text-gray-900">{lead.address}</span>
-                      </div>
-                    )}
-
-                    {lead.description && (
-                      <div className="flex items-start text-sm">
-                        <FileText className="w-4 h-4 mr-3 text-gray-400 mt-0.5" />
-                        <p className="text-gray-900">{lead.description}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Custom Fields Section */}
-                {customFields && customFields.filter(field => field.entity_type === 'lead').length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">CUSTOM FIELDS</h3>
-                    <div className="space-y-3">
-                      {customFields.filter(field => field.entity_type === 'lead').map(field => {
-                        const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
-                        const fieldValue = lead.custom_fields?.[fieldKey];
-
-                        if (fieldValue === undefined || fieldValue === null || fieldValue === '') return null;
-
-                        return (
-                          <div key={field.id} className="text-sm">
-                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                              {field.name}
-                            </div>
-                            <div className="text-gray-900">
-                              {field.field_type === 'checkbox' ? (fieldValue ? 'Yes' : 'No') : 
-                               field.field_type === 'date' ? new Date(fieldValue as string).toLocaleDateString() : 
-                               String(fieldValue)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                    );
+                  })}
 
                 {/* Convert to Deal Button */}
                 <Button 
@@ -1148,6 +1300,199 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Field Layout Customization Modal */}
+        <Dialog open={showFieldLayoutModal} onOpenChange={setShowFieldLayoutModal}>
+          <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Feldlayout anpassen</DialogTitle>
+              <DialogDescription>
+                Organisieren Sie Ihre Felder in Gruppen und passen Sie die Reihenfolge an.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Add New Group */}
+              <div className="flex items-center space-x-2">
+                <Input
+                  placeholder="Neue Gruppe hinzufügen..."
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleAddGroup} disabled={!newGroupName.trim()}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Hinzufügen
+                </Button>
+              </div>
+
+              {/* Field Groups */}
+              <div className="space-y-4">
+                {fieldGroups
+                  .sort((a, b) => a.order - b.order)
+                  .map((group, groupIndex) => (
+                    <Card key={group.id} className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium text-gray-900">{group.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          {groupIndex > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleReorderGroups(groupIndex, groupIndex - 1)}
+                            >
+                              <ArrowUpDown className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {group.id !== 'about' && group.id !== 'custom_fields' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteGroup(group.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Fields in Group */}
+                      <div className="space-y-2">
+                        {group.fields.length > 0 ? (
+                          group.fields.map((fieldKey, fieldIndex) => (
+                            <div
+                              key={`${group.id}-${fieldKey}`}
+                              className="flex items-center justify-between p-2 bg-gray-50 rounded border"
+                              draggable
+                              onDragStart={() => setDraggedField(fieldKey)}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (draggedField && draggedField !== fieldKey) {
+                                  // Find source group
+                                  const sourceGroup = fieldGroups.find(g => 
+                                    g.fields.includes(draggedField)
+                                  );
+                                  if (sourceGroup) {
+                                    handleMoveField(draggedField, sourceGroup.id, group.id);
+                                  }
+                                }
+                                setDraggedField(null);
+                              }}
+                            >
+                              <span className="text-sm font-medium">
+                                {getFieldDisplayName(fieldKey)}
+                              </span>
+                              <div className="flex items-center space-x-1">
+                                <Select
+                                  value={group.id}
+                                  onValueChange={(newGroupId) => {
+                                    if (newGroupId !== group.id) {
+                                      handleMoveField(fieldKey, group.id, newGroupId);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="w-32 h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {fieldGroups.map((g) => (
+                                      <SelectItem key={g.id} value={g.id}>
+                                        {g.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-gray-500 text-sm">
+                            Keine Felder in dieser Gruppe
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Drop Zone for Fields */}
+                      <div
+                        className="mt-2 p-3 border-2 border-dashed border-gray-300 rounded text-center text-sm text-gray-500"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (draggedField) {
+                            const sourceGroup = fieldGroups.find(g => 
+                              g.fields.includes(draggedField)
+                            );
+                            if (sourceGroup && sourceGroup.id !== group.id) {
+                              handleMoveField(draggedField, sourceGroup.id, group.id);
+                            }
+                          }
+                          setDraggedField(null);
+                        }}
+                      >
+                        Felder hierher ziehen
+                      </div>
+                    </Card>
+                  ))}
+              </div>
+
+              {/* Available Fields (not in any group) */}
+              <Card className="p-4">
+                <h3 className="font-medium text-gray-900 mb-3">Verfügbare Felder</h3>
+                <div className="space-y-2">
+                  {/* Standard fields */}
+                  {['email', 'phone', 'website', 'address', 'description'].map(fieldKey => {
+                    const isAssigned = fieldGroups.some(g => g.fields.includes(fieldKey));
+                    if (isAssigned) return null;
+
+                    return (
+                      <div
+                        key={fieldKey}
+                        className="flex items-center justify-between p-2 bg-blue-50 rounded border"
+                        draggable
+                        onDragStart={() => setDraggedField(fieldKey)}
+                      >
+                        <span className="text-sm font-medium">
+                          {getFieldDisplayName(fieldKey)}
+                        </span>
+                        <Badge variant="secondary">Standard</Badge>
+                      </div>
+                    );
+                  })}
+
+                  {/* Custom fields */}
+                  {customFields?.filter(field => field.entity_type === 'lead').map(field => {
+                    const fieldKey = field.name.toLowerCase().replace(/\s+/g, '_');
+                    const isAssigned = fieldGroups.some(g => g.fields.includes(fieldKey));
+                    if (isAssigned) return null;
+
+                    return (
+                      <div
+                        key={fieldKey}
+                        className="flex items-center justify-between p-2 bg-green-50 rounded border"
+                        draggable
+                        onDragStart={() => setDraggedField(fieldKey)}
+                      >
+                        <span className="text-sm font-medium">{field.name}</span>
+                        <Badge variant="secondary">Custom</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowFieldLayoutModal(false)}>
+                Abbrechen
+              </Button>
+              <Button onClick={() => setShowFieldLayoutModal(false)}>
+                Speichern
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 };
