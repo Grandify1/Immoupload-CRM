@@ -263,6 +263,14 @@ serve(async (req) => {
             continue;
           }
 
+          // Log exactly what we're trying to insert
+          console.log(`🔍 Attempting to insert lead for row ${i + 1}:`);
+          console.log(`   Name: "${leadData.name}"`);
+          console.log(`   Team ID: "${leadData.team_id}"`);
+          console.log(`   Status: "${leadData.status}"`);
+          console.log(`   Custom fields count: ${Object.keys(leadData.custom_fields || {}).length}`);
+          console.log(`   Full data:`, JSON.stringify(leadData, null, 2));
+
           const { data: insertedLead, error: insertError } = await supabaseAdmin
             .from('leads')
             .insert([leadData])
@@ -278,8 +286,32 @@ serve(async (req) => {
               details: insertError.details,
               hint: insertError.hint
             });
-            errors.push(`Row ${i + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
-            failedRecords++;
+
+            // Try fallback: Insert without custom_fields if that's the issue
+            if (insertError.code === '23502' || insertError.message?.includes('custom_fields')) {
+              console.log(`🔄 Attempting fallback: Insert without custom_fields for row ${i + 1}`);
+              const fallbackData = { ...leadData };
+              delete fallbackData.custom_fields;
+              
+              const { data: fallbackLead, error: fallbackError } = await supabaseAdmin
+                .from('leads')
+                .insert([fallbackData])
+                .select('id, name, status, team_id')
+                .single();
+
+              if (fallbackError) {
+                console.error(`❌ Fallback also failed for row ${i + 1}:`, fallbackError);
+                errors.push(`Row ${i + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+                failedRecords++;
+              } else {
+                console.log(`✅ Fallback success for row ${i + 1}: ${fallbackLead.name} (ID: ${fallbackLead.id})`);
+                newRecords++;
+                processedRecords++;
+              }
+            } else {
+              errors.push(`Row ${i + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+              failedRecords++;
+            }
           } else {
             console.log(`✅ Created new lead: ${insertedLead.name} (ID: ${insertedLead.id}, Status: ${insertedLead.status}, Team: ${insertedLead.team_id})`);
             newRecords++;
