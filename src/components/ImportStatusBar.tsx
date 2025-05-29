@@ -152,11 +152,42 @@ const ImportStatusBar: React.FC = () => {
     const fetchActiveImports = async () => {
       try {
         console.log('🔄 Fetching import jobs...');
-        const { data } = await supabase
-          .from('import_jobs')
-          .select('*')
-          .in('status', ['pending', 'processing', 'completed', 'completed_with_errors', 'failed'])
-          .order('created_at', { ascending: false });
+        
+        // Robuste Abfrage mit Retry-Logik
+        let retryCount = 0;
+        let data = null;
+        
+        while (retryCount < 3 && !data) {
+          try {
+            const result = await supabase
+              .from('import_jobs')
+              .select('*')
+              .in('status', ['pending', 'processing', 'completed', 'completed_with_errors', 'failed'])
+              .order('created_at', { ascending: false })
+              .limit(50); // Limit für bessere Performance
+              
+            if (result.error) {
+              console.error(`Import jobs fetch error (attempt ${retryCount + 1}):`, result.error);
+              if (retryCount < 2) {
+                retryCount++;
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                continue;
+              }
+              throw result.error;
+            }
+            
+            data = result.data;
+            break;
+            
+          } catch (fetchError) {
+            retryCount++;
+            console.error(`Import jobs fetch failed (attempt ${retryCount}):`, fetchError);
+            if (retryCount >= 3) {
+              throw fetchError;
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+        }
 
         if (data) {
           console.log(`📋 Found ${data.length} import jobs total`);
@@ -248,9 +279,13 @@ const ImportStatusBar: React.FC = () => {
           }
           
           setActiveImports(activeJobs);
+        } else {
+          console.warn('No data received from import jobs query');
+          setActiveImports([]);
         }
       } catch (error) {
-        console.error('Error fetching import jobs:', error);
+        console.error('Critical error fetching import jobs:', error);
+        // Don't reset activeImports on error to avoid flickering
       }
     };
 

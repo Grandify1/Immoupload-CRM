@@ -28,13 +28,12 @@ interface ImportRequest {
   teamId: string;
   userId: string;
   jobId: string;
-  startRow?: number; // For continuation
-  isInitialRequest?: boolean; // Flag for first request
+  startRow?: number;
+  isInitialRequest?: boolean;
 }
 
-const BATCH_SIZE = 200; // Erhöht für bessere Performance
-const MAX_EXECUTION_TIME = 45000; // 45 Sekunden Safety Buffer
-const MAX_ROWS_PER_FUNCTION_CALL = 1000; // Maximum Zeilen pro Function Call
+const BATCH_SIZE = 100; // Kleinere Batches für bessere Stabilität
+const MAX_ROWS_PER_FUNCTION_CALL = 500; // Reduziert für bessere Performance
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -146,13 +145,6 @@ serve(async (req) => {
     console.log(`📦 Processing ${currentBatchData.length} leads in ${totalBatches} batches of ${BATCH_SIZE}`);
 
     for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-      // Check if we're approaching timeout
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime > MAX_EXECUTION_TIME) {
-        console.log(`⏰ Approaching timeout after ${elapsedTime}ms, stopping at batch ${batchIndex + 1}/${totalBatches}`);
-        break;
-      }
-
       const batchStart = batchIndex * BATCH_SIZE;
       const batchEnd = Math.min(batchStart + BATCH_SIZE, currentBatchData.length);
       const currentBatch = currentBatchData.slice(batchStart, batchEnd);
@@ -366,7 +358,7 @@ serve(async (req) => {
               total_batches: totalBatches,
               current_function_call_rows: `${startRow + 1}-${endRow}`,
               is_multi_batch_import: csvData.length > MAX_ROWS_PER_FUNCTION_CALL,
-              errors: allErrors.length > 0 ? allErrors.slice(-50) : undefined // Keep last 50 errors
+              errors: allErrors.length > 0 ? allErrors.slice(-50) : undefined
             },
             updated_at: new Date().toISOString()
           };
@@ -502,7 +494,7 @@ serve(async (req) => {
       isLastBatch: isLastBatch,
       needsContinuation: needsContinuation,
       continuation: continuationResponse,
-      errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined // Return last 20 errors
+      errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined
     };
 
     console.log('📊 Function Call Summary:', response);

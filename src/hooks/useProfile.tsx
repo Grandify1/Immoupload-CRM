@@ -116,27 +116,40 @@ const useProfile = () => {
     }
     
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*, teams(*)')
-        .eq('id', user.id)
-        .single();
+      // Robuste Abfrage mit verbesserter Fehlerbehandlung
+      let profileData = null;
+      let attemptCount = 0;
+      
+      while (attemptCount < maxRetries && !profileData) {
+        try {
+          const result = await supabase
+            .from('profiles')
+            .select('*, teams(*)')
+            .eq('id', user.id)
+            .single();
 
-      if (profileError) {
-        console.error(`Error fetching profile: ${profileError.message}`, profileError);
-        
-        if (retryCount.current < maxRetries) {
-          retryCount.current += 1;
-          console.log(`Retrying profile fetch (${retryCount.current}/${maxRetries})...`);
-          setTimeout(fetchProfile, 1000 * retryCount.current);
-          return;
+          if (result.error) {
+            throw result.error;
+          }
+          
+          profileData = result.data;
+          break;
+          
+        } catch (fetchError) {
+          attemptCount++;
+          console.error(`Profile fetch attempt ${attemptCount} failed:`, fetchError);
+          
+          if (attemptCount >= maxRetries) {
+            throw fetchError;
+          }
+          
+          // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attemptCount - 1)));
         }
-        
-        if (mounted.current) {
-          setProfile(null);
-          setTeam(null);
-        }
-        return;
+      }
+
+      if (!profileData) {
+        throw new Error('Failed to fetch profile after multiple attempts');
       }
 
       retryCount.current = 0;
@@ -144,9 +157,22 @@ const useProfile = () => {
       if (mounted.current) {
         setProfile(profileData);
         setTeam(profileData?.team_id ? (profileData.teams as Team | null) : null);
+        console.log('✅ Profile loaded successfully:', {
+          userId: profileData.id,
+          teamId: profileData.team_id,
+          teamName: profileData.teams?.name
+        });
       }
     } catch (error) {
-      console.error('An unexpected error occurred while fetching profile:', error);
+      console.error('Critical error fetching profile:', error);
+      
+      if (retryCount.current < maxRetries) {
+        retryCount.current += 1;
+        console.log(`Retrying profile fetch (${retryCount.current}/${maxRetries})...`);
+        setTimeout(fetchProfile, 1000 * retryCount.current);
+        return;
+      }
+      
       if (mounted.current) {
         setProfile(null);
         setTeam(null);
