@@ -5,9 +5,10 @@ import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, accept-encoding, accept-language, cache-control, pragma',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
   'Access-Control-Max-Age': '86400',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 interface ScrapingRequest {

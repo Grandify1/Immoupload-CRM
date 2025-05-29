@@ -83,8 +83,10 @@ serve(async (req) => {
       );
     }
 
-    console.log(`📊 Processing ${csvData.length} total rows, starting from row ${startRow} for team ${teamId}`);
+    console.log(`📦 Processing ${csvData.length} total rows, starting from row ${startRow} for team ${teamId}`);
     console.log(`🔄 Duplicate config: ${duplicateConfig.duplicateDetectionField} -> ${duplicateConfig.duplicateAction}`);
+    console.log(`🔗 Function Call Details: isInitialRequest=${isInitialRequest}, jobId=${jobId}`);
+    console.log(`📊 Batch Configuration: BATCH_SIZE=${BATCH_SIZE}, MAX_ROWS=${MAX_ROWS_PER_FUNCTION_CALL}`);
 
     // Initialize Supabase Admin Client
     const supabaseAdmin = createClient(
@@ -327,7 +329,7 @@ serve(async (req) => {
           batchErrors.push(`Row ${absoluteRowNumber}: Unexpected error - ${error.message}`);
           batchFailedRecords++;
         }
-        
+
         // Memory cleanup for large imports
         if (i % 10 === 0) {
           // Allow garbage collection every 10 records
@@ -387,7 +389,7 @@ serve(async (req) => {
       const batchTime = Date.now() - startTime;
       const avgTimePerRecord = batchTime / Math.max(batchProcessed, 1);
       const estimatedTotalTime = (avgTimePerRecord * csvData.length) / 1000;
-      
+
       console.log(`✅ Batch ${batchIndex + 1}/${totalBatches} completed: +${batchNewRecords} new, +${batchUpdatedRecords} updated, +${batchFailedRecords} failed`);
       console.log(`⏱️ Performance: ${avgTimePerRecord.toFixed(0)}ms/record, estimated total: ${estimatedTotalTime.toFixed(0)}s`);
     }
