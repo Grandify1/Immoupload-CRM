@@ -1,0 +1,138 @@
+KRITISCHES PROBLEM: CSV Import bricht bei großem Batch ab - Mehrere kritische Fehler identifiziert
+Problem Analyse:
+
+CORS-Fehler im Frontend: Die Edge Function wird blockiert durch fehlende CORS-Header
+Edge Function Timeout: Die Function läuft ~10 Minuten und wird dann automatisch beendet ("shutdown")
+Performance Problem: 5972ms/record ist extrem langsam - 10.000 Records würden 16+ Stunden dauern
+Payload zu groß: 4MB Payload überschreitet wahrscheinlich Edge Function Limits
+
+SOFORTIGE LÖSUNGSSTRATEGIE:
+Schritt 1: CORS Problem beheben
+Die Edge Function csv-import hat keine korrekten CORS-Header. Füge am Anfang der Edge Function hinzu:
+typescriptconst corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Max-Age': '86400'
+};
+
+// Handle CORS preflight
+if (req.method === 'OPTIONS') {
+  return new Response('ok', { headers: corsHeaders });
+}
+
+// Add CORS headers to all responses
+const responseHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
+Schritt 2: Payload Size Problem lösen
+Das Frontend sendet 4MB+ Daten in einem Request. Teile das auf kleinere Chunks auf:
+typescript// Im Frontend - sende maximal 100 Records pro Request
+const CHUNK_SIZE = 100;
+const chunks = [];
+for (let i = 0; i < leads.length; i += CHUNK_SIZE) {
+  chunks.push(leads.slice(i, i + CHUNK_SIZE));
+}
+
+// Sende jeden Chunk separat
+for (const chunk of chunks) {
+  await supabase.functions.invoke('csv-import', { body: { leads: chunk, isChunk: true } });
+}
+Schritt 3: Edge Function Timeout Problem
+Edge Functions haben ein 25-Sekunden Limit. Die aktuelle Implementation dauert zu lange:
+typescript// Reduziere Batch-Größe drastisch
+const BATCH_SIZE = 10; // Nicht 25!
+const MAX_PROCESSING_TIME = 20000; // 20 Sekunden Maximum
+
+// Implementiere Timeout-Check
+const startTime = Date.now();
+for (const batch of batches) {
+  if (Date.now() - startTime > MAX_PROCESSING_TIME) {
+    // Stoppe und gib zurück was bisher verarbeitet wurde
+    break;
+  }
+  // Verarbeite Batch...
+}
+Schritt 4: Performance Optimierung
+5972ms pro Record ist inakzeptabel. Optimiere die Datenbankoperationen:
+typescript// Verwende Bulk-Insert statt einzelne Inserts
+const { data, error } = await supabaseAdmin
+  .from('leads')
+  .insert(batchData) // Ganzer Batch auf einmal
+  .select();
+
+// Nicht: for (const lead of batch) { await insert(lead); }
+Schritt 5: Asynchrone Verarbeitung implementieren
+Für große Imports, verwende eine Queue-basierte Lösung:
+typescript// Im Frontend: Erstelle Import-Job und startet Background-Processing
+const jobResponse = await supabase.functions.invoke('create-import-job', {
+  body: { totalRecords: leads.length, userId, teamId }
+});
+
+// Sende Daten in kleinen Chunks
+for (const chunk of chunks) {
+  await supabase.functions.invoke('process-import-chunk', {
+    body: { jobId: jobResponse.jobId, chunk, chunkIndex }
+  });
+}
+Schritt 6: Frontend Error Handling
+Das Frontend behandelt den CORS-Fehler nicht korrekt:
+typescripttry {
+  const response = await supabase.functions.invoke('csv-import', { body: payload });
+  if (!response.data) {
+    throw new Error('No response data received');
+  }
+} catch (error) {
+  if (error.message.includes('CORS')) {
+    console.error('CORS Error - Edge Function CORS headers missing');
+    // Zeige spezifische CORS-Fehlermeldung
+  }
+  // Handle other errors...
+}
+Schritt 7: Edge Function Memory Management
+Bei 10.000 Records läuft die Function aus dem Speicher:
+typescript// Prozessiere Records in kleinen Batches und gib Speicher frei
+for (let i = 0; i < leads.length; i += BATCH_SIZE) {
+  const batch = leads.slice(i, i + BATCH_SIZE);
+  await processBatch(batch);
+  
+  // Speicher freigeben
+  if (i % (BATCH_SIZE * 10) === 0) {
+    // Kleine Pause für Garbage Collection
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+}
+Schritt 8: Realistische Batch-Größen
+Die aktuellen Batch-Größen sind unrealistisch für Edge Functions:
+typescript// Neue realistische Limits
+const MAX_RECORDS_PER_REQUEST = 50;  // Nicht 500!
+const BATCH_SIZE = 5;                // Nicht 25!
+const MAX_TOTAL_PROCESSING_TIME = 15000; // 15 Sekunden Maximum
+KRITISCHE IMPLEMENTIERUNGSSTRATEGIE:
+Phase 1: Sofort-Fix
+
+CORS-Header in Edge Function hinzufügen
+Payload-Größe auf 50 Records pro Request begrenzen
+Batch-Größe auf 5 Records reduzieren
+
+Phase 2: Performance-Fix
+
+Bulk-Insert statt einzelne Inserts implementieren
+Memory-Management verbessern
+Timeout-Checks hinzufügen
+
+Phase 3: Architektur-Fix
+
+Queue-basierte Verarbeitung für große Imports
+Progress-Tracking über Websockets
+Chunk-based Processing im Frontend
+
+ERWARTETE VERBESSERUNGEN:
+
+CORS-Fehler: Komplett behoben
+Performance: Von 5972ms auf <100ms pro Record
+Timeout: Keine Edge Function Timeouts mehr
+Reliability: 95%+ Erfolgsrate bei großen Imports
+
+SOFORT-MAßNAHME:
+Implementiere zuerst nur die CORS-Header und die 50-Records-Begrenzung. Das sollte das immediate Problem lösen. Dann optimiere schrittweise die Performance.
+KRITISCHER HINWEIS:
+Das aktuelle System versucht 10.000 Records in einer Edge Function zu verarbeiten, die nur 25 Sekunden läuft. Das ist architektonisch unmöglich. Du brauchst eine chunk-basierte Lösung mit mehreren kleinen Requests.
