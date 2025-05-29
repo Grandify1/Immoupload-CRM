@@ -3,9 +3,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, accept-encoding, accept-language, cache-control, pragma',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
   'Access-Control-Max-Age': '86400',
+  'Access-Control-Allow-Credentials': 'true',
 };
 
 interface MappingType {
@@ -29,6 +30,8 @@ interface ImportRequest {
   jobId: string;
   startRow?: number;
   isInitialRequest?: boolean;
+  resumeFromError?: boolean;
+  lastProcessedRow?: number;
 }
 
 const BATCH_SIZE = 50; // Optimiert für große Imports
@@ -70,7 +73,7 @@ serve(async (req) => {
       );
     }
 
-    const { csvData, mappings, duplicateConfig, teamId, userId, jobId, startRow = 0, isInitialRequest = true } = body;
+    const { csvData, mappings, duplicateConfig, teamId, userId, jobId, startRow = 0, isInitialRequest = true, resumeFromError = false, lastProcessedRow = 0 } = body;
 
     // Validate required fields
     if (!csvData || !mappings || !teamId || !userId) {
@@ -125,7 +128,7 @@ serve(async (req) => {
       try {
         const { data: currentJob } = await supabaseAdmin
           .from('import_jobs')
-          .select('processed_records, failed_records, error_details')
+          .select('processed_records, failed_records, error_details, status')
           .eq('id', jobId)
           .single();
 
@@ -134,6 +137,27 @@ serve(async (req) => {
           totalFailedRecords = currentJob.failed_records || 0;
           totalNewRecords = currentJob.error_details?.new_records || 0;
           totalUpdatedRecords = currentJob.error_details?.updated_records || 0;
+          
+          // Resume from error logic
+          if (resumeFromError && currentJob.status === 'failed') {
+            console.log(`🔄 RESUMING FAILED IMPORT from row ${lastProcessedRow || totalProcessed}`);
+            
+            // Update job status to processing again
+            await supabaseAdmin
+              .from('import_jobs')
+              .update({
+                status: 'processing',
+                error_details: {
+                  ...currentJob.error_details,
+                  resume_attempt: (currentJob.error_details?.resume_attempt || 0) + 1,
+                  resumed_at: new Date().toISOString(),
+                  resume_from_row: lastProcessedRow || totalProcessed
+                },
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', jobId);
+          }
+          
           console.log(`📊 Continuing import: ${totalProcessed} already processed, ${totalFailedRecords} failed`);
         }
       } catch (error) {
@@ -365,7 +389,15 @@ serve(async (req) => {
               total_batches: totalBatches,
               current_function_call_rows: `${startRow + 1}-${endRow}`,
               is_multi_batch_import: csvData.length > MAX_ROWS_PER_FUNCTION_CALL,
-              errors: allErrors.length > 0 ? allErrors.slice(-50) : undefined
+              errors: allErrors.length > 0 ? allErrors.slice(-50) : undefined,
+              // Store original data for resume (only on first batch)
+              original_data: isInitialRequest ? {
+                csvData: csvData,
+                mappings: mappings,
+                duplicateConfig: duplicateConfig,
+                teamId: teamId,
+                userId: userId
+              } : undefined
             },
             updated_at: new Date().toISOString()
           };
@@ -416,39 +448,71 @@ serve(async (req) => {
 
         console.log(`📤 Triggering next batch: rows ${endRow + 1}-${Math.min(endRow + MAX_ROWS_PER_FUNCTION_CALL, csvData.length)}`);
 
-        // Fire-and-forget next batch
-        const { error: continuationError } = await supabaseAdmin.functions.invoke('csv-import', {
-          body: nextBatchPayload
-        });
+        // Retry mechanism for continuation
+        let continuationError = null;
+        let retryCount = 0;
+        const maxRetries = 3;
 
-        if (continuationError) {
-          console.error('❌ Failed to trigger continuation:', continuationError);
-          // Update job status to indicate continuation failed
+        while (retryCount < maxRetries) {
+          try {
+            const { error: invokeError } = await supabaseAdmin.functions.invoke('csv-import', {
+              body: nextBatchPayload
+            });
+
+            if (!invokeError) {
+              console.log(`✅ Next batch triggered successfully (attempt ${retryCount + 1})`);
+              continuationResponse = {
+                continuation_triggered: true,
+                next_start_row: endRow,
+                remaining_rows: csvData.length - endRow,
+                retry_count: retryCount
+              };
+              break;
+            } else {
+              continuationError = invokeError;
+              retryCount++;
+              console.warn(`⚠️ Continuation attempt ${retryCount} failed:`, invokeError);
+              
+              if (retryCount < maxRetries) {
+                // Wait before retry (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+              }
+            }
+          } catch (error) {
+            continuationError = error;
+            retryCount++;
+            console.warn(`⚠️ Continuation attempt ${retryCount} error:`, error);
+            
+            if (retryCount < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+            }
+          }
+        }
+
+        if (continuationError && retryCount >= maxRetries) {
+          console.error('❌ All continuation retries failed:', continuationError);
+          // Update job with pause status and instructions for manual resume
           if (jobId) {
             await supabaseAdmin
               .from('import_jobs')
               .update({
-                status: 'completed_with_errors',
+                status: 'paused',
                 error_details: {
-                  summary: `Import paused after ${totalProcessed} records - continuation failed`,
+                  summary: `Import paused after ${totalProcessed} records - retry continuation failed`,
                   new_records: totalNewRecords,
                   updated_records: totalUpdatedRecords,
                   failed_records: totalFailedRecords,
                   continuation_error: continuationError.message,
                   processed_rows: `${startRow + 1}-${endRow}`,
-                  errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined
+                  last_successful_row: endRow - 1,
+                  resume_instructions: `Call CSV import function with resumeFromError=true and lastProcessedRow=${endRow}`,
+                  errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined,
+                  retry_attempts: maxRetries
                 },
                 updated_at: new Date().toISOString()
               })
               .eq('id', jobId);
           }
-        } else {
-          console.log(`✅ Next batch triggered successfully`);
-          continuationResponse = {
-            continuation_triggered: true,
-            next_start_row: endRow,
-            remaining_rows: csvData.length - endRow
-          };
         }
       } catch (error) {
         console.error('❌ Critical error triggering continuation:', error);

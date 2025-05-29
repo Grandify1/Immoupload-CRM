@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, FileText, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { X, FileText, CheckCircle, AlertCircle, Clock, Loader2, Undo2, RotateCcw } from 'lucide-react';
 
 interface ImportJob {
   id: string;
