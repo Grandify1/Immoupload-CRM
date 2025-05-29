@@ -168,11 +168,19 @@ serve(async (req) => {
 
       try {
         // Create a proper test import job first
-        console.log('🏗️ Creating test import job...');
+        const actualJobId = body.jobId || `test-job-${Date.now()}`;
+        console.log('🏗️ Creating test import job with ID:', actualJobId);
+        
+        // First, try to delete any existing job with this ID to avoid conflicts
+        await supabaseAdmin
+          .from('import_jobs')
+          .delete()
+          .eq('id', actualJobId);
+
         const { data: testJob, error: jobError } = await supabaseAdmin
           .from('import_jobs')
           .insert({
-            id: body.jobId || `test-job-${Date.now()}`,
+            id: actualJobId,
             team_id: body.teamId,
             created_by: body.userId,
             file_name: 'dashboard-test.csv',
@@ -186,33 +194,22 @@ serve(async (req) => {
 
         if (jobError) {
           console.error('❌ Test job creation failed:', jobError);
-          // Try to update existing job instead
-          const { data: existingJob, error: updateError } = await supabaseAdmin
-            .from('import_jobs')
-            .update({
-              status: 'processing',
-              total_records: body.csvData?.length || 0,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', body.jobId)
-            .select()
-            .single();
-
-          if (updateError) {
-            console.error('❌ Job update also failed:', updateError);
-            return new Response(
-              JSON.stringify({
-                success: false,
-                error: 'Test job creation/update failed',
-                details: { jobError, updateError }
-              }),
-              { status: 500, headers: responseHeaders }
-            );
-          }
-          console.log('✅ Using existing job:', existingJob);
-        } else {
-          console.log('✅ Test job created successfully:', testJob);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Test job creation failed',
+              details: { 
+                jobError,
+                attemptedJobId: actualJobId,
+                teamId: body.teamId,
+                userId: body.userId
+              }
+            }),
+            { status: 500, headers: responseHeaders }
+          );
         }
+        
+        console.log('✅ Test job created successfully:', testJob);
 
         // Now test the actual CSV import logic
         const { csvData, mappings, duplicateConfig } = body;
@@ -249,7 +246,7 @@ serve(async (req) => {
               continue;
             }
             leadData.status = 'potential';
-            leadData.import_job_id = body.jobId;
+            leadData.import_job_id = actualJobId;
 
             // Insert lead
             const { data: insertedLead, error: insertError } = await supabaseAdmin
@@ -282,7 +279,7 @@ serve(async (req) => {
             error_details: errors.length > 0 ? { errors } : null,
             completed_at: new Date().toISOString()
           })
-          .eq('id', body.jobId);
+          .eq('id', actualJobId);
 
         console.log('✅ Test completed successfully');
         return new Response(
@@ -296,7 +293,7 @@ serve(async (req) => {
               errors: errors.length > 0 ? errors : undefined
             },
             test_user_id: body.userId,
-            job_id: body.jobId
+            job_id: actualJobId
           }),
           { status: 200, headers: responseHeaders }
         );
