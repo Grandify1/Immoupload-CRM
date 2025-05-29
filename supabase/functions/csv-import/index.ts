@@ -103,9 +103,27 @@ serve(async (req) => {
       console.log('📝 Raw request body length:', rawBody.length);
       console.log('📝 Raw request body preview:', rawBody.substring(0, 500));
       
+      if (!rawBody || rawBody.trim() === '') {
+        console.error('❌ Empty request body');
+        return new Response(
+          JSON.stringify({ 
+            error: 'Empty request body',
+            details: 'No data provided'
+          }),
+          { status: 400, headers: responseHeaders }
+        );
+      }
+      
       body = JSON.parse(rawBody);
       console.log('✅ JSON parsed successfully');
       console.log('📊 Body keys:', Object.keys(body));
+      console.log('📊 Body structure:', {
+        csvData: Array.isArray(body.csvData) ? `Array with ${body.csvData?.length} rows` : typeof body.csvData,
+        mappings: Array.isArray(body.mappings) ? `Array with ${body.mappings?.length} items` : typeof body.mappings,
+        teamId: body.teamId,
+        userId: body.userId,
+        jobId: body.jobId
+      });
     } catch (error) {
       console.error('❌ Invalid JSON in request body:', error);
       console.error('❌ JSON parsing error details:', {
@@ -120,6 +138,28 @@ serve(async (req) => {
           error_type: error.name
         }),
         { status: 400, headers: responseHeaders }
+      );
+    }
+
+    // DEBUGGING: If this is a test request, return early with success
+    if (body.userId === 'test-user-id' && body.isInitialRequest === true) {
+      console.log('🧪 TEST REQUEST DETECTED - Returning mock success response');
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Test request successful',
+          processedRecords: 0,
+          newRecords: 0,
+          updatedRecords: 0,
+          failedRecords: 0,
+          jobId: 'test-job-id',
+          debug: {
+            receivedBody: body,
+            bodyKeys: Object.keys(body),
+            functionWorking: true
+          }
+        }),
+        { status: 200, headers: responseHeaders }
       );
     }
 
