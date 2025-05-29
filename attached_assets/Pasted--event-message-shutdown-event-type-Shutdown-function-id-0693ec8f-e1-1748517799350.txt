@@ -1,0 +1,802 @@
+[
+  {
+    "event_message": "shutdown",
+    "event_type": "Shutdown",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "adc4fb01-36d7-455d-88c4-73a7c07ac7b7",
+    "level": "log",
+    "timestamp": 1748516921067086
+  },
+  {
+    "event_message": "📦 Processing batch 17/20: rows 401-425\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "7a6669ba-e949-40f4-9485-89f11039cd00",
+    "level": "log",
+    "timestamp": 1748516916086833
+  },
+  {
+    "event_message": "⏱️ Performance: 6014ms/record, estimated total: 58988s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "1d412bff-1bc4-42b5-a7a2-9661c12abfdb",
+    "level": "log",
+    "timestamp": 1748516916086568
+  },
+  {
+    "event_message": "✅ Batch 16/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "fb94dade-5bf7-4403-aa00-6b5d5c042a55",
+    "level": "log",
+    "timestamp": 1748516916086410
+  },
+  {
+    "event_message": "✅ Progress updated: 4% (400/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "755f3d2e-244e-43f5-a84a-76311f623510",
+    "level": "log",
+    "timestamp": 1748516916086115
+  },
+  {
+    "event_message": "shutdown",
+    "event_type": "Shutdown",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "0f39884d-029b-409c-a6c4-d65dcca9f016",
+    "level": "log",
+    "timestamp": 1748516913748901
+  },
+  {
+    "event_message": "📦 Processing batch 16/20: rows 376-400\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "fb00df79-3f9c-4af8-8de3-44bf32f9577b",
+    "level": "log",
+    "timestamp": 1748516906069604
+  },
+  {
+    "event_message": "⏱️ Performance: 5704ms/record, estimated total: 55949s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "a806b2f8-1b34-4832-b73a-1937fc86f0ee",
+    "level": "log",
+    "timestamp": 1748516906069436
+  },
+  {
+    "event_message": "✅ Batch 15/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "c2928fc1-4cd8-4674-8ee0-5944bd377acb",
+    "level": "log",
+    "timestamp": 1748516906069267
+  },
+  {
+    "event_message": "✅ Progress updated: 4% (375/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "b34750b4-0dcf-4920-9145-b688ecd094d8",
+    "level": "log",
+    "timestamp": 1748516906069117
+  },
+  {
+    "event_message": "📦 Processing batch 15/20: rows 351-375\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "48661651-9a61-4df5-870a-03742610f9c5",
+    "level": "log",
+    "timestamp": 1748516896037671
+  },
+  {
+    "event_message": "⏱️ Performance: 5329ms/record, estimated total: 52274s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "ed9710a3-d4fa-49d1-823b-35b903dc430f",
+    "level": "log",
+    "timestamp": 1748516896037457
+  },
+  {
+    "event_message": "✅ Batch 14/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "e102793c-fcab-43e9-b2fd-e1e1976c593d",
+    "level": "log",
+    "timestamp": 1748516896037222
+  },
+  {
+    "event_message": "✅ Progress updated: 4% (350/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "496f46a1-28fd-44be-b2bb-0d063402701b",
+    "level": "log",
+    "timestamp": 1748516896037037
+  },
+  {
+    "event_message": "📦 Processing batch 14/20: rows 326-350\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "123496ab-75b3-4b71-bf61-5db5bb2d731e",
+    "level": "log",
+    "timestamp": 1748516886065943
+  },
+  {
+    "event_message": "⏱️ Performance: 4930ms/record, estimated total: 48354s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "dd2bc350-8825-429b-9238-1e70f7fe8431",
+    "level": "log",
+    "timestamp": 1748516886065780
+  },
+  {
+    "event_message": "✅ Batch 13/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "23013117-6b25-401d-ad91-118863eded6e",
+    "level": "log",
+    "timestamp": 1748516886065562
+  },
+  {
+    "event_message": "✅ Progress updated: 3% (325/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "a1938b1e-db8f-4f31-beae-0faf49677ed5",
+    "level": "log",
+    "timestamp": 1748516886065356
+  },
+  {
+    "event_message": "📦 Processing batch 13/20: rows 301-325\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "4733f4a2-946f-4dde-acc7-c33bd27fef62",
+    "level": "log",
+    "timestamp": 1748516881043787
+  },
+  {
+    "event_message": "⏱️ Performance: 4595ms/record, estimated total: 45072s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "4748f547-0578-457b-9f46-3bc7b0529601",
+    "level": "log",
+    "timestamp": 1748516881043438
+  },
+  {
+    "event_message": "✅ Batch 12/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "173c0043-6ba5-46d7-89a9-6022c84142be",
+    "level": "log",
+    "timestamp": 1748516881043119
+  },
+  {
+    "event_message": "✅ Progress updated: 3% (300/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "b2dcb5c9-5f18-46c6-a8c6-bbcc62e10de2",
+    "level": "log",
+    "timestamp": 1748516881042847
+  },
+  {
+    "event_message": "📦 Processing batch 12/20: rows 276-300\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "fc426618-109d-476a-a64b-e0d0c4c3613c",
+    "level": "log",
+    "timestamp": 1748516871029281
+  },
+  {
+    "event_message": "⏱️ Performance: 4168ms/record, estimated total: 40887s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "e5ada393-9bf4-494d-acc3-70eeef6d9fb6",
+    "level": "log",
+    "timestamp": 1748516871029094
+  },
+  {
+    "event_message": "✅ Batch 11/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "810ebbe5-e7fb-4bb8-9438-115c11c6f90d",
+    "level": "log",
+    "timestamp": 1748516871028915
+  },
+  {
+    "event_message": "✅ Progress updated: 3% (275/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "9a8f3b9d-c29b-4010-8132-3961605e9a0b",
+    "level": "log",
+    "timestamp": 1748516871028641
+  },
+  {
+    "event_message": "📦 Processing batch 11/20: rows 251-275\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "7ad2c138-c7d9-4413-9b2e-8433ddae4e81",
+    "level": "log",
+    "timestamp": 1748516861058616
+  },
+  {
+    "event_message": "⏱️ Performance: 3797ms/record, estimated total: 37244s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "3e59f9a7-15c0-4a0d-8fef-591b159ed6eb",
+    "level": "log",
+    "timestamp": 1748516861058441
+  },
+  {
+    "event_message": "✅ Batch 10/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "0a3a22ed-3f4f-4b6f-a265-24a779852af7",
+    "level": "log",
+    "timestamp": 1748516861058256
+  },
+  {
+    "event_message": "✅ Progress updated: 3% (250/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "1f4c283c-327d-4217-b038-83b9499285b5",
+    "level": "log",
+    "timestamp": 1748516861058060
+  },
+  {
+    "event_message": "📦 Processing batch 10/20: rows 226-250\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "a70f7796-9761-42a1-8b68-19ae5a24750b",
+    "level": "log",
+    "timestamp": 1748516851081480
+  },
+  {
+    "event_message": "⏱️ Performance: 3455ms/record, estimated total: 33894s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "33d8b2af-7bbc-48e5-bea6-f6d769735ea4",
+    "level": "log",
+    "timestamp": 1748516851081239
+  },
+  {
+    "event_message": "✅ Batch 9/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "b52d1aa9-c3dc-493f-8905-8b1b91b8d905",
+    "level": "log",
+    "timestamp": 1748516851081065
+  },
+  {
+    "event_message": "✅ Progress updated: 2% (225/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "6137c668-c110-4cc3-a016-1ace69b43d5e",
+    "level": "log",
+    "timestamp": 1748516851080832
+  },
+  {
+    "event_message": "📦 Processing batch 9/20: rows 201-225\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "e5d634d1-0a38-4562-9b66-0462a136d94f",
+    "level": "log",
+    "timestamp": 1748516841040179
+  },
+  {
+    "event_message": "⏱️ Performance: 3111ms/record, estimated total: 30520s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "87cebf64-5c1c-4bdc-b0cf-f44032863703",
+    "level": "log",
+    "timestamp": 1748516841039998
+  },
+  {
+    "event_message": "✅ Batch 8/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "398ff404-8fc4-402e-9b60-2a3edd2f9a9e",
+    "level": "log",
+    "timestamp": 1748516841039737
+  },
+  {
+    "event_message": "✅ Progress updated: 2% (200/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "94fa4b84-fb78-4830-958f-4fa7e92a6985",
+    "level": "log",
+    "timestamp": 1748516841039559
+  },
+  {
+    "event_message": "📦 Processing batch 8/20: rows 176-200\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "ec811d0a-4da0-453f-af8a-edfcfedf568a",
+    "level": "log",
+    "timestamp": 1748516831037415
+  },
+  {
+    "event_message": "⏱️ Performance: 2747ms/record, estimated total: 26944s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "6e5f88ec-c35d-4a7e-a142-a1d7875fc27d",
+    "level": "log",
+    "timestamp": 1748516831037196
+  },
+  {
+    "event_message": "✅ Batch 7/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "232b9cd4-b171-444c-ac6f-1ff659b3df20",
+    "level": "log",
+    "timestamp": 1748516831037005
+  },
+  {
+    "event_message": "✅ Progress updated: 2% (175/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "8c19dd8c-ebd8-4261-8185-2e5b03bdcc6b",
+    "level": "log",
+    "timestamp": 1748516831036760
+  },
+  {
+    "event_message": "📦 Processing batch 7/20: rows 151-175\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "4de0efac-df4c-47bf-8b4f-4d93fee4f000",
+    "level": "log",
+    "timestamp": 1748516826097062
+  },
+  {
+    "event_message": "⏱️ Performance: 2368ms/record, estimated total: 23223s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "ab29b5b7-dc78-48bd-877e-1e600fbf6117",
+    "level": "log",
+    "timestamp": 1748516826096893
+  },
+  {
+    "event_message": "✅ Batch 6/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "2dc77db3-7860-48d8-8f45-3d7a2252046b",
+    "level": "log",
+    "timestamp": 1748516826096740
+  },
+  {
+    "event_message": "✅ Progress updated: 2% (150/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "458146e2-772c-400c-81e2-75ff7b7509ba",
+    "level": "log",
+    "timestamp": 1748516826096482
+  },
+  {
+    "event_message": "📦 Processing batch 6/20: rows 126-150\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "f5d168e2-ca4e-40da-a530-ba341ffd8cbd",
+    "level": "log",
+    "timestamp": 1748516816058109
+  },
+  {
+    "event_message": "⏱️ Performance: 2066ms/record, estimated total: 20262s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "19d221c2-3ef8-4cde-86f9-d57be9a293b7",
+    "level": "log",
+    "timestamp": 1748516816057834
+  },
+  {
+    "event_message": "✅ Batch 5/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "c663f868-63d8-427c-a3d1-77b88e72cbaa",
+    "level": "log",
+    "timestamp": 1748516816057684
+  },
+  {
+    "event_message": "✅ Progress updated: 1% (125/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "6edd3145-89d5-4d52-a552-bc815a296401",
+    "level": "log",
+    "timestamp": 1748516816057509
+  },
+  {
+    "event_message": "📦 Processing batch 5/20: rows 101-125\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "a7837f74-b2cd-4542-bf9b-516073775091",
+    "level": "log",
+    "timestamp": 1748516806038533
+  },
+  {
+    "event_message": "⏱️ Performance: 1684ms/record, estimated total: 16521s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "1d9ba8e4-5a79-4b1d-92a7-f2d9efd671ec",
+    "level": "log",
+    "timestamp": 1748516806038346
+  },
+  {
+    "event_message": "✅ Batch 4/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "3cf85e6c-f5b0-4544-85ce-e2dfc973f7b3",
+    "level": "log",
+    "timestamp": 1748516806038080
+  },
+  {
+    "event_message": "✅ Progress updated: 1% (100/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "c2f19132-175a-492b-a791-30519258d539",
+    "level": "log",
+    "timestamp": 1748516806037864
+  },
+  {
+    "event_message": "📦 Processing batch 4/20: rows 76-100\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "481ab09b-ee4d-44a4-badd-ea62a91206e0",
+    "level": "log",
+    "timestamp": 1748516801008537
+  },
+  {
+    "event_message": "⏱️ Performance: 1381ms/record, estimated total: 13547s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "32824864-32ce-4cf3-9f43-6dbcd2f0c870",
+    "level": "log",
+    "timestamp": 1748516801008351
+  },
+  {
+    "event_message": "✅ Batch 3/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "fc32890b-3b73-48a0-948c-b9b73f2e75c8",
+    "level": "log",
+    "timestamp": 1748516801007968
+  },
+  {
+    "event_message": "✅ Progress updated: 1% (75/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "df241eab-c082-4d4a-a092-b0a643db9a20",
+    "level": "log",
+    "timestamp": 1748516801007647
+  },
+  {
+    "event_message": "📦 Processing batch 3/20: rows 51-75\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "6aee123b-cc72-428e-8cff-9bec9b6ed153",
+    "level": "log",
+    "timestamp": 1748516791044363
+  },
+  {
+    "event_message": "⏱️ Performance: 1051ms/record, estimated total: 10306s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "8987973c-43d0-4e82-bf84-d023792edf1f",
+    "level": "log",
+    "timestamp": 1748516791044162
+  },
+  {
+    "event_message": "✅ Batch 2/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "bf8d43b0-8cac-4c2a-a5fb-4e5f22e6e0cb",
+    "level": "log",
+    "timestamp": 1748516791043999
+  },
+  {
+    "event_message": "✅ Progress updated: 1% (50/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "3c3eb30b-57a7-4d14-b7ec-518188fd3d07",
+    "level": "log",
+    "timestamp": 1748516791043855
+  },
+  {
+    "event_message": "📦 Processing batch 2/20: rows 26-50\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "387eb1ba-b865-4e8e-b753-809dc8498fc5",
+    "level": "log",
+    "timestamp": 1748516781048303
+  },
+  {
+    "event_message": "⏱️ Performance: 649ms/record, estimated total: 6364s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "4814b24d-b3a9-4f45-941c-2fe065c10786",
+    "level": "log",
+    "timestamp": 1748516781048039
+  },
+  {
+    "event_message": "✅ Batch 1/20 completed: +25 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "0d0c989a-738e-4af3-b40f-504a111564c9",
+    "level": "log",
+    "timestamp": 1748516781047891
+  },
+  {
+    "event_message": "✅ Progress updated: 0% (25/9809)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "f60a52ce-d29f-4bbe-9617-e8feaf4d77f0",
+    "level": "log",
+    "timestamp": 1748516781047697
+  },
+  {
+    "event_message": "shutdown",
+    "event_type": "Shutdown",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "c03028ad-cc91-4605-a0de-439b9f7cb1b8",
+    "level": "log",
+    "timestamp": 1748516774302507
+  },
+  {
+    "event_message": "📦 Processing batch 1/20: rows 1-25\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "bb4b68d6-1974-42f7-b4e7-437164c2b5ca",
+    "level": "log",
+    "timestamp": 1748516766051145
+  },
+  {
+    "event_message": "📦 Processing 500 leads in 20 batches of 25\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "40e3bef9-fd4a-41c0-9460-bd4340d742f7",
+    "level": "log",
+    "timestamp": 1748516766050883
+  },
+  {
+    "event_message": "📦 Processing rows 1-500 (500 rows) - Last batch: false\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "0f3fb0e6-3769-4343-8297-4b6f7e222e88",
+    "level": "log",
+    "timestamp": 1748516766050642
+  },
+  {
+    "event_message": "📊 Batch Configuration: BATCH_SIZE=25, MAX_ROWS=500\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "caa9012f-203a-4069-8598-c0a720757ca8",
+    "level": "log",
+    "timestamp": 1748516766050392
+  },
+  {
+    "event_message": "🔗 Function Call Details: isInitialRequest=true, jobId=9eca3b51-e364-4ce8-b11b-ab6ec33e49b3\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "4c6d862f-3e3a-41f4-b9e0-71fced9e32c1",
+    "level": "log",
+    "timestamp": 1748516766050185
+  },
+  {
+    "event_message": "🔄 Duplicate config: none -> update\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "85885437-357d-4012-9e43-ccf5dbb85154",
+    "level": "log",
+    "timestamp": 1748516766049969
+  },
+  {
+    "event_message": "📦 Processing 9809 total rows, starting from row 0 for team e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "70269adc-e91c-4a73-89e4-8f2ace49e12a",
+    "level": "log",
+    "timestamp": 1748516766049704
+  },
+  {
+    "event_message": "🚀 CSV Import Edge Function started\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "23babe22-b183-4985-9c8f-37800a4cf207",
+    "level": "log",
+    "timestamp": 1748516766048905
+  },
+  {
+    "event_message": "Listening on http://localhost:9999/\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "7e50bec7-d1c6-4442-ab6c-6a005f348de7",
+    "level": "log",
+    "timestamp": 1748516766048687
+  },
+  {
+    "event_message": "booted (time: 197ms)",
+    "event_type": "Boot",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "50a541e8-47a2-4394-bfb9-a6c4a18b24a1",
+    "level": "log",
+    "timestamp": 1748516766048444
+  },
+  {
+    "event_message": "📊 Function Call Summary: {\n  success: true,\n  processedRecords: 9,\n  newRecords: 9,\n  updatedRecords: 0,\n  failedRecords: 0,\n  totalRows: 9,\n  jobId: \"c5699691-4008-4fed-b4ad-fb7c3e7fdef9\",\n  batchesProcessed: 1,\n  executionTime: 4028,\n  currentBatchRows: \"1-9\",\n  isLastBatch: true,\n  needsContinuation: false,\n  continuation: null,\n  errors: undefined\n}\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "f94677a9-b0ab-446c-9f39-8348e733f51d",
+    "level": "log",
+    "timestamp": 1748516718700773
+  },
+  {
+    "event_message": "✅ Import job c5699691-4008-4fed-b4ad-fb7c3e7fdef9 final update completed with status: completed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "b7002ba7-b102-4a12-bd1e-c736831fdcb4",
+    "level": "log",
+    "timestamp": 1748516718700581
+  },
+  {
+    "event_message": "⏱️ Performance: 426ms/record, estimated total: 4s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "44372f39-71a5-4896-bb7c-de718e8b3dc2",
+    "level": "log",
+    "timestamp": 1748516713706895
+  },
+  {
+    "event_message": "✅ Batch 1/1 completed: +9 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "1594f128-f8aa-42a9-8335-22496b4bc6bc",
+    "level": "log",
+    "timestamp": 1748516713706615
+  },
+  {
+    "event_message": "✅ Progress updated: 100% (9/9)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "f89150db-d894-4d3a-8497-7a74fa8d0c25",
+    "level": "log",
+    "timestamp": 1748516713706321
+  },
+  {
+    "event_message": "📦 Processing batch 1/1: rows 1-9\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "49a10e4a-5b91-488b-97f5-52a9afbabc61",
+    "level": "log",
+    "timestamp": 1748516713703371
+  },
+  {
+    "event_message": "📦 Processing 9 leads in 1 batches of 25\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "ebc1efe0-b05c-497c-b176-5b7ea42062b6",
+    "level": "log",
+    "timestamp": 1748516713703200
+  },
+  {
+    "event_message": "📦 Processing rows 1-9 (9 rows) - Last batch: true\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "90c03650-b0af-414d-b0c0-01027ba1cbc1",
+    "level": "log",
+    "timestamp": 1748516713703061
+  },
+  {
+    "event_message": "📊 Batch Configuration: BATCH_SIZE=25, MAX_ROWS=500\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "fbd60040-3006-4819-8dce-f64430d573cd",
+    "level": "log",
+    "timestamp": 1748516713702905
+  },
+  {
+    "event_message": "🔗 Function Call Details: isInitialRequest=true, jobId=c5699691-4008-4fed-b4ad-fb7c3e7fdef9\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "75ba47cd-40d7-4d3c-bbc7-15a90770d0ca",
+    "level": "log",
+    "timestamp": 1748516713702752
+  },
+  {
+    "event_message": "🔄 Duplicate config: none -> update\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "9535f482-db00-4b33-b094-fb732af9ff78",
+    "level": "log",
+    "timestamp": 1748516713702596
+  },
+  {
+    "event_message": "📦 Processing 9 total rows, starting from row 0 for team e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "8da9cfc2-fa6f-4149-87c2-239215fd1469",
+    "level": "log",
+    "timestamp": 1748516713702385
+  },
+  {
+    "event_message": "🚀 CSV Import Edge Function started\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "cf2a0987-c263-4ae1-9875-dbd458e05d78",
+    "level": "log",
+    "timestamp": 1748516713702170
+  },
+  {
+    "event_message": "Listening on http://localhost:9999/\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "b37d55aa-6a2d-4be0-921a-1428b06d6ffb",
+    "level": "log",
+    "timestamp": 1748516713701751
+  },
+  {
+    "event_message": "booted (time: 30ms)",
+    "event_type": "Boot",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "5ce4fe09-43b1-45bf-b75e-7b8f140502ea",
+    "level": "log",
+    "timestamp": 1748516713701313
+  },
+  {
+    "event_message": "📊 Function Call Summary: {\n  success: true,\n  processedRecords: 9,\n  newRecords: 9,\n  updatedRecords: 0,\n  failedRecords: 0,\n  totalRows: 9,\n  jobId: \"f27c5e73-69d4-4882-b43f-d3f28b84a5a0\",\n  batchesProcessed: 1,\n  executionTime: 5476,\n  currentBatchRows: \"1-9\",\n  isLastBatch: true,\n  needsContinuation: false,\n  continuation: null,\n  errors: undefined\n}\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "eca576e5-099b-40eb-8e92-b51977f203a3",
+    "level": "log",
+    "timestamp": 1748516579238481
+  },
+  {
+    "event_message": "✅ Import job f27c5e73-69d4-4882-b43f-d3f28b84a5a0 final update completed with status: completed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "3f65b829-f4b8-4a1b-8d49-2bdcf415cb16",
+    "level": "log",
+    "timestamp": 1748516579238216
+  },
+  {
+    "event_message": "⏱️ Performance: 555ms/record, estimated total: 5s\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "2473f983-ee7f-46e6-ada1-957fc9868814",
+    "level": "log",
+    "timestamp": 1748516579238039
+  },
+  {
+    "event_message": "✅ Batch 1/1 completed: +9 new, +0 updated, +0 failed\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "92e4e830-90d1-413b-bf6b-791632e0f3bb",
+    "level": "log",
+    "timestamp": 1748516579237897
+  },
+  {
+    "event_message": "✅ Progress updated: 100% (9/9)\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "625ada55-397d-4305-8cd8-bafdfd737896",
+    "level": "log",
+    "timestamp": 1748516579237740
+  },
+  {
+    "event_message": "📦 Processing batch 1/1: rows 1-9\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "1788197a-31b6-4de0-917a-e54fddaa668a",
+    "level": "log",
+    "timestamp": 1748516574259315
+  },
+  {
+    "event_message": "📦 Processing 9 leads in 1 batches of 25\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "303f58d5-9d28-489d-8139-04f53356c3d9",
+    "level": "log",
+    "timestamp": 1748516574259182
+  },
+  {
+    "event_message": "📦 Processing rows 1-9 (9 rows) - Last batch: true\n",
+    "event_type": "Log",
+    "function_id": "0693ec8f-e152-4ac9-9042-59c9f9c6922d",
+    "id": "69d25f4b-cabd-419f-8a71-9786ba370cb4",
+    "level": "log",
+    "timestamp": 1748516574259036
+  }
+]
