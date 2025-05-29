@@ -28,6 +28,117 @@ const ImportStatusBar: React.FC = () => {
       const { importJobId } = event.detail;
       console.log(`Marking import job ${importJobId} as completed to prevent duplicate toast`);
       setCompletedImports(prev => new Set([...prev, importJobId]));
+      
+      // CRITICAL FIX: Force immediate refresh to remove the job from active list
+      setTimeout(() => {
+        console.log('🔄 Force refreshing import jobs after completion event...');
+        fetchActiveImports();
+      }, 1000);
+    };
+
+    const fetchActiveImports = async () => {
+      try {
+        console.log('🔄 Fetching import jobs...');
+        const { data } = await supabase
+          .from('import_jobs')
+          .select('*')
+          .in('status', ['pending', 'processing', 'completed', 'completed_with_errors', 'failed'])
+          .order('created_at', { ascending: false });
+
+        if (data) {
+          console.log(`📋 Found ${data.length} import jobs total`);
+          
+          // On initial load, mark all imports as already seen to prevent duplicate toasts
+          if (initialLoad) {
+            const allJobIds = data.map(job => job.id);
+            console.log('Initial load: marking all existing jobs as seen:', allJobIds);
+            setCompletedImports(new Set(allJobIds));
+            setInitialLoad(false);
+          } else {
+            // Check for newly completed imports (only show toast for new completions)
+            data.forEach(job => {
+              if ((job.status === 'completed' || job.status === 'completed_with_errors' || job.status === 'failed') && !completedImports.has(job.id)) {
+                
+                // Check if this is a very recent import (completed within last 30 seconds)
+                // If so, skip the automatic toast as the CSVImport component already showed one
+                const jobCompletedAt = new Date(job.completed_at || job.updated_at);
+                const now = new Date();
+                const timeDiffInSeconds = (now.getTime() - jobCompletedAt.getTime()) / 1000;
+                
+                // Skip automatic toast for very recent imports (likely from current session)
+                if (timeDiffInSeconds < 30) {
+                  console.log(`Skipping automatic toast for recent import job ${job.id} (completed ${timeDiffInSeconds}s ago)`);
+                  setCompletedImports(prev => new Set([...prev, job.id]));
+                  return;
+                }
+
+                // Show completion toast for older imports (from page refresh or background jobs)
+                const newRecords = job.error_details?.new_records || job.processed_records;
+                const updatedRecords = job.error_details?.updated_records || 0;
+                const failedRecords = job.failed_records || 0;
+
+                if (job.status === 'completed' && failedRecords === 0) {
+                  toast.success('Import erfolgreich abgeschlossen! 🎉', {
+                    description: `${newRecords} neue Leads erstellt${updatedRecords > 0 ? `, ${updatedRecords} aktualisiert` : ''}`,
+                    duration: 6000,
+                    className: 'bg-green-50 border-green-200',
+                    style: {
+                      background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                      borderColor: '#22c55e',
+                    },
+                    icon: <CheckCircle className="h-5 w-5 text-green-600" />
+                  });
+                } else if (job.status === 'completed_with_errors') {
+                  toast.warning('Import mit Warnungen abgeschlossen', {
+                    description: `${newRecords} erstellt, ${updatedRecords} aktualisiert, ${failedRecords} fehlgeschlagen`,
+                    duration: 8000,
+                    className: 'bg-yellow-50 border-yellow-200',
+                    style: {
+                      background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+                      borderColor: '#f59e0b',
+                    },
+                    icon: <AlertCircle className="h-5 w-5 text-yellow-600" />
+                  });
+                } else if (job.status === 'failed') {
+                  toast.error('Import fehlgeschlagen', {
+                    description: `Import von ${job.file_name} ist fehlgeschlagen.`,
+                    duration: 8000,
+                    icon: <AlertCircle className="h-5 w-5 text-red-600" />
+                  });
+                }
+
+                setCompletedImports(prev => new Set([...prev, job.id]));
+              }
+            });
+          }
+
+          // Only show active imports in the status bar (pending or processing)
+          // CRITICAL FIX: Add completed_at check to ensure truly completed jobs are not shown
+          const activeJobs = data.filter(job => {
+            const isActive = (job.status === 'pending' || job.status === 'processing') && !job.completed_at;
+            console.log(`Job ${job.id}: status=${job.status}, completed_at=${job.completed_at}, isActive=${isActive}`);
+            return isActive;
+          });
+          
+          console.log(`🟢 Active import jobs: ${activeJobs.length}`);
+          if (activeJobs.length > 0) {
+            console.log('Active jobs details:', activeJobs.map(job => ({
+              id: job.id,
+              status: job.status,
+              fileName: job.file_name,
+              processed: job.processed_records,
+              total: job.total_records,
+              completed_at: job.completed_at
+            })));
+          } else {
+            console.log('No active jobs - all imports completed or failed');
+          }
+          
+          setActiveImports(activeJobs);
+        }
+      } catch (error) {
+        console.error('Error fetching import jobs:', error);
+      }
     };
 
     window.addEventListener('importCompleted', handleImportCompleted as EventListener);
@@ -115,9 +226,10 @@ const ImportStatusBar: React.FC = () => {
           }
 
           // Only show active imports in the status bar (pending or processing)
+          // CRITICAL FIX: Add completed_at check to ensure truly completed jobs are not shown
           const activeJobs = data.filter(job => {
-            const isActive = job.status === 'pending' || job.status === 'processing';
-            console.log(`Job ${job.id}: status=${job.status}, isActive=${isActive}`);
+            const isActive = (job.status === 'pending' || job.status === 'processing') && !job.completed_at;
+            console.log(`Job ${job.id}: status=${job.status}, completed_at=${job.completed_at}, isActive=${isActive}`);
             return isActive;
           });
           

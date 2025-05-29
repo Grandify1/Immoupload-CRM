@@ -369,7 +369,7 @@ serve(async (req) => {
           total_records: csvData.length
         });
 
-        // Force the update with all required fields
+        // Force the update with all required fields - CRITICAL FIX
         const updateData = {
           status: jobStatus,
           processed_records: processedRecords,
@@ -382,9 +382,13 @@ serve(async (req) => {
 
         console.log(`🔍 Final update data being sent:`, updateData);
 
+        // CRITICAL: Use upsert to ensure the update happens
         const { data: updatedJob, error: jobUpdateError } = await supabaseAdmin
           .from('import_jobs')
-          .update(updateData)
+          .upsert(updateData, { 
+            onConflict: 'id',
+            ignoreDuplicates: false 
+          })
           .eq('id', jobId)
           .select()
           .single();
