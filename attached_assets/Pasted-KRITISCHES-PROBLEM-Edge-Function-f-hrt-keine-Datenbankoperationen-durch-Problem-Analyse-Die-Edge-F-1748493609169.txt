@@ -1,0 +1,78 @@
+KRITISCHES PROBLEM: Edge Function führt keine Datenbankoperationen durch
+Problem Analyse:
+Die Edge Function antwortet mit Status 200 (Erfolg), aber es werden KEINE Console.log Ausgaben in den Logs angezeigt. Das bedeutet, dass die Edge Function zwar aufgerufen wird, aber der eigentliche Code nicht ausgeführt wird oder sofort abbricht.
+Hauptproblem identifiziert:
+Die Edge Function ist defekt oder hat einen kritischen Fehler beim Start, der verhindert, dass überhaupt Code ausgeführt wird. Die 208ms Ausführungszeit deutet darauf hin, dass die Function sofort terminiert.
+Sofortige Debugging-Schritte:
+Schritt 1: Edge Function Code überprüfen
+Öffne die csv-import Edge Function in Supabase und überprüfe den Code. Häufige Probleme:
+
+Syntax-Fehler die zum sofortigen Crash führen
+Fehlende import-Statements
+Falscher Function-Export
+Fehlende CORS-Header Behandlung
+
+Schritt 2: Minimalen Test-Code implementieren
+Ersetze temporär den gesamten Edge Function Code durch einen minimalen Test:
+typescriptserve(async (req) => {
+  console.log('🚀 Edge Function called');
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
+  
+  return new Response(JSON.stringify({ success: true, message: 'Test successful' }), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+});
+Schritt 3: CORS Preflight Problem
+Du siehst einen OPTIONS Request vor dem POST. Die Edge Function muss CORS korrekt handhaben:
+typescriptif (req.method === 'OPTIONS') {
+  return new Response('ok', { 
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    }
+  });
+}
+Schritt 4: Request Body Problem
+Mit 23.257 Bytes ist der Request ziemlich groß. Möglicherweise schlägt das Parsen des Request Body fehl:
+typescriptlet body;
+try {
+  body = await req.json();
+  console.log('✅ Request body parsed successfully');
+} catch (error) {
+  console.error('❌ Failed to parse request body:', error);
+  return new Response(JSON.stringify({ error: 'Invalid request body' }), { status: 400 });
+}
+Schritt 5: Environment Variables überprüfen
+Die Edge Function braucht Zugriff auf Supabase URLs und Keys:
+typescriptconst supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+console.log('Supabase URL:', supabaseUrl ? 'Present' : 'Missing');
+console.log('Service Key:', supabaseKey ? 'Present' : 'Missing');
+Schritt 6: Import Statements Problem
+Überprüfe alle Import-Statements am Anfang der Edge Function:
+typescriptimport { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+Kritische Debugging-Strategie:
+Phase 1: Minimal Function Test
+Deploye eine minimale Edge Function die nur "Hello World" zurückgibt und console.log macht. Wenn das nicht funktioniert, ist die Function grundsätzlich defekt.
+Phase 2: Request Parsing Test
+Erweitere um Request Body Parsing und logge alle eingehenden Daten.
+Phase 3: Database Connection Test
+Teste nur die Supabase Client Erstellung ohne Datenoperationen.
+Phase 4: Schritt-für-Schritt Rebuild
+Baue die Import-Logik Schritt für Schritt wieder auf und teste nach jedem Schritt.
+Wahrscheinlichste Ursachen:
+
+Syntax Error im Edge Function Code - verhindert Ausführung komplett
+Fehlende CORS Headers - Request wird blockiert
+Import Statement Fehler - Function lädt nicht richtig
+Request Body zu groß - Parsing schlägt fehl
+Environment Variables fehlen - Supabase Client kann nicht erstellt werden
+
+Sofortmaßnahme:
+Ersetze die gesamte Edge Function durch den minimalen Test-Code oben. Wenn dann immer noch keine Console-Logs erscheinen, ist das Problem fundamentaler (Function-Deployment, Permissions, etc.).
+Erwartetes Ergebnis:
+Nach dem minimalen Test solltest du Console-Logs sehen. Dann kannst du Schritt für Schritt die Import-Logik wieder hinzufügen bis du die Stelle findest, wo es bricht.
