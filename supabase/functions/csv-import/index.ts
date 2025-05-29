@@ -289,6 +289,10 @@ serve(async (req) => {
         };
 
         // Map CSV columns to lead fields with enhanced custom field handling
+        console.log(`🗺️ Processing ${mappings.length} mappings for row ${rowIndex + 1}`);
+        console.log(`🗂️ Available custom fields in map:`, Array.from(customFieldsMap.keys()));
+        console.log(`🗂️ Available custom fields in list:`, customFieldsList.map(cf => cf.name));
+        
         mappings.forEach((mapping, index) => {
           if (mapping.fieldName && index < row.length) {
             const value = row[index]?.toString().trim();
@@ -306,41 +310,57 @@ serve(async (req) => {
                 console.log(`✅ Standard field: ${mapping.fieldName} = ${value}`);
               }
             } else {
-              // Enhanced custom field handling
+              // Enhanced custom field handling with reverse mapping
               console.log(`🔍 Checking if "${mapping.fieldName}" is a custom field...`);
               
-              // Normalize the field name to match database naming
-              const normalizedFieldName = mapping.fieldName
-                .toLowerCase()
-                .replace(/[äöüßÄÖÜ]/g, (match) => {
-                  const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
-                  return replacements[match] || match;
-                })
-                .replace(/[^a-z0-9]/g, '_')
-                .replace(/_+/g, '_')
-                .replace(/^_|_$/g, '');
+              // Try to find custom field by mapping fieldName first
+              let customField = customFieldsMap.get(mapping.fieldName);
               
-              // Look for custom field by both original and normalized names
-              const customField = customFieldsMap.get(mapping.fieldName) || 
-                                 customFieldsMap.get(normalizedFieldName) ||
-                                 customFieldsMap.get(mapping.fieldName.toLowerCase()) ||
-                                 customFieldsList.find(cf => 
-                                   cf.name === mapping.fieldName || 
-                                   cf.name.toLowerCase().replace(/\s+/g, '_') === normalizedFieldName ||
-                                   cf.name.toLowerCase() === mapping.fieldName.toLowerCase()
-                                 );
+              if (!customField) {
+                // If not found, try to reverse-engineer the original name
+                // Check if mapping.fieldName might be a normalized version of an existing custom field
+                console.log(`🔄 Trying reverse lookup for normalized field: ${mapping.fieldName}`);
+                
+                customField = customFieldsList.find(cf => {
+                  // Create all possible normalized versions of the custom field name
+                  const normalizations = [
+                    cf.name,
+                    cf.name.toLowerCase(),
+                    cf.name.toLowerCase().replace(/\s+/g, '_'),
+                    cf.name.toLowerCase()
+                      .replace(/[äöüßÄÖÜ]/g, (match) => {
+                        const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
+                        return replacements[match] || match;
+                      })
+                      .replace(/[^a-z0-9]/g, '_')
+                      .replace(/_+/g, '_')
+                      .replace(/^_|_$/g, '')
+                  ];
+                  
+                  // Check if any normalization matches the mapping fieldName
+                  const isMatch = normalizations.includes(mapping.fieldName);
+                  if (isMatch) {
+                    console.log(`🎯 Found match: "${cf.name}" normalizes to "${mapping.fieldName}"`);
+                    console.log(`   Normalizations tested:`, normalizations);
+                  }
+                  return isMatch;
+                });
+              }
               
               if (customField) {
                 console.log(`✅ Found existing custom field: ${customField.name} (ID: ${customField.id})`);
-                // Use the actual custom field name from database
+                // CRITICAL: Use the actual custom field name from database, NOT the mapping fieldName
                 lead.custom_fields[customField.name] = value;
+                console.log(`   Stored as: custom_fields["${customField.name}"] = "${value}"`);
               } else if (mapping.createCustomField) {
                 console.log(`➕ Will create new custom field: ${mapping.fieldName}`);
                 lead.custom_fields[mapping.fieldName] = value;
+                console.log(`   Stored as: custom_fields["${mapping.fieldName}"] = "${value}"`);
               } else {
-                console.log(`📊 Adding as custom field: ${mapping.fieldName} = ${value}`);
+                console.log(`📊 Adding as new custom field (no match found): ${mapping.fieldName} = ${value}`);
                 // Use the mapping fieldName as provided by frontend
                 lead.custom_fields[mapping.fieldName] = value;
+                console.log(`   Stored as: custom_fields["${mapping.fieldName}"] = "${value}"`);
               }
             }
           }
@@ -514,7 +534,7 @@ serve(async (req) => {
               custom_fields: insertResult[0].custom_fields
             });
             
-            // Immediate verification
+            // Immediate verification with detailed custom fields check
             console.log(`🔍 Verifying lead was actually inserted...`);
             try {
               const { data: verifyLead, error: verifyError } = await supabaseAdmin
@@ -526,7 +546,13 @@ serve(async (req) => {
               if (verifyError) {
                 console.error(`❌ Verification failed for lead ${insertResult[0].id}:`, verifyError);
               } else {
-                console.log(`✅ Lead verified in database:`, verifyLead);
+                console.log(`✅ Lead verified in database:`, {
+                  id: verifyLead.id,
+                  name: verifyLead.name,
+                  custom_fields: verifyLead.custom_fields
+                });
+                console.log(`🎯 Custom fields saved:`, Object.keys(verifyLead.custom_fields || {}));
+                console.log(`🎯 Custom field values:`, verifyLead.custom_fields);
               }
             } catch (verifyException) {
               console.warn(`⚠️ Verification exception:`, verifyException);
