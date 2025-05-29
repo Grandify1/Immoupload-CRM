@@ -247,12 +247,22 @@ serve(async (req) => {
           leadData.import_job_id = jobId;
         }
 
-        // Ensure created_at and updated_at are set
-        const now = new Date().toISOString();
-        leadData.created_at = now;
-        leadData.updated_at = now;
+        // Let database handle timestamps automatically
+        // Remove manual timestamp setting to avoid constraint conflicts
 
         try {
+          // Validate lead data before insert
+          if (!leadData.name || !leadData.team_id || !leadData.status) {
+            console.error(`❌ Invalid lead data - missing required fields:`, {
+              hasName: !!leadData.name,
+              hasTeamId: !!leadData.team_id,
+              hasStatus: !!leadData.status
+            });
+            errors.push(`Row ${i + 1}: Missing required fields (name, team_id, or status)`);
+            failedRecords++;
+            continue;
+          }
+
           const { data: insertedLead, error: insertError } = await supabaseAdmin
             .from('leads')
             .insert([leadData])

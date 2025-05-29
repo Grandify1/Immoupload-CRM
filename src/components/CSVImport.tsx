@@ -680,8 +680,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
 
             if (targetField && standardFields.some(sf => sf.name === targetField.name)) {
-               if (targetField.name === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
-                 lead[targetField.name] = 'potential';
+               if (targetField.name === 'status') {
+                 // Ensure status is always valid
+                 const validStatuses = ['potential', 'contacted', 'qualified', 'closed'];
+                 if (validStatuses.includes(value?.toLowerCase())) {
+                   lead[targetField.name] = value.toLowerCase();
+                 } else {
+                   lead[targetField.name] = 'potential';
+                 }
                } else {
                  lead[targetField.name] = value;
                }
