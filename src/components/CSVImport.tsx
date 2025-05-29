@@ -790,7 +790,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       };
 
       console.log('📤 Full payload size:', JSON.stringify(requestPayload).length, 'bytes');
-      
+
       if (csvData.length > 1000) {
         console.log('🔄 Large import detected - will be processed in multiple batches automatically');
       }
@@ -825,7 +825,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
             description: `Großer Import erkannt (${totalRows} Zeilen). Wird automatisch in mehreren Batches verarbeitet. Fortschritt wird unten rechts angezeigt.`,
             duration: 8000,
           });
-          
+
           console.log('🔄 Multi-batch import started, monitoring progress via ImportStatusBar');
         } else if (isLastBatch) {
           // Final batch completed - trigger completion event
@@ -843,7 +843,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           } else {
             toast.success('Import erfolgreich abgeschlossen!', {
               description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
-              duration: 5000,
+              duration:5000,
             });
           }
         } else {
@@ -882,10 +882,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
     } catch (error: any) {
       console.error('❌ CRITICAL ERROR during import:', error);
-      
+
       // Reset importing state
       setIsImporting(false);
-      
+
       toast.error('Import fehlgeschlagen', {
         description: `Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`,
         duration: 4000,

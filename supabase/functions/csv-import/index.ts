@@ -13,12 +13,12 @@ function getCorsHeaders(request: Request): Record<string, string> {
   ];
 
   let allowOrigin = 'null';
-  
+
   if (origin) {
     const isAllowed = allowedOrigins.some(allowed => 
       typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
     );
-    
+
     if (isAllowed) {
       allowOrigin = origin;
     }
@@ -64,7 +64,7 @@ const MAX_ROWS_PER_FUNCTION_CALL = 500; // Reduziert wegen Memory-Limits
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-  
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -164,11 +164,11 @@ serve(async (req) => {
           totalFailedRecords = currentJob.failed_records || 0;
           totalNewRecords = currentJob.error_details?.new_records || 0;
           totalUpdatedRecords = currentJob.error_details?.updated_records || 0;
-          
+
           // Resume from error logic
           if (resumeFromError && currentJob.status === 'failed') {
             console.log(`🔄 RESUMING FAILED IMPORT from row ${lastProcessedRow || totalProcessed}`);
-            
+
             // Update job status to processing again
             await supabaseAdmin
               .from('import_jobs')
@@ -184,7 +184,7 @@ serve(async (req) => {
               })
               .eq('id', jobId);
           }
-          
+
           console.log(`📊 Continuing import: ${totalProcessed} already processed, ${totalFailedRecords} failed`);
         }
       } catch (error) {
@@ -499,7 +499,7 @@ serve(async (req) => {
               continuationError = invokeError;
               retryCount++;
               console.warn(`⚠️ Continuation attempt ${retryCount} failed:`, invokeError);
-              
+
               if (retryCount < maxRetries) {
                 // Wait before retry (exponential backoff)
                 await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
@@ -509,7 +509,7 @@ serve(async (req) => {
             continuationError = error;
             retryCount++;
             console.warn(`⚠️ Continuation attempt ${retryCount} error:`, error);
-            
+
             if (retryCount < maxRetries) {
               await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
             }
