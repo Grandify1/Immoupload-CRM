@@ -577,52 +577,23 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
   const handleImport = async () => {
     try {
-      console.log('=== STARTING IMPORT PROCESS ===');
       setError(null);
-
-      // Show immediate feedback - close modal and show loading toast
-      const { toast } = await import('sonner');
-
-      // Set loading state immediately
       setIsImporting(true);
 
-      // Show simple loading feedback
-      console.log('Starting import process...');
+      const { toast } = await import('sonner');
+      const { SimpleCSVImportService } = await import('@/services/csvImportService');
 
-      // Small delay to show the loading state on button, then close modal
-      setTimeout(() => {
-        resetState();
-        onClose();
-      }, 300);
-
-      // Check if we have any leads to import
-      if (!csvData || csvData.length === 0) {
-        toast.dismiss(loadingToastId);
-        toast.error('Keine Daten zum Importieren gefunden.');
-        return;
-      }
-
-      console.log('CSV data rows:', csvData.length);
-      console.log('Mappings:', mappings);
-
-      // Get current user info for import job FIRST
-      console.log('=== GETTING USER INFO ===');
+      // Get current user info
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) {
-        console.error('❌ Error getting user:', userError);
         setError(`Authentifizierungsfehler: ${userError.message}`);
-        setStep('preview');
         return;
       }
 
       if (!user?.id) {
-        console.error('❌ No user found');
         setError('Benutzer nicht gefunden. Bitte loggen Sie sich erneut ein.');
-        setStep('preview');
         return;
       }
-
-      console.log('✅ User found:', user.id);
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -630,268 +601,75 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         .eq('id', user.id)
         .single();
 
-      if (profileError) {
-        console.error('❌ Error getting profile:', profileError);
-        setError(`Profil-Fehler: ${profileError.message}`);
-        return;
-      }
-
-      if (!profile?.team_id) {
-        console.error('❌ No team found for user');
+      if (profileError || !profile?.team_id) {
         setError('Team-Information nicht gefunden. Bitte kontaktieren Sie den Support.');
         return;
       }
 
-      console.log('✅ Profile found, team_id:', profile.team_id);
-
+      // Create custom fields first
       const customFieldMappings = mappings.filter(m => m.createCustomField && m.fieldName);
-      console.log('Custom fields to create:', customFieldMappings);
-
-      // Create new custom fields first
       for (const mapping of customFieldMappings) {
         if (mapping.fieldName) {
           try {
-            console.log('Creating custom field:', mapping.fieldName);
             await onAddCustomField(mapping.fieldName, mapping.customFieldType);
-            console.log('✅ Custom field created:', mapping.fieldName);
           } catch (error) {
-            console.log('Custom field might already exist:', mapping.fieldName, error);
+            console.log('Custom field might already exist:', mapping.fieldName);
           }
         }
       }
 
-      console.log('=== PROCESSING CSV DATA ===');
-      const leads: Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>[] = [];
+      // Show progress
+      setStep('importing');
+      
+      // Start import with progress callback
+      const result = await SimpleCSVImportService.processCSVImport(
+        csvData,
+        mappings,
+        duplicateConfig,
+        profile.team_id,
+        user.id,
+        (progress, message) => {
+          setImportProgress(progress);
+          console.log(`${progress}%: ${message}`);
+        }
+      );
 
-      for (let i = 0; i < csvData.length; i++) {
-        const row = csvData[i];
-        const lead: any = {
-          custom_fields: {}
-        };
+      // Close modal after small delay
+      setTimeout(() => {
+        resetState();
+        onClose();
+      }, 500);
 
-        mappings.forEach((mapping, index) => {
-          if (mapping.fieldName && index < row.length) {
-            const value = row[index]?.trim();
-            if (!value) return; // Skip empty values
-
-            const targetField = allAvailableFields.find(f => f.name === mapping.fieldName);
-
-            if (targetField && standardFields.some(sf => sf.name === targetField.name)) {
-               if (targetField.name === 'status') {
-                 // Ensure status is always valid
-                 const validStatuses = ['potential', 'contacted', 'qualified', 'closed'];
-                 if (validStatuses.includes(value?.toLowerCase())) {
-                   lead[targetField.name] = value.toLowerCase();
-                 } else {
-                   lead[targetField.name] = 'potential';
-                 }
-               } else {
-                 lead[targetField.name] = value;
-               }
-            } else if (mapping.createCustomField && mapping.fieldName) {
-              lead.custom_fields[mapping.fieldName] = value;
-            } else if (targetField && targetField.isCustom) {
-              // Use the standardized field key for custom fields
-              lead.custom_fields[targetField.name] = value;
-            }
-          }
+      // Show results
+      if (result.failedRecords > 0) {
+        toast.warning('Import mit Fehlern abgeschlossen', {
+          description: `${result.processedRecords} Leads verarbeitet (${result.newRecords} neu, ${result.updatedRecords} aktualisiert, ${result.failedRecords} Fehler)`,
+          duration: 6000,
         });
-
-        // Set required fields
-        if (!lead.status) lead.status = 'potential';
-        lead.team_id = profile.team_id; // Ensure team_id is always set
-
-        // Check if lead has required name field
-        if (lead.name && lead.name.trim()) {
-          leads.push(lead as Omit<Lead, 'id' | 'team_id' | 'created_at' | 'updated_at'>);
-        }
-      }
-
-      console.log('✅ Processed CSV data, prepared leads:', leads.length);
-      if (leads.length === 0) {
-        setError('Keine gültigen Leads gefunden. Überprüfen Sie Ihre Feldzuordnung.');
-        return;
-      }
-
-      console.log('Sample lead:', leads[0]);
-
-      // Create import job entry in Supabase
-      console.log('=== CREATING IMPORT JOB IN SUPABASE ===');
-      let importJob = null;
-      let skipJobTracking = false;
-
-      try {
-        const importJobData = {
-          file_name: file?.name || 'unknown.csv',
-          total_records: leads.length,
-          processed_records: 0,
-          failed_records: 0,
-          status: 'processing' as const,
-          error_details: null,
-          team_id: profile.team_id,
-          created_by: user.id,
-          undo_status: 'active' as const
-        };
-
-        console.log('Import job data:', importJobData);
-
-        const { data: jobData, error: jobError } = await supabase
-          .from('import_jobs')
-          .insert([importJobData])
-          .select()
-          .single();
-
-        if (jobError) {
-          console.error('❌ Failed to create import job:', jobError);
-          console.error('Job error code:', jobError.code);
-
-          // If table doesn't exist, proceed with import but skip job tracking
-          if (jobError.code === 'PGRST204' || jobError.code === '42P01' || jobError.message?.includes('relation "import_jobs" does not exist')) {
-            console.warn('⚠️ Import jobs table not found, proceeding without tracking...');
-            skipJobTracking = true;
-          } else {
-            setError(`Import-Job Fehler: ${jobError.message}`);
-            setStep('preview');
-            return;
-          }
-        } else {
-          importJob = jobData;
-          console.log('✅ Import job created with ID:', importJob.id);
-        }
-      } catch (error: any) {
-        console.warn('⚠️ Import job creation failed, proceeding without tracking...', error);
-        skipJobTracking = true;
-      }
-
-      // Use Edge Function for background processing with Multi-Batch support
-      console.log('=== STARTING MULTI-BATCH IMPORT WITH EDGE FUNCTION ===');
-      console.log('Duplicate Detection Config:', duplicateConfig);
-      console.log('Sending data to Edge Function...');
-      console.log('🔍 Data being sent to Edge Function:', {
-        csvDataLength: csvData.length,
-        mappingsCount: mappings.length,
-        teamId: profile.team_id,
-        userId: user.id,
-        jobId: importJob.id,
-        isLargeImport: csvData.length > 1000,
-        firstRowExample: csvData[0],
-        mappingsExample: mappings.slice(0, 3)
-      });
-
-      const requestPayload = {
-        csvData: csvData,
-        mappings: mappings,
-        duplicateConfig: duplicateConfig,
-        teamId: profile.team_id,
-        userId: user.id,
-        jobId: importJob.id,
-        startRow: 0,
-        isInitialRequest: true
-      };
-
-      console.log('📤 Full payload size:', JSON.stringify(requestPayload).length, 'bytes');
-
-      if (csvData.length > 1000) {
-        console.log('🔄 Large import detected - will be processed in multiple batches automatically');
-      }
-
-      const { data: functionResponse, error: functionError } = await supabase.functions.invoke('csv-import', {
-        body: requestPayload
-      });
-
-      console.log('✅ Edge Function response:', functionResponse);
-      console.log('✅ Edge Function response data:', functionResponse);
-      console.log('✅ Edge Function response error:', functionError);
-
-      if (functionError) {
-        console.error('❌ Edge Function error:', functionError);
-        setIsImporting(false); // Reset importing state
-        toast.error('Import fehlgeschlagen', {
-          description: `Edge Function Fehler: ${functionError.message}`,
-          duration: 4000,
-        });
-        return;
-      }
-
-      console.log('✅ Edge Function response:', functionResponse);
-
-      // Check if the response indicates success
-      if (functionResponse && functionResponse.success) {
-        const { processedRecords, newRecords, updatedRecords, failedRecords, needsContinuation, isLastBatch, totalRows } = functionResponse;
-
-        if (needsContinuation) {
-          // Multi-batch import in progress
-          toast.success('Import gestartet!', {
-            description: `Großer Import erkannt (${totalRows} Zeilen). Wird automatisch in mehreren Batches verarbeitet. Fortschritt wird unten rechts angezeigt.`,
-            duration: 8000,
-          });
-
-          console.log('🔄 Multi-batch import started, monitoring progress via ImportStatusBar');
-        } else if (isLastBatch) {
-          // Final batch completed - trigger completion event
-          if (importJob?.id) {
-            window.dispatchEvent(new CustomEvent('importCompleted', { 
-              detail: { importJobId: importJob.id } 
-            }));
-          }
-
-          if (failedRecords > 0) {
-            toast.warning('Import mit Fehlern abgeschlossen', {
-              description: `${processedRecords} Leads verarbeitet (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert, ${failedRecords} Fehler)`,
-              duration: 6000,
-            });
-          } else {
-            toast.success('Import erfolgreich abgeschlossen!', {
-              description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
-              duration:5000,
-            });
-          }
-        } else {
-          // Single batch completed but not the last one (should not happen in normal flow)
-          toast.info('Import Batch abgeschlossen', {
-            description: `${processedRecords} von ${totalRows} Leads verarbeitet. Import läuft weiter...`,
-            duration: 4000,
-          });
-        }
       } else {
-        toast.error('Import fehlgeschlagen', {
-          description: 'Der Import konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
-          duration: 4000,
+        toast.success('Import erfolgreich abgeschlossen!', {
+          description: `${result.processedRecords} Leads erfolgreich importiert (${result.newRecords} neu, ${result.updatedRecords} aktualisiert)`,
+          duration: 5000,
         });
       }
 
-      // Trigger refresh of leads data with multiple attempts
+      // Trigger refresh
       if (onRefresh) {
-        console.log('🔄 Triggering automatic refresh of leads data...');
-
-        // Immediately refresh
         onRefresh();
-
-        // Retry after 2 seconds to ensure data is available
-        setTimeout(() => {
-          console.log('🔄 Second refresh attempt...');
-          onRefresh();
-        }, 2000);
-
-        // Final retry after 5 seconds
-        setTimeout(() => {
-          console.log('🔄 Final refresh attempt...');
-          onRefresh();
-        }, 5000);
+        setTimeout(() => onRefresh(), 2000);
       }
 
     } catch (error: any) {
-      console.error('❌ CRITICAL ERROR during import:', error);
-
-      // Reset importing state
-      setIsImporting(false);
-
+      console.error('Import Error:', error);
+      setError(`Import fehlgeschlagen: ${error.message}`);
+      setStep('preview');
+      
+      const { toast } = await import('sonner');
       toast.error('Import fehlgeschlagen', {
-        description: `Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`,
+        description: error.message,
         duration: 4000,
       });
     } finally {
-      // Ensure importing state is always reset
       setIsImporting(false);
     }
   };
