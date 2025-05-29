@@ -592,6 +592,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         duration: Infinity, // Keep it visible until we update it
       });
 
+      console.log('Loading toast created with ID:', loadingToastId);
+
       // Small delay to show the loading state on button, then close modal
       setTimeout(() => {
         resetState();
@@ -802,6 +804,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       if (functionError) {
         console.error('❌ Edge Function error:', functionError);
         toast.dismiss(loadingToastId);
+        setIsImporting(false); // Reset importing state
         toast.error('Import fehlgeschlagen', {
           description: `Edge Function Fehler: ${functionError.message}`,
           duration: 4000,
@@ -867,11 +870,22 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
     } catch (error: any) {
       console.error('❌ CRITICAL ERROR during import:', error);
-      toast.dismiss(loadingToastId);
+      
+      // Ensure loading toast is dismissed
+      if (loadingToastId) {
+        toast.dismiss(loadingToastId);
+      }
+      
+      // Reset importing state
+      setIsImporting(false);
+      
       toast.error('Import fehlgeschlagen', {
         description: `Kritischer Fehler: ${error?.message || 'Unbekannter Fehler'}`,
         duration: 4000,
       });
+    } finally {
+      // Ensure importing state is always reset
+      setIsImporting(false);
     }
   };
 
