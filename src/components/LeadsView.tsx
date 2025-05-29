@@ -479,19 +479,99 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const handleBulkDelete = async () => {
     if (selectedLeads.size === 0) return;
 
-    const confirmed = window.confirm(`Sind Sie sicher, dass Sie ${selectedLeads.size} Lead(s) löschen möchten?`);
+    // Prüfe ob "alle Leads" aus der Datenbank ausgewählt sind
+    const isAllDatabaseSelected = selectedLeads.has('__ALL_DATABASE_LEADS__');
+    
+    let totalCount = selectedLeads.size;
+    if (isAllDatabaseSelected) {
+      // Hole die tatsächliche Anzahl für die Bestätigung
+      const { count } = await supabase
+        .from('leads')
+        .select('id', { count: 'exact', head: true })
+        .eq('team_id', team?.id);
+      totalCount = count || 0;
+    }
+
+    const confirmed = window.confirm(`Sind Sie sicher, dass Sie ${totalCount} Lead(s) löschen möchten?`);
     if (!confirmed) return;
 
     try {
-      const leadsToDelete = Array.from(selectedLeads);
-
-      // Leads in kleineren Batches löschen um URL-Längenbeschränkungen zu vermeiden
-      const batchSize = 50; // Kleinere Batches verwenden
       let totalDeleted = 0;
       let failedDeletes: string[] = [];
 
+      if (isAllDatabaseSelected) {
+        // Optimierter Ansatz für alle Leads: Lösche direkt per team_id
+        console.log('🚀 Deleting all leads for team using optimized approach...');
+        
+        const { error, count } = await supabase
+          .from('leads')
+          .delete({ count: 'exact' })
+          .eq('team_id', team?.id);
+
+        if (error) {
+          console.error('Error deleting all leads:', error);
+          
+          if (error.code === '23503') {
+            // Falls Foreign Key Constraints verhindern: Lösche in kleineren Batches
+            console.log('🔄 Foreign key constraints detected, falling back to batch deletion...');
+            await handleBatchDeletion();
+          } else {
+            throw error;
+          }
+        } else {
+          totalDeleted = count || 0;
+          
+          toast({
+            title: "Alle Leads gelöscht",
+            description: `Alle ${totalDeleted} Leads wurden erfolgreich gelöscht.`,
+          });
+        }
+      } else {
+        // Standard Batch-Löschung für spezifische Lead-IDs
+        await handleBatchDeletion();
+      }
+
+      setSelectedLeads(new Set());
+      setAllLeadsSelected(false);
+      setShowBulkActionsMenu(false);
+      onRefresh();
+
+    } catch (error) {
+      console.error('Unexpected error during bulk delete:', error);
+      toast({
+        title: "Fehler",
+        description: "Beim Löschen der Leads ist ein Fehler aufgetreten.",
+        variant: "destructive",
+      });
+    }
+
+    // Hilfsfunktion für Batch-Löschung
+    async function handleBatchDeletion() {
+      let leadsToDelete: string[];
+      
+      if (isAllDatabaseSelected) {
+        // Lade alle Lead-IDs für team_id
+        const { data, error } = await supabase
+          .from('leads')
+          .select('id')
+          .eq('team_id', team?.id);
+          
+        if (error) throw error;
+        leadsToDelete = data?.map(lead => lead.id) || [];
+      } else {
+        leadsToDelete = Array.from(selectedLeads);
+      }
+
+      // Größere Batches für bessere Performance
+      const batchSize = 100;
+      let localTotalDeleted = 0;
+      let localFailedDeletes: string[] = [];
+
       for (let i = 0; i < leadsToDelete.length; i += batchSize) {
         const batch = leadsToDelete.slice(i, i + batchSize);
+        
+        // Progress-Anzeige
+        console.log(`🗑️ Deleting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(leadsToDelete.length/batchSize)} (${batch.length} leads)`);
 
         const { error, count } = await supabase
           .from('leads')
@@ -501,62 +581,49 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         if (error) {
           console.error('Error deleting batch:', error);
 
-          // Prüfe ob es ein Foreign Key Constraint Fehler ist
           if (error.code === '23503') {
-            // Versuche jeden Lead einzeln zu löschen, um herauszufinden, welche problematisch sind
+            // Foreign Key Constraint: Versuche einzeln
             for (const leadId of batch) {
               const { error: singleError } = await supabase
                 .from('leads')
                 .delete()
                 .eq('id', leadId);
 
-              if (singleError) {
-                if (singleError.code === '23503') {
-                  failedDeletes.push(leadId);
-                } else {
-                  throw singleError; // Andere Fehler weiterwerfen
-                }
+              if (singleError?.code === '23503') {
+                localFailedDeletes.push(leadId);
+              } else if (singleError) {
+                throw singleError;
               } else {
-                totalDeleted += 1;
+                localTotalDeleted += 1;
               }
             }
           } else {
-            throw error; // Andere Fehler weiterwerfen
+            throw error;
           }
         } else {
-          totalDeleted += count || batch.length;
+          localTotalDeleted += count || batch.length;
         }
       }
 
-      if (totalDeleted > 0 && failedDeletes.length === 0) {
+      // Toast-Nachrichten basierend auf Ergebnis
+      if (localTotalDeleted > 0 && localFailedDeletes.length === 0) {
         toast({
           title: "Leads gelöscht",
-          description: `${totalDeleted} Lead(s) wurden erfolgreich gelöscht.`,
+          description: `${localTotalDeleted} Lead(s) wurden erfolgreich gelöscht.`,
         });
-      } else if (totalDeleted > 0 && failedDeletes.length > 0) {
+      } else if (localTotalDeleted > 0 && localFailedDeletes.length > 0) {
         toast({
           title: "Teilweise erfolgreich",
-          description: `${totalDeleted} Lead(s) wurden gelöscht. ${failedDeletes.length} Lead(s) konnten nicht gelöscht werden, da sie mit Deals verknüpft sind.`,
+          description: `${localTotalDeleted} Lead(s) wurden gelöscht. ${localFailedDeletes.length} Lead(s) konnten nicht gelöscht werden, da sie mit Deals verknüpft sind.`,
           variant: "destructive",
         });
-      } else if (failedDeletes.length > 0) {
+      } else if (localFailedDeletes.length > 0) {
         toast({
           title: "Löschen fehlgeschlagen",
           description: `Alle ausgewählten Leads sind mit Deals verknüpft und können nicht gelöscht werden. Löschen Sie zuerst die zugehörigen Deals.`,
           variant: "destructive",
         });
       }
-
-      setSelectedLeads(new Set());
-      setShowBulkActionsMenu(false);
-      onRefresh();
-    } catch (error) {
-      console.error('Unexpected error during bulk delete:', error);
-      toast({
-        title: "Fehler",
-        description: "Beim Löschen der Leads ist ein Fehler aufgetreten.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -599,10 +666,49 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     }
 
     try {
-      // Abrufen ALLER Lead-IDs aus der Datenbank ohne Limit - RPC für große Mengen
+      // Schnelle COUNT-Abfrage für die Gesamtanzahl
+      const { count, error: countError } = await supabase
+        .from('leads')
+        .select('id', { count: 'exact', head: true })
+        .eq('team_id', team.id);
+
+      if (countError) {
+        console.error("Fehler beim Abrufen der Lead-Anzahl:", countError);
+        toast({
+          title: "Fehler",
+          description: "Beim Abrufen der Lead-Anzahl ist ein Fehler aufgetreten.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!count || count === 0) {
+        toast({
+          title: "Keine Leads gefunden",
+          description: "Es wurden keine Leads in der Datenbank gefunden.",
+        });
+        return;
+      }
+
+      // Für große Mengen: Verwende einen speziellen "ALL_DATABASE_LEADS" Marker
+      // anstatt alle IDs zu laden
+      if (count > 5000) {
+        // Setze einen speziellen Marker für "alle Leads aus der DB"
+        setSelectedLeads(new Set(['__ALL_DATABASE_LEADS__']));
+        setAllLeadsSelected(true);
+        
+        toast({
+          title: "Alle Leads ausgewählt",
+          description: `Alle ${count} Leads aus der Datenbank wurden ausgewählt.`,
+        });
+        console.log(`✅ Selected all ${count} leads from database (optimized mode)`);
+        return;
+      }
+
+      // Für kleinere Mengen: Lade tatsächliche IDs in größeren Batches
       let allLeadIds: string[] = [];
       let from = 0;
-      const batchSize = 1000;
+      const batchSize = 2000; // Größere Batches für bessere Performance
       let hasMore = true;
 
       while (hasMore) {
@@ -610,8 +716,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           .from('leads')
           .select('id')
           .eq('team_id', team.id)
-          .range(from, from + batchSize - 1)
-          .order('created_at', { ascending: false });
+          .range(from, from + batchSize - 1);
 
         if (error) {
           console.error("Fehler beim Abrufen aller Lead-IDs:", error);
@@ -626,27 +731,22 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         if (data && data.length > 0) {
           allLeadIds.push(...data.map(lead => lead.id));
           from += batchSize;
-          hasMore = data.length === batchSize; // Wenn weniger als batchSize zurückkommt, sind wir fertig
+          hasMore = data.length === batchSize;
         } else {
           hasMore = false;
         }
       }
 
-      if (allLeadIds.length > 0) {
-        const allLeadIdsSet = new Set(allLeadIds);
-        setSelectedLeads(allLeadIdsSet);
-        setAllLeadsSelected(true);
-        toast({
-          title: "Alle Leads ausgewählt",
-          description: `Alle ${allLeadIdsSet.size} Leads aus der Datenbank wurden ausgewählt.`,
-        });
-        console.log(`✅ Selected all ${allLeadIdsSet.size} leads from database`);
-      } else {
-        toast({
-          title: "Keine Leads gefunden",
-          description: "Es wurden keine Leads in der Datenbank gefunden.",
-        });
-      }
+      const allLeadIdsSet = new Set(allLeadIds);
+      setSelectedLeads(allLeadIdsSet);
+      setAllLeadsSelected(true);
+      
+      toast({
+        title: "Alle Leads ausgewählt",
+        description: `Alle ${allLeadIdsSet.size} Leads aus der Datenbank wurden ausgewählt.`,
+      });
+      console.log(`✅ Selected all ${allLeadIdsSet.size} leads from database`);
+
     } catch (error) {
       console.error("Unerwarteter Fehler beim Auswählen aller Leads:", error);
       toast({
