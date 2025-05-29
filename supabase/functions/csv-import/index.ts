@@ -382,13 +382,10 @@ serve(async (req) => {
 
         console.log(`🔍 Final update data being sent:`, updateData);
 
-        // CRITICAL: Use upsert to ensure the update happens
+        // CRITICAL: Use update to properly set the completed_at field
         const { data: updatedJob, error: jobUpdateError } = await supabaseAdmin
           .from('import_jobs')
-          .upsert(updateData, { 
-            onConflict: 'id',
-            ignoreDuplicates: false 
-          })
+          .update(updateData)
           .eq('id', jobId)
           .select()
           .single();
