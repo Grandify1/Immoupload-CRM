@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -157,8 +156,10 @@ serve(async (req) => {
       let batchFailedRecords = 0;
       const batchErrors: string[] = [];
 
-      // Process each row in the current batch
-      for (let i = 0; i < currentBatch.length; i++) {
+      // Process rows in parallel for better performance
+      const batchPromises = currentBatch.map(async (row, i) => {
+        const absoluteRowNumber = startRow + batchStart + i + 1;
+
         try {
           const row = currentBatch[i];
           const absoluteRowNumber = startRow + batchStart + i + 1;
@@ -198,7 +199,7 @@ serve(async (req) => {
           if (!leadData.name || !leadData.name.trim()) {
             batchErrors.push(`Row ${absoluteRowNumber}: Missing required 'name' field`);
             batchFailedRecords++;
-            continue;
+            return;
           }
 
           if (!leadData.status || !['potential', 'contacted', 'qualified', 'closed'].includes(leadData.status)) {
@@ -208,7 +209,7 @@ serve(async (req) => {
           if (!leadData.team_id) {
             batchErrors.push(`Row ${absoluteRowNumber}: Missing team_id`);
             batchFailedRecords++;
-            continue;
+            return;
           }
 
           // Handle duplicate detection
@@ -224,7 +225,7 @@ serve(async (req) => {
             if (duplicateError && duplicateError.code !== 'PGRST116') {
               batchErrors.push(`Row ${absoluteRowNumber}: Duplicate check failed - ${duplicateError.message}`);
               batchFailedRecords++;
-              continue;
+              return;
             }
 
             if (duplicateCheck) {
@@ -236,7 +237,7 @@ serve(async (req) => {
           if (existingLead) {
             if (duplicateConfig.duplicateAction === 'skip') {
               batchProcessed++;
-              continue;
+              return;
             } else if (duplicateConfig.duplicateAction === 'update') {
               // Merge custom fields
               const mergedCustomFields = {
@@ -264,7 +265,7 @@ serve(async (req) => {
                 batchUpdatedRecords++;
                 batchProcessed++;
               }
-              continue;
+              return;
             }
             // For 'create_new', continue with normal insert
           }
@@ -328,7 +329,13 @@ serve(async (req) => {
           batchErrors.push(`Row ${absoluteRowNumber}: Unexpected error - ${error.message}`);
           batchFailedRecords++;
         }
-      }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+
+      batchResults.forEach(() => {
+        // Update totals (already updated inside the promises)
+      });
 
       // Update totals
       totalProcessed += batchProcessed;
@@ -341,7 +348,7 @@ serve(async (req) => {
       if (jobId) {
         try {
           const progressPercent = Math.round((totalProcessed / csvData.length) * 100);
-          
+
           const progressUpdate = {
             processed_records: totalProcessed,
             failed_records: totalFailedRecords,
@@ -388,7 +395,7 @@ serve(async (req) => {
 
     if (needsContinuation) {
       console.log(`🔄 Import needs continuation. Next batch starts at row ${endRow}`);
-      
+
       // Trigger next batch asynchronously
       try {
         const nextBatchPayload = {

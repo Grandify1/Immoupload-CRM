@@ -19,7 +19,7 @@ interface ImportJobsHistoryProps {
   teamId: string;
 }
 
-const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
+const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = React.memo(({ teamId }) => {
   const [importJobs, setImportJobs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -141,11 +141,11 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = ({ teamId }) => {
       )
       .subscribe();
 
-    // More frequent auto-refresh to catch any missed updates
+    // Optimized: Längere Auto-Refresh Intervalle für bessere Performance
     const interval = setInterval(() => {
       console.log('Auto-refreshing import jobs...');
       fetchImportJobs();
-    }, 10000); // Every 10 seconds instead of 30
+    }, 30000); // Every 30 seconds für bessere Performance
 
     return () => {
       subscription.unsubscribe();
