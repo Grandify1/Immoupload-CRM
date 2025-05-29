@@ -1157,7 +1157,40 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               </div>
             )}
 
-            {/* Status-Mehrfachauswahl */}
+            {/* Wertfeld nur anzeigen, wenn der Operator es erfordert */}
+            {(filterOperator === 'contains' || 
+              (filterField !== 'website' && filterField !== 'email' && 
+               filterOperator !== 'is_empty' && filterOperator !== 'is_not_empty')) && 
+             filterField !== 'status' && (
+              <div className="mb-3">
+                <label className="block text-sm mb-1 font-medium">Value</label>
+                <input 
+                  type="text" 
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* Status Single Select für equals/not_equals */}
+            {filterField === 'status' && (filterOperator === 'equals' || filterOperator === 'not_equals') && (
+              <div className="mb-3">
+                <label className="block text-sm mb-1 font-medium">Select Status</label>
+                <select 
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                >
+                  <option value="">Select a status...</option>
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Status-Mehrfachauswahl für "is_any_of" */}
             {filterField === 'status' && filterOperator === 'is_any_of' && (
               <div className="mb-3">
                 <label className="block text-sm mb-1 font-medium">Select Status</label>
