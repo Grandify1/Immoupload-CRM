@@ -1,0 +1,75 @@
+KRITISCHES PROBLEM: Ihr habt den cURL-Ansatz NICHT richtig implementiert!
+Die Logs zeigen deutlich:
+apiService.ts:75 ❌ Edge function invoke error: FunctionsFetchError: Failed to send a request to the Edge Function
+    at @supabase_supabase-js.js?v=957518e4:1388:17
+Das bedeutet: Euer "Backend API Service" ruft noch immer direkt supabase.functions.invoke() auf - das ist KEIN cURL!
+HAUPTPROBLEM IDENTIFIZIERT:
+Was ihr implementiert habt:
+
+Frontend → APIService → supabase.functions.invoke() → Edge Function ❌
+
+Was ihr implementieren solltet:
+
+Frontend → Backend-Server → cURL → Edge Function ✅
+
+SOFORTIGE KORREKTUR - Echte cURL Implementation:
+Schritt 1: Backend-Server erstellen
+Ihr braucht einen echten Node.js/Express Server, der cURL macht:
+javascript// server.js (Node.js Backend)
+const express = require('express');
+const { exec } = require('child_process');
+const app = express();
+
+app.post('/api/csv-import', async (req, res) => {
+  const { leads, userId, teamId, jobId } = req.body;
+  
+  // Chunk die Daten in kleine Teile
+  const chunks = chunkArray(leads, 50); // 50 pro Chunk
+  
+  for (let i = 0; i < chunks.length; i++) {
+    const curlCommand = `
+      curl -X POST 'https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/csv-import' \\
+      -H 'Authorization: Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}' \\
+      -H 'Content-Type: application/json' \\
+      -d '${JSON.stringify({
+        leads: chunks[i],
+        userId,
+        teamId,
+        jobId,
+        chunkIndex: i
+      })}'
+    `;
+    
+    try {
+      await execAsync(curlCommand);
+      console.log(`Chunk ${i + 1}/${chunks.length} processed`);
+    } catch (error) {
+      console.error(`Chunk ${i + 1} failed:`, error);
+    }
+    
+    // Pause zwischen Chunks
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  
+  res.json({ success: true, chunksProcessed: chunks.length });
+});
+Schritt 2: Frontend zum Backend umleiten
+javascript// apiService.ts - ERSETZEN, nicht erweitern!
+export class APIService {
+  static async importCSVData(data) {
+    // Nicht mehr supabase.functions.invoke()!
+    const response = await fetch('/api/csv-import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    return response.json();
+  }
+}
+WARUM euer aktueller "Backend API Service" nicht funktioniert:
+
+Kein echter Backend-Server: Ihr ruft noch immer Supabase direkt auf
+Kein cURL: supabase.functions.invoke() ist JavaScript, nicht cURL
+Gleiche CORS-Probleme: Browser → Supabase hat noch immer CORS-Issues
+Timeout nach 400-500 Leads: Edge Function läuft zu lange und wird beendet
