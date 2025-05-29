@@ -816,6 +816,14 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         // Dismiss loading toast and show detailed success
         toast.dismiss(loadingToastId);
 
+        // Mark this import as completed to prevent duplicate toast from ImportStatusBar
+        if (importJob?.id) {
+          // Trigger a custom event that ImportStatusBar can listen to
+          window.dispatchEvent(new CustomEvent('importCompleted', { 
+            detail: { importJobId: importJob.id } 
+          }));
+        }
+
         const { processedRecords, newRecords, updatedRecords, failedRecords } = functionResponse;
 
         if (failedRecords > 0) {

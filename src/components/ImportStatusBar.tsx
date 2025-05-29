@@ -23,6 +23,21 @@ const ImportStatusBar: React.FC = () => {
   const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
+    // Listen for import completion events from CSVImport component
+    const handleImportCompleted = (event: CustomEvent) => {
+      const { importJobId } = event.detail;
+      console.log(`Marking import job ${importJobId} as completed to prevent duplicate toast`);
+      setCompletedImports(prev => new Set([...prev, importJobId]));
+    };
+
+    window.addEventListener('importCompleted', handleImportCompleted as EventListener);
+    
+    return () => {
+      window.removeEventListener('importCompleted', handleImportCompleted as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchActiveImports = async () => {
       const { data } = await supabase
         .from('import_jobs')
@@ -42,7 +57,21 @@ const ImportStatusBar: React.FC = () => {
           // Check for newly completed imports (only show toast for new completions)
           data.forEach(job => {
             if ((job.status === 'completed' || job.status === 'completed_with_errors') && !completedImports.has(job.id)) {
-              // Show completion toast
+              
+              // Check if this is a very recent import (completed within last 30 seconds)
+              // If so, skip the automatic toast as the CSVImport component already showed one
+              const jobCompletedAt = new Date(job.completed_at || job.updated_at);
+              const now = new Date();
+              const timeDiffInSeconds = (now.getTime() - jobCompletedAt.getTime()) / 1000;
+              
+              // Skip automatic toast for very recent imports (likely from current session)
+              if (timeDiffInSeconds < 30) {
+                console.log(`Skipping automatic toast for recent import job ${job.id} (completed ${timeDiffInSeconds}s ago)`);
+                setCompletedImports(prev => new Set([...prev, job.id]));
+                return;
+              }
+
+              // Show completion toast for older imports (from page refresh or background jobs)
               const newRecords = job.error_details?.new_records || job.processed_records;
               const updatedRecords = job.error_details?.updated_records || 0;
               const failedRecords = job.failed_records || 0;
