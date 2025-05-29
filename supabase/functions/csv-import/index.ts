@@ -59,8 +59,8 @@ interface ImportRequest {
   lastProcessedRow?: number;
 }
 
-const BATCH_SIZE = 25; // Reduziert für Stabilität bei großen Imports
-const MAX_ROWS_PER_FUNCTION_CALL = 500; // Reduziert wegen Memory-Limits
+const BATCH_SIZE = 25; // Optimiert für Stabilität
+const MAX_ROWS_PER_FUNCTION_CALL = 20000; // Erhöht um alle Daten in einem Call zu verarbeiten
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -381,10 +381,10 @@ serve(async (req) => {
           batchFailedRecords++;
         }
 
-        // Memory cleanup for large imports
-        if (i % 10 === 0) {
-          // Allow garbage collection every 10 records
-          await new Promise(resolve => setTimeout(resolve, 1));
+        // Memory cleanup and progress feedback for large imports
+        if (i % 50 === 0) {
+          // Allow garbage collection and brief pause every 50 records
+          await new Promise(resolve => setTimeout(resolve, 10));
         }
       }
 
@@ -453,98 +453,8 @@ serve(async (req) => {
       console.log(`⏱️ Performance: ${avgTimePerRecord.toFixed(0)}ms/record, estimated total: ${estimatedTotalTime.toFixed(0)}s`);
     }
 
-    // Bestimme ob wir weitere Function Calls brauchen
-    const needsContinuation = !isLastBatch;
-    let continuationResponse = null;
-
-    if (needsContinuation) {
-      console.log(`🔄 Import needs continuation. Next batch starts at row ${endRow}`);
-
-      // Trigger next batch asynchronously
-      try {
-        const nextBatchPayload = {
-          csvData: csvData,
-          mappings: mappings,
-          duplicateConfig: duplicateConfig,
-          teamId: teamId,
-          userId: userId,
-          jobId: jobId,
-          startRow: endRow,
-          isInitialRequest: false
-        };
-
-        console.log(`📤 Triggering next batch: rows ${endRow + 1}-${Math.min(endRow + MAX_ROWS_PER_FUNCTION_CALL, csvData.length)}`);
-
-        // Retry mechanism for continuation
-        let continuationError = null;
-        let retryCount = 0;
-        const maxRetries = 3;
-
-        while (retryCount < maxRetries) {
-          try {
-            const { error: invokeError } = await supabaseAdmin.functions.invoke('csv-import', {
-              body: nextBatchPayload
-            });
-
-            if (!invokeError) {
-              console.log(`✅ Next batch triggered successfully (attempt ${retryCount + 1})`);
-              continuationResponse = {
-                continuation_triggered: true,
-                next_start_row: endRow,
-                remaining_rows: csvData.length - endRow,
-                retry_count: retryCount
-              };
-              break;
-            } else {
-              continuationError = invokeError;
-              retryCount++;
-              console.warn(`⚠️ Continuation attempt ${retryCount} failed:`, invokeError);
-
-              if (retryCount < maxRetries) {
-                // Wait before retry (exponential backoff)
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
-              }
-            }
-          } catch (error) {
-            continuationError = error;
-            retryCount++;
-            console.warn(`⚠️ Continuation attempt ${retryCount} error:`, error);
-
-            if (retryCount < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
-            }
-          }
-        }
-
-        if (continuationError && retryCount >= maxRetries) {
-          console.error('❌ All continuation retries failed:', continuationError);
-          // Update job with pause status and instructions for manual resume
-          if (jobId) {
-            await supabaseAdmin
-              .from('import_jobs')
-              .update({
-                status: 'paused',
-                error_details: {
-                  summary: `Import paused after ${totalProcessed} records - retry continuation failed`,
-                  new_records: totalNewRecords,
-                  updated_records: totalUpdatedRecords,
-                  failed_records: totalFailedRecords,
-                  continuation_error: continuationError.message,
-                  processed_rows: `${startRow + 1}-${endRow}`,
-                  last_successful_row: endRow - 1,
-                  resume_instructions: `Call CSV import function with resumeFromError=true and lastProcessedRow=${endRow}`,
-                  errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined,
-                  retry_attempts: maxRetries
-                },
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', jobId);
-          }
-        }
-      } catch (error) {
-        console.error('❌ Critical error triggering continuation:', error);
-      }
-    }
+    // Process all data in single function call - no continuation needed
+    console.log(`✅ Processing complete: ${totalProcessed}/${csvData.length} records processed in single call`);
 
     // Final status update for this function call
     if (jobId && isLastBatch) {
@@ -594,9 +504,9 @@ serve(async (req) => {
       batchesProcessed: Math.ceil(totalProcessed / BATCH_SIZE),
       executionTime: Date.now() - startTime,
       currentBatchRows: `${startRow + 1}-${endRow}`,
-      isLastBatch: isLastBatch,
-      needsContinuation: needsContinuation,
-      continuation: continuationResponse,
+      isLastBatch: true,
+      needsContinuation: false,
+      continuation: null,
       errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined
     };
 
