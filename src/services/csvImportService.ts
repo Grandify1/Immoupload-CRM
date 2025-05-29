@@ -84,43 +84,77 @@ export class SimpleCSVImportService {
         progressCallback(50, 'Import-Job wurde erstellt, verarbeite Daten...');
       }
 
-      // Überwache den Import-Status
-      let currentProgress = 50;
+      // Enhanced progress tracking for large imports
+      let currentProgress = 10;
+      let statusCheckCount = 0;
+      const maxStatusChecks = 300; // 10 minutes at 2-second intervals
+
       const statusCheckInterval = setInterval(async () => {
         try {
+          statusCheckCount++;
           const jobStatus = await APIService.getImportJobStatus(result.jobId);
 
           if (jobStatus) {
-            const progressPercent = Math.round((jobStatus.processed_records / jobStatus.total_records) * 100);
-            currentProgress = Math.max(currentProgress, progressPercent);
+            const progressPercent = jobStatus.total_records > 0 
+              ? Math.round((jobStatus.processed_records / jobStatus.total_records) * 100)
+              : currentProgress;
+            
+            currentProgress = Math.max(currentProgress, Math.min(progressPercent, 95));
 
             if (progressCallback) {
-              const statusMessage = jobStatus.status === 'processing' 
-                ? `Verarbeite... ${jobStatus.processed_records}/${jobStatus.total_records} Leads`
-                : `Status: ${jobStatus.status}`;
+              let statusMessage = '';
+              
+              if (jobStatus.status === 'processing') {
+                const rate = statusCheckCount > 0 ? jobStatus.processed_records / (statusCheckCount * 2) : 0;
+                const remaining = jobStatus.total_records - jobStatus.processed_records;
+                const estimatedMinutes = rate > 0 ? Math.ceil((remaining / rate) / 60) : 0;
+                
+                statusMessage = `Verarbeite ${jobStatus.processed_records}/${jobStatus.total_records} Leads`;
+                if (estimatedMinutes > 0 && estimatedMinutes < 60) {
+                  statusMessage += ` (≈${estimatedMinutes}min verbleibend)`;
+                }
+                
+                if (jobStatus.failed_records > 0) {
+                  statusMessage += ` • ${jobStatus.failed_records} Fehler`;
+                }
+              } else {
+                statusMessage = `Status: ${jobStatus.status}`;
+              }
+              
               progressCallback(currentProgress, statusMessage);
             }
 
-            // Stoppe Überwachung wenn abgeschlossen
+            // Stop monitoring when completed
             if (jobStatus.status === 'completed' || 
                 jobStatus.status === 'completed_with_errors' || 
                 jobStatus.status === 'failed') {
               clearInterval(statusCheckInterval);
 
               if (progressCallback) {
-                progressCallback(100, 'Import abgeschlossen!');
+                const finalMessage = jobStatus.status === 'completed' 
+                  ? `✅ Import abgeschlossen! ${jobStatus.processed_records} Leads importiert`
+                  : jobStatus.status === 'completed_with_errors'
+                  ? `⚠️ Import mit ${jobStatus.failed_records} Fehlern abgeschlossen`
+                  : `❌ Import fehlgeschlagen`;
+                
+                progressCallback(100, finalMessage);
               }
             }
           }
+
+          // Stop after max attempts
+          if (statusCheckCount >= maxStatusChecks) {
+            clearInterval(statusCheckInterval);
+            if (progressCallback) {
+              progressCallback(95, 'Import läuft noch... Prüfen Sie später den Status.');
+            }
+          }
+
         } catch (error) {
           console.warn('Status check error:', error);
+          statusCheckCount++;
         }
-      }, 2000); // Prüfe alle 2 Sekunden
-
-      // Stoppe Status-Überwachung nach 5 Minuten
-      setTimeout(() => {
-        clearInterval(statusCheckInterval);
-      }, 300000);
+      }, 2000);
 
       // Return das erwartete Format
       return {

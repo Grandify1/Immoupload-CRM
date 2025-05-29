@@ -10,6 +10,23 @@ const corsHeaders = {
   'Access-Control-Allow-Credentials': 'true'
 };
 
+interface CSVImportRequest {
+  userId: string;
+  teamId: string;
+  csvData: string[][];
+  mappings: any[];
+  duplicateConfig: any;
+  jobId: string;
+  startRow?: number;
+  batchSize?: number;
+  isInitialRequest?: boolean;
+  resumeFromError?: boolean;
+  lastProcessedRow?: number;
+}
+
+const BATCH_SIZE = 100; // Process 100 leads at a time
+const MAX_EXECUTION_TIME = 50000; // 50 seconds (before 60s timeout)
+
 serve(async (req) => {
   console.log('🚀 CSV Import Edge Function - Request method:', req.method);
 
@@ -26,6 +43,8 @@ serve(async (req) => {
     ...corsHeaders,
     'Content-Type': 'application/json',
   };
+
+  const startTime = Date.now();
 
   try {
     console.log('🔧 Environment check:');
@@ -52,7 +71,7 @@ serve(async (req) => {
     console.log('✅ Supabase client created');
 
     // Parse request body
-    let body;
+    let body: CSVImportRequest;
     try {
       const rawBody = await req.text();
       console.log('📝 Raw body length:', rawBody.length);
@@ -70,262 +89,199 @@ serve(async (req) => {
       );
     }
 
-    // DIRECT TEST - Vereinfacht für Debugging
-    if (body.userId === '4467ca04-af24-4c9e-b26b-f3152a00f429') {
-      console.log('🧪 DIRECT TEST detected');
+    // Validate required fields
+    if (!body.userId || !body.teamId || !body.jobId) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing required fields',
+          required: ['userId', 'teamId', 'jobId']
+        }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
 
-      // Test database connection first
-      console.log('🔗 Testing database connection...');
-      try {
-        const { data: testConnection, error: connError } = await supabaseAdmin
-          .from('profiles')
-          .select('id')
-          .eq('id', body.userId)
-          .limit(1);
+    console.log(`🚀 Processing import for job: ${body.jobId}`);
+    console.log(`📊 CSV Data: ${body.csvData?.length || 0} rows`);
+    console.log(`🎯 Start row: ${body.startRow || 0}`);
+    console.log(`📦 Batch size: ${body.batchSize || BATCH_SIZE}`);
 
-        if (connError) {
-          console.error('❌ Database connection failed:', connError);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'Database connection failed',
-              details: connError
-            }),
-            { status: 500, headers: responseHeaders }
-          );
-        }
+    // Get existing job
+    const { data: job, error: jobFetchError } = await supabaseAdmin
+      .from('import_jobs')
+      .select('*')
+      .eq('id', body.jobId)
+      .single();
 
-        console.log('✅ Database connection successful:', testConnection);
-      } catch (dbError) {
-        console.error('❌ Database test failed:', dbError);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Database test failed',
-            details: dbError.message
-          }),
-          { status: 500, headers: responseHeaders }
-        );
+    if (jobFetchError) {
+      console.error('❌ Failed to fetch job:', jobFetchError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Job not found',
+          details: jobFetchError.message
+        }),
+        { status: 404, headers: responseHeaders }
+      );
+    }
+
+    console.log(`✅ Job found: ${job.status} (${job.processed_records}/${job.total_records})`);
+
+    // Update job status to processing if not already
+    if (job.status === 'pending') {
+      await supabaseAdmin
+        .from('import_jobs')
+        .update({ status: 'processing' })
+        .eq('id', body.jobId);
+    }
+
+    // Calculate batch parameters
+    const startRow = body.startRow || job.processed_records || 0;
+    const batchSize = body.batchSize || BATCH_SIZE;
+    const endRow = Math.min(startRow + batchSize, body.csvData.length);
+    const batchData = body.csvData.slice(startRow, endRow);
+
+    console.log(`📦 Processing batch: rows ${startRow}-${endRow} (${batchData.length} leads)`);
+
+    let processedCount = 0;
+    let failedCount = 0;
+    let newCount = 0;
+    let updatedCount = 0;
+    const errors: any[] = [];
+
+    // Process leads in batch
+    for (let i = 0; i < batchData.length; i++) {
+      const rowIndex = startRow + i;
+      const row = batchData[i];
+
+      // Check execution time limit
+      if (Date.now() - startTime > MAX_EXECUTION_TIME) {
+        console.log('⏰ Approaching time limit, saving progress and scheduling next batch');
+        break;
       }
 
-      // Check import_jobs table structure first
-      console.log('🔍 Checking import_jobs table structure...');
       try {
-        const { data: tableStructure, error: structureError } = await supabaseAdmin
-          .rpc('get_table_columns', { table_name: 'import_jobs' });
-
-        if (structureError) {
-          console.log('⚠️ Could not get table structure, proceeding anyway:', structureError);
-        } else {
-          console.log('📋 Table structure:', tableStructure);
+        // Convert CSV row to lead object
+        const leadData = await convertRowToLead(row, body.mappings, body.teamId, body.userId, body.jobId);
+        
+        if (!leadData) {
+          console.log(`⚠️ Skipping row ${rowIndex}: no valid lead data`);
+          continue;
         }
-      } catch (err) {
-        console.log('⚠️ Table structure check failed, continuing:', err);
-      }
 
-      // Vereinfachter Job-Creation Test mit minimalsten Daten
-      const jobId = `test-${Date.now()}`;
-      console.log('🏗️ Creating minimal test job:', jobId);
+        // Handle duplicates
+        const duplicateAction = await handleDuplicates(supabaseAdmin, leadData, body.duplicateConfig, body.teamId);
+        
+        if (duplicateAction === 'skip') {
+          console.log(`⏭️ Skipping duplicate: ${leadData.name}`);
+          processedCount++;
+          continue;
+        }
 
-      try {
-        // Erstelle Job mit nur absolut notwendigen Feldern
-        const jobData = {
-          id: jobId,
-          team_id: body.teamId,
-          created_by: body.userId,
-          file_name: 'dashboard-test.csv',
-          total_records: 2,
-          status: 'processing'
-        };
-
-        console.log('📝 Attempting to insert job data:', jobData);
-
-        const { data: testJob, error: jobError } = await supabaseAdmin
-          .from('import_jobs')
-          .insert(jobData)
-          .select()
-          .single();
-
-        if (jobError) {
-          console.error('❌ Job creation failed:', jobError);
-          console.error('❌ Job error details:', JSON.stringify(jobError, null, 2));
-          
-          // Try alternative approach - create without ID
-          console.log('🔄 Trying job creation without explicit ID...');
-          const { data: altJob, error: altError } = await supabaseAdmin
-            .from('import_jobs')
-            .insert({
-              team_id: body.teamId,
-              created_by: body.userId,
-              file_name: 'dashboard-test.csv',
-              total_records: 2,
-              status: 'processing'
-            })
-            .select()
-            .single();
-
-          if (altError) {
-            console.error('❌ Alternative job creation also failed:', altError);
-            return new Response(
-              JSON.stringify({
-                success: false,
-                error: 'Job creation failed',
-                primary_error: jobError,
-                alternative_error: altError,
-                attempted_data: jobData
-              }),
-              { status: 500, headers: responseHeaders }
-            );
-          }
-
-          console.log('✅ Alternative job created:', altJob);
-          const finalJob = altJob;
-          
-          // Continue with lead test using alternative job
-          console.log('🔄 Testing lead insertion with alternative job...');
-          const testLeadData = {
-            team_id: body.teamId,
-            name: 'Test Lead Dashboard Alt',
-            email: 'test-alt@dashboard.com',
-            status: 'potential',
-            import_job_id: finalJob.id
-          };
-
-          const { data: insertedLead, error: leadError } = await supabaseAdmin
+        // Insert or update lead
+        if (duplicateAction === 'update') {
+          const { error: updateError } = await supabaseAdmin
             .from('leads')
-            .insert([testLeadData])
-            .select('id, name, email')
-            .single();
+            .update(leadData)
+            .eq('team_id', body.teamId)
+            .eq(body.duplicateConfig.duplicateDetectionField, leadData[body.duplicateConfig.duplicateDetectionField]);
 
-          if (leadError) {
-            console.error('❌ Lead insertion failed:', leadError);
-            return new Response(
-              JSON.stringify({
-                success: false,
-                error: 'Lead insertion failed with alternative job',
-                details: leadError,
-                job_created: true,
-                job_id: finalJob.id
-              }),
-              { status: 500, headers: responseHeaders }
-            );
+          if (updateError) {
+            console.error(`❌ Update failed for row ${rowIndex}:`, updateError);
+            errors.push({ row: rowIndex, error: updateError.message, data: leadData });
+            failedCount++;
+          } else {
+            updatedCount++;
+            processedCount++;
           }
+        } else {
+          // Insert new lead
+          const { error: insertError } = await supabaseAdmin
+            .from('leads')
+            .insert([leadData]);
 
-          // Update job to completed
-          await supabaseAdmin
-            .from('import_jobs')
-            .update({
-              status: 'completed',
-              processed_records: 1,
-              completed_at: new Date().toISOString()
-            })
-            .eq('id', finalJob.id);
-
-          return new Response(
-            JSON.stringify({
-              success: true,
-              message: 'Dashboard test completed with alternative approach!',
-              results: {
-                job_id: finalJob.id,
-                lead_created: insertedLead,
-                test_passed: true,
-                note: 'Used alternative job creation method'
-              }
-            }),
-            { status: 200, headers: responseHeaders }
-          );
+          if (insertError) {
+            console.error(`❌ Insert failed for row ${rowIndex}:`, insertError);
+            errors.push({ row: rowIndex, error: insertError.message, data: leadData });
+            failedCount++;
+          } else {
+            newCount++;
+            processedCount++;
+          }
         }
 
-        console.log('✅ Primary job creation successful:', testJob);
-
-        // Einfacher Lead-Insert Test
-        console.log('🔄 Testing lead insertion...');
-        const testLeadData = {
-          team_id: body.teamId,
-          name: 'Test Lead Dashboard',
-          email: 'test@dashboard.com',
-          status: 'potential',
-          import_job_id: testJob.id
-        };
-
-        const { data: insertedLead, error: leadError } = await supabaseAdmin
-          .from('leads')
-          .insert([testLeadData])
-          .select('id, name, email')
-          .single();
-
-        if (leadError) {
-          console.error('❌ Lead insertion failed:', leadError);
-
-          // Update job status
-          await supabaseAdmin
-            .from('import_jobs')
-            .update({
-              status: 'failed',
-              failed_records: 1,
-              error_details: { error: leadError.message }
-            })
-            .eq('id', testJob.id);
-
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'Lead insertion failed',
-              details: leadError,
-              job_created: true,
-              job_id: testJob.id
-            }),
-            { status: 500, headers: responseHeaders }
-          );
-        }
-
-        console.log('✅ Lead inserted successfully:', insertedLead);
-
-        // Update job to completed
-        await supabaseAdmin
-          .from('import_jobs')
-          .update({
-            status: 'completed',
-            processed_records: 1,
-            completed_at: new Date().toISOString()
-          })
-          .eq('id', testJob.id);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: 'Dashboard test completed successfully!',
-            results: {
-              job_id: testJob.id,
-              lead_created: insertedLead,
-              test_passed: true
-            }
-          }),
-          { status: 200, headers: responseHeaders }
-        );
-
-      } catch (testError) {
-        console.error('❌ Test execution failed:', testError);
-        console.error('❌ Test error stack:', testError.stack);
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Test execution failed',
-            details: testError.message,
-            stack: testError.stack
-          }),
-          { status: 500, headers: responseHeaders }
-        );
+      } catch (rowError) {
+        console.error(`❌ Row processing failed for row ${rowIndex}:`, rowError);
+        errors.push({ row: rowIndex, error: rowError.message, data: row });
+        failedCount++;
       }
     }
 
-    // Für andere Benutzer
+    // Update job progress
+    const totalProcessedSoFar = startRow + processedCount;
+    const isCompleted = totalProcessedSoFar >= body.csvData.length;
+    
+    console.log(`📊 Batch completed: ${processedCount} processed, ${failedCount} failed`);
+    console.log(`📈 Total progress: ${totalProcessedSoFar}/${body.csvData.length}`);
+
+    const updateData: any = {
+      processed_records: totalProcessedSoFar,
+      failed_records: (job.failed_records || 0) + failedCount,
+      updated_at: new Date().toISOString()
+    };
+
+    if (errors.length > 0) {
+      updateData.error_details = {
+        batch_errors: errors,
+        last_batch: { startRow, endRow, processedCount, failedCount }
+      };
+    }
+
+    if (isCompleted) {
+      updateData.status = failedCount > 0 ? 'completed_with_errors' : 'completed';
+      updateData.completed_at = new Date().toISOString();
+      console.log('✅ Import completed!');
+    } else {
+      // Schedule next batch by calling self
+      console.log('🔄 Scheduling next batch...');
+      
+      // Don't await - fire and forget to avoid timeout
+      setTimeout(async () => {
+        try {
+          await supabaseAdmin.functions.invoke('csv-import', {
+            body: {
+              ...body,
+              startRow: totalProcessedSoFar,
+              isInitialRequest: false
+            }
+          });
+        } catch (error) {
+          console.error('❌ Failed to schedule next batch:', error);
+        }
+      }, 1000);
+    }
+
+    await supabaseAdmin
+      .from('import_jobs')
+      .update(updateData)
+      .eq('id', body.jobId);
+
     return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: 'Only test user supported in debug mode'
+      JSON.stringify({
+        success: true,
+        message: `Batch processed: ${processedCount} leads`,
+        batch_results: {
+          processed: processedCount,
+          failed: failedCount,
+          new: newCount,
+          updated: updatedCount,
+          total_processed: totalProcessedSoFar,
+          total_records: body.csvData.length,
+          is_completed: isCompleted,
+          next_start_row: isCompleted ? null : totalProcessedSoFar
+        },
+        job_id: body.jobId
       }),
-      { status: 400, headers: responseHeaders }
+      { status: 200, headers: responseHeaders }
     );
 
   } catch (error) {
@@ -342,3 +298,74 @@ serve(async (req) => {
     );
   }
 });
+
+
+// Helper function to convert CSV row to lead object
+async function convertRowToLead(row: string[], mappings: any[], teamId: string, userId: string, jobId: string): Promise<any | null> {
+  const leadData: any = {
+    team_id: teamId,
+    status: 'potential',
+    import_job_id: jobId
+  };
+
+  let hasRequiredData = false;
+
+  for (let i = 0; i < mappings.length; i++) {
+    const mapping = mappings[i];
+    if (!mapping.fieldName || mapping.fieldName === '__skip__') continue;
+
+    const cellValue = row[i]?.trim();
+    if (!cellValue) continue;
+
+    // Standard fields
+    if (['name', 'email', 'phone', 'website', 'address', 'description', 'status'].includes(mapping.fieldName)) {
+      leadData[mapping.fieldName] = cellValue;
+      if (mapping.fieldName === 'name') hasRequiredData = true;
+    }
+    // Custom fields
+    else if (mapping.createCustomField || mapping.fieldName.startsWith('custom_')) {
+      if (!leadData.custom_fields) leadData.custom_fields = {};
+      leadData.custom_fields[mapping.fieldName] = cellValue;
+    }
+  }
+
+  // Must have at least a name
+  if (!hasRequiredData || !leadData.name) {
+    return null;
+  }
+
+  return leadData;
+}
+
+// Helper function to handle duplicate detection
+async function handleDuplicates(supabaseAdmin: any, leadData: any, duplicateConfig: any, teamId: string): Promise<'skip' | 'update' | 'insert'> {
+  if (duplicateConfig.duplicateDetectionField === 'none') {
+    return 'insert';
+  }
+
+  const detectionField = duplicateConfig.duplicateDetectionField;
+  const detectionValue = leadData[detectionField];
+
+  if (!detectionValue) {
+    return 'insert';
+  }
+
+  // Check for existing lead
+  const { data: existingLeads, error } = await supabaseAdmin
+    .from('leads')
+    .select('id')
+    .eq('team_id', teamId)
+    .eq(detectionField, detectionValue)
+    .limit(1);
+
+  if (error) {
+    console.error('❌ Duplicate check failed:', error);
+    return 'insert'; // Default to insert on error
+  }
+
+  if (existingLeads && existingLeads.length > 0) {
+    return duplicateConfig.duplicateAction;
+  }
+
+  return 'insert';
+}

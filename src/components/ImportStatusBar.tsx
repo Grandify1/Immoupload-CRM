@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, FileText, CheckCircle, AlertCircle, Clock, Loader2, Undo2, RotateCcw } from 'lucide-react';
+import { X, FileText, CheckCircle, AlertCircle, Clock, Loader2, Undo2, RotateCcw, Play } from 'lucide-react';
 
 interface ImportJob {
   id: string;
@@ -33,6 +33,8 @@ const ImportStatusBar: React.FC = React.memo(() => {
   const [activeJobs, setActiveJobs] = useState<ImportJob[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState(0);
+  const [resumingJobs, setResumingJobs] = useState<Set<string>>(new Set()); // Track resuming jobs
+  const [errorDetails, setErrorDetails] = useState<{ [jobId: string]: string[] }>({});
 
   // Update active jobs query to include failed/paused jobs
   const fetchActiveJobs = useCallback(async () => {
@@ -52,7 +54,7 @@ const ImportStatusBar: React.FC = React.memo(() => {
           updated_at, completed_at
         `)
         .eq('team_id', team.id)
-        .in('status', ['processing', 'failed', 'paused']) // Include failed/paused
+        .in('status', ['processing', 'failed', 'paused', 'completed_with_errors']) // Include failed/paused
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -157,6 +159,47 @@ const ImportStatusBar: React.FC = React.memo(() => {
     setActiveJobs(prev => prev.filter(job => job.id !== jobId));
   }, []);
 
+  const handleResumeImport = async (jobId: string) => {
+    setResumingJobs(prev => new Set(prev).add(jobId));
+    try {
+      const { data, error } = await supabase.functions.invoke('resume-import', {
+        body: { job_id: jobId },
+      });
+
+      if (error) {
+        console.error('Error resuming import:', error);
+        toast({
+          title: 'Fehler beim Fortsetzen des Imports',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Import wird fortgesetzt',
+          description: `Der Import ${jobId} wird fortgesetzt.`,
+        });
+      }
+    } finally {
+      setResumingJobs(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(jobId);
+        return newSet;
+      });
+    }
+  };
+
+  const showErrorDetails = (jobId: string) => {
+    const job = activeJobs.find(j => j.id === jobId);
+    if (job && job.error_details && job.error_details.errors) {
+      setErrorDetails(prev => ({ ...prev, [jobId]: job.error_details.errors }));
+    } else {
+      toast({
+        title: "Keine Fehlerdetails verfügbar",
+        description: "Für diesen Job sind keine detaillierten Fehlerinformationen vorhanden.",
+      });
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -210,6 +253,44 @@ const ImportStatusBar: React.FC = React.memo(() => {
                     {job.failed_records} Fehler aufgetreten
                   </p>
                 )}
+
+                {(job.status === 'failed' || job.status === 'completed_with_errors') && (
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleResumeImport(job.id)}
+                    disabled={resumingJobs.has(job.id)}
+                    title={job.status === 'failed' 
+                      ? `Import bei Zeile ${job.processed_records} fortsetzen`
+                      : `${job.failed_records} fehlerhafte Zeilen erneut verarbeiten`
+                    }
+                  >
+                    {resumingJobs.has(job.id) ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Wird fortgesetzt...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3 h-3 mr-1" />
+                        {job.status === 'failed' ? 'Fortsetzen' : 'Fehler beheben'}
+                      </>
+                    )}
+                  </Button>
+
+                  {job.failed_records > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => showErrorDetails(job.id)}
+                    >
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      {job.failed_records} Fehler anzeigen
+                    </Button>
+                  )}
+                </div>
+              )}
               </div>
             </div>
           ))}
