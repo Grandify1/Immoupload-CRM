@@ -206,13 +206,16 @@ serve(async (req) => {
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '');
         
-        // Add various lookup keys
+        const spacesToUnderscores = originalName.toLowerCase().replace(/\s+/g, '_');
+        
+        // Add various lookup keys for comprehensive matching
         customFieldsMap.set(originalName, field);
         customFieldsMap.set(originalName.toLowerCase(), field);
         customFieldsMap.set(normalizedName, field);
+        customFieldsMap.set(spacesToUnderscores, field);
         customFieldsMap.set(field.id, field);
         
-        console.log(`📝 Custom field mapping: "${originalName}" -> normalized: "${normalizedName}"`);
+        console.log(`📝 Custom field mapping: "${originalName}" -> normalized: "${normalizedName}" -> spaces: "${spacesToUnderscores}"`);
       });
     }
 
@@ -306,19 +309,37 @@ serve(async (req) => {
               // Enhanced custom field handling
               console.log(`🔍 Checking if "${mapping.fieldName}" is a custom field...`);
               
-              // Check if this field exists in our custom fields
+              // Normalize the field name to match database naming
+              const normalizedFieldName = mapping.fieldName
+                .toLowerCase()
+                .replace(/[äöüßÄÖÜ]/g, (match) => {
+                  const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
+                  return replacements[match] || match;
+                })
+                .replace(/[^a-z0-9]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+              
+              // Look for custom field by both original and normalized names
               const customField = customFieldsMap.get(mapping.fieldName) || 
+                                 customFieldsMap.get(normalizedFieldName) ||
                                  customFieldsMap.get(mapping.fieldName.toLowerCase()) ||
-                                 customFieldsList.find(cf => cf.name === mapping.fieldName);
+                                 customFieldsList.find(cf => 
+                                   cf.name === mapping.fieldName || 
+                                   cf.name.toLowerCase().replace(/\s+/g, '_') === normalizedFieldName ||
+                                   cf.name.toLowerCase() === mapping.fieldName.toLowerCase()
+                                 );
               
               if (customField) {
                 console.log(`✅ Found existing custom field: ${customField.name} (ID: ${customField.id})`);
+                // Use the actual custom field name from database
                 lead.custom_fields[customField.name] = value;
               } else if (mapping.createCustomField) {
                 console.log(`➕ Will create new custom field: ${mapping.fieldName}`);
                 lead.custom_fields[mapping.fieldName] = value;
               } else {
                 console.log(`📊 Adding as custom field: ${mapping.fieldName} = ${value}`);
+                // Use the mapping fieldName as provided by frontend
                 lead.custom_fields[mapping.fieldName] = value;
               }
             }
