@@ -4,7 +4,7 @@ const testCSVImport = async () => {
   
   const testData = {
     userId: "4467ca04-af24-4c9e-b26b-f3152a00f429",
-    teamId: "test-team-id", // Du musst deine echte team_id hier einsetzen
+    teamId: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0", // Deine echte team_id
     csvData: [
       ["John Doe", "john@example.com", "+49123456789"],
       ["Jane Smith", "jane@example.com", "+49987654321"]
