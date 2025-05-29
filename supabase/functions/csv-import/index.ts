@@ -366,7 +366,13 @@ async function convertRowToLead(row: string[], mappings: any[], teamId: string, 
       if (mapping.fieldName === 'name') hasRequiredData = true;
     }
     // Custom fields
-    else if (mapping.createCustomField || mapping.fieldName.startsWith('custom_')) {
+    else if (mapping.createCustomField) {
+      if (!leadData.custom_fields) leadData.custom_fields = {};
+      leadData.custom_fields[mapping.fieldName] = cellValue;
+    }
+    // Also handle fields that were mapped to existing custom fields
+    else {
+      // Check if this is a custom field by looking for it in available fields
       if (!leadData.custom_fields) leadData.custom_fields = {};
       leadData.custom_fields[mapping.fieldName] = cellValue;
     }
