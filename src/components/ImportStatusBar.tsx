@@ -115,9 +115,11 @@ const ImportStatusBar: React.FC = () => {
           }
 
           // Only show active imports in the status bar (pending or processing)
-          const activeJobs = data.filter(job => 
-            job.status === 'pending' || job.status === 'processing'
-          );
+          const activeJobs = data.filter(job => {
+            const isActive = job.status === 'pending' || job.status === 'processing';
+            console.log(`Job ${job.id}: status=${job.status}, isActive=${isActive}`);
+            return isActive;
+          });
           
           console.log(`🟢 Active import jobs: ${activeJobs.length}`);
           if (activeJobs.length > 0) {
@@ -126,8 +128,11 @@ const ImportStatusBar: React.FC = () => {
               status: job.status,
               fileName: job.file_name,
               processed: job.processed_records,
-              total: job.total_records
+              total: job.total_records,
+              completed_at: job.completed_at
             })));
+          } else {
+            console.log('No active jobs - all imports completed or failed');
           }
           
           setActiveImports(activeJobs);

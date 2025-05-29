@@ -365,18 +365,26 @@ serve(async (req) => {
           status: jobStatus,
           processed_records: processedRecords,
           failed_records: failedRecords,
-          error_details: errorDetails
+          error_details: errorDetails,
+          total_records: csvData.length
         });
+
+        // Force the update with all required fields
+        const updateData = {
+          status: jobStatus,
+          processed_records: processedRecords,
+          failed_records: failedRecords,
+          total_records: csvData.length,
+          error_details: errorDetails,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        console.log(`🔍 Final update data being sent:`, updateData);
 
         const { data: updatedJob, error: jobUpdateError } = await supabaseAdmin
           .from('import_jobs')
-          .update({
-            status: jobStatus,
-            processed_records: processedRecords,
-            failed_records: failedRecords,
-            error_details: errorDetails,
-            completed_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', jobId)
           .select()
           .single();

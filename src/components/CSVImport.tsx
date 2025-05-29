@@ -586,13 +586,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       // Set loading state immediately
       setIsImporting(true);
 
-      // Show loading toast immediately
-      const loadingToastId = toast.loading('Import wird vorbereitet...', {
-        description: 'Daten werden verarbeitet und an den Server gesendet.',
-        duration: Infinity, // Keep it visible until we update it
-      });
-
-      console.log('Loading toast created with ID:', loadingToastId);
+      // Show simple loading feedback
+      console.log('Starting import process...');
 
       // Small delay to show the loading state on button, then close modal
       setTimeout(() => {
@@ -803,7 +798,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       if (functionError) {
         console.error('❌ Edge Function error:', functionError);
-        toast.dismiss(loadingToastId);
         setIsImporting(false); // Reset importing state
         toast.error('Import fehlgeschlagen', {
           description: `Edge Function Fehler: ${functionError.message}`,
@@ -816,9 +810,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       // Check if the response indicates success
       if (functionResponse && functionResponse.success) {
-        // Dismiss loading toast and show detailed success
-        toast.dismiss(loadingToastId);
-
         // Mark this import as completed to prevent duplicate toast from ImportStatusBar
         if (importJob?.id) {
           // Trigger a custom event that ImportStatusBar can listen to
@@ -841,7 +832,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           });
         }
       } else {
-        toast.dismiss(loadingToastId);
         toast.error('Import fehlgeschlagen', {
           description: 'Der Import konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
           duration: 4000,
@@ -870,11 +860,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
     } catch (error: any) {
       console.error('❌ CRITICAL ERROR during import:', error);
-      
-      // Ensure loading toast is dismissed
-      if (loadingToastId) {
-        toast.dismiss(loadingToastId);
-      }
       
       // Reset importing state
       setIsImporting(false);
