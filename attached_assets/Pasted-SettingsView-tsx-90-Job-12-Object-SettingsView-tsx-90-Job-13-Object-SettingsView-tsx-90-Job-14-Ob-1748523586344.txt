@@ -1,0 +1,827 @@
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:90 Job 15: Object
+SettingsView.tsx:90 Job 16: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 16
+SettingsView.tsx:86 Import jobs fetched successfully: 16 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(16)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:90 Job 15: Object
+SettingsView.tsx:90 Job 16: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 15
+SettingsView.tsx:86 Import jobs fetched successfully: 15 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(15)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:90 Job 15: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 15
+SettingsView.tsx:86 Import jobs fetched successfully: 15 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(15)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:90 Job 15: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 14
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 14 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(14)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:49 Total import jobs in database: 14
+SettingsView.tsx:86 Import jobs fetched successfully: 14 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(14)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 13
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+2SettingsView.tsx:49 Total import jobs in database: 13
+SettingsView.tsx:86 Import jobs fetched successfully: 13 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(13)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 13 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(13)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:49 Total import jobs in database: 13
+SettingsView.tsx:86 Import jobs fetched successfully: 13 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(13)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 13 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(13)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:49 Total import jobs in database: 12
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 12
+SettingsView.tsx:86 Import jobs fetched successfully: 12 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(12)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 12 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(12)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:49 Total import jobs in database: 12
+SettingsView.tsx:86 Import jobs fetched successfully: 12 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(12)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+2SettingsView.tsx:49 Total import jobs in database: 11
+SettingsView.tsx:86 Import jobs fetched successfully: 11 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(11)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 11 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(11)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:49 Total import jobs in database: 11
+SettingsView.tsx:86 Import jobs fetched successfully: 11 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(11)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+2SettingsView.tsx:49 Total import jobs in database: 10
+SettingsView.tsx:86 Import jobs fetched successfully: 10 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(10)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:86 Import jobs fetched successfully: 10 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(10)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+2SettingsView.tsx:49 Total import jobs in database: 9
+SettingsView.tsx:86 Import jobs fetched successfully: 9 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(9)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 9 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(9)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:49 Total import jobs in database: 9
+SettingsView.tsx:86 Import jobs fetched successfully: 9 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(9)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 8
+SettingsView.tsx:86 Import jobs fetched successfully: 8 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(8)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 8
+SettingsView.tsx:86 Import jobs fetched successfully: 8 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(8)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 7
+SettingsView.tsx:86 Import jobs fetched successfully: 7 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(7)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 6
+SettingsView.tsx:86 Import jobs fetched successfully: 6 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(6)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 5
+SettingsView.tsx:86 Import jobs fetched successfully: 5 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(5)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 4
+SettingsView.tsx:86 Import jobs fetched successfully: 4 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(4)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 4
+SettingsView.tsx:86 Import jobs fetched successfully: 4 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(4)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 3
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:86 Import jobs fetched successfully: 3 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(3)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+2SettingsView.tsx:49 Total import jobs in database: 3
+SettingsView.tsx:86 Import jobs fetched successfully: 3 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(3)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:86 Import jobs fetched successfully: 3 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(3)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 2
+SettingsView.tsx:86 Import jobs fetched successfully: 2 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(2)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 2
+SettingsView.tsx:86 Import jobs fetched successfully: 2 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(2)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 1
+SettingsView.tsx:86 Import jobs fetched successfully: 1 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(1)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 1
+SettingsView.tsx:86 Import jobs fetched successfully: 1 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(1)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 0
+SettingsView.tsx:86 Import jobs fetched successfully: 0 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(0)
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 0 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CSVImport.tsx:114 === PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:115 Raw customFields: Array(20)
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:166 Final lead custom fields: Array(20)
+CSVImport.tsx:167 === END PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:228 CSV delimiter detection: Array(4) Selected: ,
+CSVImport.tsx:248 CSV quote character detected: "
+CSVImport.tsx:345 CSV parsing completed: 9809 rows, 15 columns
+CSVImport.tsx:346 Headers detected: Array(15)
+CSVImport.tsx:371 CSV parsing completed: 9809 valid rows from 9809 total rows
+CSVImport.tsx:457 No auto-mapping found for "Keyword"
+CSVImport.tsx:427 Auto-mapped "Title" to "name"
+CSVImport.tsx:427 Auto-mapped "Average Rating" to "rating"
+CSVImport.tsx:427 Auto-mapped "Reviews" to "reviews"
+CSVImport.tsx:427 Auto-mapped "Address" to "address"
+CSVImport.tsx:427 Auto-mapped "Description" to "description"
+CSVImport.tsx:427 Auto-mapped "Website" to "website"
+CSVImport.tsx:457 No auto-mapping found for "Category"
+CSVImport.tsx:457 No auto-mapping found for "Timings"
+CSVImport.tsx:427 Auto-mapped "Phone Number" to "phone"
+CSVImport.tsx:457 No auto-mapping found for "Extra Services"
+CSVImport.tsx:457 No auto-mapping found for "Latitude"
+CSVImport.tsx:457 No auto-mapping found for "Longitude"
+CSVImport.tsx:457 No auto-mapping found for "Link"
+CSVImport.tsx:457 No auto-mapping found for "Data ID"
+CSVImport.tsx:746 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:747 Raw select value: query
+CSVImport.tsx:748 CSV column: Keyword
+CSVImport.tsx:749 Current mapping: Object
+CSVImport.tsx:752 Processed value: query
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: query
+CSVImport.tsx:493 Index: 0
+CSVImport.tsx:517 Sanitized fieldName: query
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:755 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:746 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:747 Raw select value: main_category
+CSVImport.tsx:748 CSV column: Category
+CSVImport.tsx:749 Current mapping: Object
+CSVImport.tsx:752 Processed value: main_category
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: main_category
+CSVImport.tsx:493 Index: 7
+CSVImport.tsx:517 Sanitized fieldName: main_category
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:755 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:746 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:747 Raw select value: workday_timing
+CSVImport.tsx:748 CSV column: Timings
+CSVImport.tsx:749 Current mapping: Object
+CSVImport.tsx:752 Processed value: workday_timing
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: workday_timing
+CSVImport.tsx:493 Index: 8
+CSVImport.tsx:517 Sanitized fieldName: workday_timing
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:755 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:746 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:747 Raw select value: can_claim
+CSVImport.tsx:748 CSV column: Extra Services
+CSVImport.tsx:749 Current mapping: Object
+CSVImport.tsx:752 Processed value: can_claim
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: can_claim
+CSVImport.tsx:493 Index: 10
+CSVImport.tsx:517 Sanitized fieldName: can_claim
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:755 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:746 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:747 Raw select value: categories
+CSVImport.tsx:748 CSV column: Extra Services
+CSVImport.tsx:749 Current mapping: Object
+CSVImport.tsx:752 Processed value: categories
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: categories
+CSVImport.tsx:493 Index: 10
+CSVImport.tsx:517 Sanitized fieldName: categories
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:755 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:746 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:747 Raw select value: gmb_url
+CSVImport.tsx:748 CSV column: Link
+CSVImport.tsx:749 Current mapping: Object
+CSVImport.tsx:752 Processed value: gmb_url
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: gmb_url
+CSVImport.tsx:493 Index: 13
+CSVImport.tsx:517 Sanitized fieldName: gmb_url
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:755 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:568 Name mapping found: Array(1)
+csvImportService.ts:63 🚀 Starting SimpleCSVImportService.processCSVImport via backend API...
+CSVImport.tsx:639 0%: Import wird gestartet...
+apiService.ts:38 🚀 Starting CSV import via backend API...
+apiService.ts:58 ✅ Import job created: 14cbe271-517b-479f-8f3c-bff404a7c3ac
+apiService.ts:94 ✅ CSV import response: Object
+CSVImport.tsx:639 50%: Import-Job wurde erstellt, verarbeite Daten...
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 100 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 101 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈4min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈7min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈10min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈13min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈17min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈20min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈23min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈26min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈30min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈33min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈36min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈39min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈43min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈46min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 100/9809 Leads (≈49min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈26min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈28min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈29min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈31min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈33min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈34min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈36min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈37min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈39min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈41min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈42min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈44min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈45min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈47min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈49min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 200/9809 Leads (≈50min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈34min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈35min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈36min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈37min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈39min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈40min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈41min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈42min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈43min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈44min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈45min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈46min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈47min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈48min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈49min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 300/9809 Leads (≈50min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈38min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈39min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈40min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈41min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈42min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈43min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈44min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈45min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 400/9809 Leads (≈46min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈37min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈38min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈39min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈40min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈41min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈42min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈43min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈44min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈45min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 500/9809 Leads (≈46min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈39min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈40min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈41min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈42min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈43min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈44min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈45min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈46min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 600/9809 Leads (≈47min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 700/9809 Leads (≈40min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 700/9809 Leads (≈41min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 700/9809 Leads (≈42min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 700/9809 Leads (≈43min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 700/9809 Leads (≈44min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 800/9809 Leads (≈39min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 800/9809 Leads (≈40min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 800/9809 Leads (≈41min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 800/9809 Leads (≈42min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 800/9809 Leads (≈43min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 800/9809 Leads (≈44min verbleibend)
+CSVImport.tsx:639 10%: Verarbeite 900/9809 Leads (≈39min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 900/9809 Leads (≈40min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 900/9809 Leads (≈41min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 900/9809 Leads (≈42min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 900/9809 Leads (≈43min verbleibend)
+2CSVImport.tsx:639 10%: Verarbeite 900/9809 Leads (≈44min verbleibend)
+4CSVImport.tsx:639 10%: Verarbeite 1000/9809 Leads (≈40min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 1000/9809 Leads (≈41min verbleibend)
+3CSVImport.tsx:639 10%: Verarbeite 1000/9809 Leads (≈42min verbleibend)
+CSVImport.tsx:639 11%: Verarbeite 1100/9809 Leads (≈38min verbleibend)
+4CSVImport.tsx:639 11%: Verarbeite 1100/9809 Leads (≈39min verbleibend)
+4CSVImport.tsx:639 11%: Verarbeite 1100/9809 Leads (≈40min verbleibend)
+4CSVImport.tsx:639 11%: Verarbeite 1100/9809 Leads (≈41min verbleibend)
+3CSVImport.tsx:639 11%: Verarbeite 1100/9809 Leads (≈42min verbleibend)
+5CSVImport.tsx:639 12%: Verarbeite 1200/9809 Leads (≈39min verbleibend)
+4CSVImport.tsx:639 12%: Verarbeite 1200/9809 Leads (≈40min verbleibend)
+CSVImport.tsx:639 12%: Verarbeite 1200/9809 Leads (≈41min verbleibend)
+CSVImport.tsx:639 13%: Verarbeite 1300/9809 Leads (≈37min verbleibend)
+5CSVImport.tsx:639 13%: Verarbeite 1300/9809 Leads (≈38min verbleibend)
+4CSVImport.tsx:639 13%: Verarbeite 1300/9809 Leads (≈39min verbleibend)
+5CSVImport.tsx:639 13%: Verarbeite 1300/9809 Leads (≈40min verbleibend)
+CSVImport.tsx:639 14%: Verarbeite 1400/9809 Leads (≈37min verbleibend)
+5CSVImport.tsx:639 14%: Verarbeite 1400/9809 Leads (≈38min verbleibend)
+5CSVImport.tsx:639 14%: Verarbeite 1400/9809 Leads (≈39min verbleibend)
+5CSVImport.tsx:639 14%: Verarbeite 1400/9809 Leads (≈40min verbleibend)
+CSVImport.tsx:639 15%: Verarbeite 1500/9809 Leads (≈37min verbleibend)
+5CSVImport.tsx:639 15%: Verarbeite 1500/9809 Leads (≈38min verbleibend)
+4CSVImport.tsx:639 15%: Verarbeite 1500/9809 Leads (≈39min verbleibend)
+CSVImport.tsx:639 16%: Verarbeite 1600/9809 Leads (≈36min verbleibend)
+6CSVImport.tsx:639 16%: Verarbeite 1600/9809 Leads (≈37min verbleibend)
+5CSVImport.tsx:639 16%: Verarbeite 1600/9809 Leads (≈38min verbleibend)
+5CSVImport.tsx:639 17%: Verarbeite 1700/9809 Leads (≈36min verbleibend)
+6CSVImport.tsx:639 17%: Verarbeite 1700/9809 Leads (≈37min verbleibend)
+3CSVImport.tsx:639 17%: Verarbeite 1700/9809 Leads (≈38min verbleibend)
+7CSVImport.tsx:639 18%: Verarbeite 1800/9809 Leads (≈36min verbleibend)
+4CSVImport.tsx:639 18%: Verarbeite 1800/9809 Leads (≈37min verbleibend)
+6CSVImport.tsx:639 19%: Verarbeite 1900/9809 Leads (≈35min verbleibend)
+5CSVImport.tsx:639 19%: Verarbeite 1900/9809 Leads (≈36min verbleibend)
+4CSVImport.tsx:639 20%: Verarbeite 2000/9809 Leads (≈34min verbleibend)
+7CSVImport.tsx:639 20%: Verarbeite 2000/9809 Leads (≈35min verbleibend)
+6CSVImport.tsx:639 20%: Verarbeite 2000/9809 Leads (≈36min verbleibend)
+3CSVImport.tsx:639 21%: Verarbeite 2100/9809 Leads (≈34min verbleibend)
+8CSVImport.tsx:639 21%: Verarbeite 2100/9809 Leads (≈35min verbleibend)
+CSVImport.tsx:639 22%: Verarbeite 2200/9809 Leads (≈33min verbleibend)
+8CSVImport.tsx:639 22%: Verarbeite 2200/9809 Leads (≈34min verbleibend)
+6CSVImport.tsx:639 22%: Verarbeite 2200/9809 Leads (≈35min verbleibend)
+CSVImport.tsx:639 95%: Import läuft noch... Prüfen Sie später den Status.
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 1
+SettingsView.tsx:86 Import jobs fetched successfully: 1 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(1)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 1
+SettingsView.tsx:86 Import jobs fetched successfully: 1 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(1)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:146 Auto-refreshing import jobs...
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 1
+SettingsView.tsx:86 Import jobs fetched successfully: 1 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(1)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
