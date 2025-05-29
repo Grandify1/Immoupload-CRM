@@ -141,27 +141,8 @@ serve(async (req) => {
       );
     }
 
-    // DEBUGGING: If this is a test request, return early with success
-    if (body.userId === 'test-user-id' && body.isInitialRequest === true) {
-      console.log('🧪 TEST REQUEST DETECTED - Returning mock success response');
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Test request successful',
-          processedRecords: 0,
-          newRecords: 0,
-          updatedRecords: 0,
-          failedRecords: 0,
-          jobId: 'test-job-id',
-          debug: {
-            receivedBody: body,
-            bodyKeys: Object.keys(body),
-            functionWorking: true
-          }
-        }),
-        { status: 200, headers: responseHeaders }
-      );
-    }
+    // Test logic removed - function now processes all requests normally
+    console.log('🚀 Processing real import request for user:', body.userId);
 
     const { csvData, mappings, duplicateConfig, teamId, userId, jobId, startRow = 0, isInitialRequest = true, resumeFromError = false, lastProcessedRow = 0 } = body;
 
