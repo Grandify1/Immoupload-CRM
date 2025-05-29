@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log('🚀 CSV Import Edge Function called');
+  console.log('🚀 CSV Import Edge Function started');
   console.log('Method:', req.method);
   console.log('URL:', req.url);
   console.log('Headers present:', Object.keys(Object.fromEntries(req.headers.entries())));
@@ -44,9 +44,9 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    console.log('Environment check:');
+    console.log('🔧 Environment check:');
     console.log('- SUPABASE_URL:', supabaseUrl ? 'Present' : 'Missing');
-    console.log('- SERVICE_KEY:', supabaseServiceKey ? 'Present' : 'Missing');
+    console.log('- SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Present' : 'Missing');
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('❌ Missing Supabase environment variables');
@@ -68,10 +68,12 @@ serve(async (req) => {
 
       body = JSON.parse(rawBody);
       console.log('✅ Request body parsed successfully');
-      console.log('- csvData rows:', body.csvData?.length || 'undefined');
-      console.log('- mappings:', body.mappings?.length || 'undefined');
-      console.log('- teamId:', body.teamId ? 'Present' : 'Missing');
-      console.log('- userId:', body.userId ? 'Present' : 'Missing');
+      console.log('📊 Received data:', {
+        csvDataRows: body.csvData?.length || 'undefined',
+        mappingsCount: body.mappings?.length || 'undefined',
+        teamId: body.teamId ? 'Present' : 'Missing',
+        userId: body.userId ? 'Present' : 'Missing'
+      });
     } catch (parseError) {
       console.error('❌ Failed to parse request body:', parseError.message);
       return new Response(
@@ -88,7 +90,7 @@ serve(async (req) => {
 
     if (!csvData || !mappings || !teamId || !userId) {
       console.error('❌ Missing required fields');
-      console.log('Missing fields:', {
+      console.log('Missing fields validation:', {
         csvData: !csvData,
         mappings: !mappings,
         teamId: !teamId,
@@ -104,36 +106,74 @@ serve(async (req) => {
     }
 
     console.log('✅ All required fields present');
+    console.log('👤 User ID:', userId);
+    console.log('🏢 Team ID:', teamId);
 
-    // Initialize Supabase client
-    console.log('🔌 Creating Supabase client...');
+    // Initialize Supabase client with SERVICE_ROLE_KEY
+    console.log('🔌 Creating Supabase client with SERVICE_ROLE_KEY...');
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Test database connection
-    console.log('🔍 Testing database connection...');
-    const { data: testData, error: testError } = await supabaseAdmin
-      .from('leads')
-      .select('id')
-      .eq('team_id', teamId)
-      .limit(1);
+    // Test database connection and permissions
+    console.log('🔍 Testing database connection and permissions...');
+    try {
+      const { data: testData, error: testError } = await supabaseAdmin
+        .from('leads')
+        .select('id, name, team_id')
+        .eq('team_id', teamId)
+        .limit(1);
 
-    if (testError) {
-      console.error('❌ Database connection test failed:', testError);
+      if (testError) {
+        console.error('❌ Database connection test failed:', testError);
+        console.error('Test error details:', {
+          code: testError.code,
+          message: testError.message,
+          details: testError.details,
+          hint: testError.hint
+        });
+        return new Response(
+          JSON.stringify({ 
+            error: 'Database connection failed', 
+            details: testError.message,
+            code: testError.code
+          }),
+          { status: 500, headers: responseHeaders }
+        );
+      }
+
+      console.log('✅ Database connection successful');
+      console.log('📋 Existing leads count for team:', testData?.length || 0);
+    } catch (connectionError) {
+      console.error('❌ Database connection exception:', connectionError);
       return new Response(
         JSON.stringify({ 
-          error: 'Database connection failed', 
-          details: testError.message 
+          error: 'Database connection exception', 
+          details: connectionError.message 
         }),
         { status: 500, headers: responseHeaders }
       );
     }
 
-    console.log('✅ Database connection successful');
+    // Check leads table structure
+    console.log('🔍 Checking leads table structure...');
+    try {
+      const { data: tableInfo, error: tableError } = await supabaseAdmin
+        .from('leads')
+        .select('*')
+        .limit(0);
+
+      if (tableError) {
+        console.error('❌ Table structure check failed:', tableError);
+      } else {
+        console.log('✅ Leads table accessible');
+      }
+    } catch (structureError) {
+      console.warn('⚠️ Could not check table structure:', structureError);
+    }
 
     // Process CSV import
     console.log('=== STARTING CSV IMPORT PROCESSING ===');
-    console.log(`Processing ${csvData.length} rows with ${mappings.length} mappings`);
-    console.log('Duplicate config:', duplicateConfig);
+    console.log(`📊 Processing ${csvData.length} rows with ${mappings.length} mappings`);
+    console.log('🔄 Duplicate config:', duplicateConfig);
 
     // Load existing custom fields for the team
     console.log('📋 Loading existing custom fields...');
@@ -163,7 +203,7 @@ serve(async (req) => {
       });
     }
 
-    console.log('Custom fields map size:', customFieldsMap.size);
+    console.log('📋 Custom fields map size:', customFieldsMap.size);
 
     // Standard lead fields
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
@@ -174,6 +214,7 @@ serve(async (req) => {
     let updatedRecords = 0;
     let duplicateRecords = 0;
     let newRecords = 0;
+    const detailedErrors = [];
 
     // Create custom fields that don't exist yet
     console.log('➕ Creating new custom fields...');
@@ -186,7 +227,7 @@ serve(async (req) => {
     for (const mapping of customFieldsToCreate) {
       if (mapping.fieldName) {
         try {
-          console.log(`Creating custom field: ${mapping.fieldName}`);
+          console.log(`🆕 Creating custom field: ${mapping.fieldName}`);
           const { data: newField, error: createError } = await supabaseAdmin
             .from('custom_fields')
             .insert({
@@ -200,29 +241,34 @@ serve(async (req) => {
             .single();
 
           if (createError) {
-            console.warn(`Failed to create custom field ${mapping.fieldName}:`, createError);
+            console.warn(`⚠️ Failed to create custom field ${mapping.fieldName}:`, createError);
+            detailedErrors.push(`Custom field creation failed: ${mapping.fieldName} - ${createError.message}`);
           } else {
             console.log(`✅ Created custom field: ${mapping.fieldName}`);
             customFieldsMap.set(mapping.fieldName, newField);
           }
         } catch (error) {
-          console.warn(`Error creating custom field ${mapping.fieldName}:`, error);
+          console.warn(`⚠️ Exception creating custom field ${mapping.fieldName}:`, error);
+          detailedErrors.push(`Custom field exception: ${mapping.fieldName} - ${error.message}`);
         }
       }
     }
 
-    // Process each row
-    console.log('🔄 Processing CSV rows...');
-    const leads = [];
+    // Process each row individually with detailed error handling
+    console.log('🔄 Processing CSV rows individually...');
     
     for (let rowIndex = 0; rowIndex < csvData.length; rowIndex++) {
       const row = csvData[rowIndex];
       
       try {
+        console.log(`📝 Processing row ${rowIndex + 1}/${csvData.length}`);
+        
         const lead = {
           team_id: teamId,
           status: 'potential',
-          custom_fields: {}
+          custom_fields: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
         // Map CSV columns to lead fields
@@ -231,26 +277,41 @@ serve(async (req) => {
             const value = row[index]?.toString().trim();
             if (!value || value === '') return;
 
+            console.log(`📋 Mapping column "${mapping.csvHeader}" -> "${mapping.fieldName}" = "${value}"`);
+
             // Check if it's a standard field
             if (standardFields.includes(mapping.fieldName)) {
               if (mapping.fieldName === 'status' && !['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
                 lead[mapping.fieldName] = 'potential';
+                console.log(`🔄 Normalized status from "${value}" to "potential"`);
               } else {
                 lead[mapping.fieldName] = value;
               }
             } else {
               // Handle custom fields
               lead.custom_fields[mapping.fieldName] = value;
+              console.log(`📊 Added custom field: ${mapping.fieldName} = ${value}`);
             }
           }
         });
 
         // Ensure we have at least a name to create the lead
         if (!lead.name || !lead.name.trim()) {
-          console.warn(`Skipping row ${rowIndex + 1} without name`);
+          console.warn(`⚠️ Skipping row ${rowIndex + 1} - no name provided`);
+          console.log('Row data:', row);
           failedRecords++;
+          detailedErrors.push(`Row ${rowIndex + 1}: Missing required name field`);
           continue;
         }
+
+        console.log(`💾 Prepared lead data for "${lead.name}":`, {
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          team_id: lead.team_id,
+          status: lead.status,
+          custom_fields_count: Object.keys(lead.custom_fields).length
+        });
 
         // Handle duplicates
         let existingLead = null;
@@ -258,15 +319,28 @@ serve(async (req) => {
           const searchField = duplicateConfig.duplicateDetectionField;
           const searchValue = lead[searchField];
           
+          console.log(`🔍 Checking for duplicates using field "${searchField}" = "${searchValue}"`);
+          
           if (searchValue) {
-            const { data: duplicateCheck } = await supabaseAdmin
-              .from('leads')
-              .select('id, custom_fields')
-              .eq('team_id', teamId)
-              .eq(searchField, searchValue)
-              .maybeSingle();
+            try {
+              const { data: duplicateCheck, error: duplicateError } = await supabaseAdmin
+                .from('leads')
+                .select('id, name, custom_fields')
+                .eq('team_id', teamId)
+                .eq(searchField, searchValue)
+                .maybeSingle();
 
-            existingLead = duplicateCheck;
+              if (duplicateError) {
+                console.warn(`⚠️ Duplicate check failed for ${searchField}:`, duplicateError);
+              } else {
+                existingLead = duplicateCheck;
+                if (existingLead) {
+                  console.log(`🔍 Found duplicate lead: ${existingLead.name} (ID: ${existingLead.id})`);
+                }
+              }
+            } catch (duplicateException) {
+              console.warn(`⚠️ Duplicate check exception:`, duplicateException);
+            }
           }
         }
 
@@ -274,76 +348,138 @@ serve(async (req) => {
           duplicateRecords++;
           
           if (duplicateConfig.duplicateAction === 'skip') {
-            console.log(`Skipping duplicate lead: ${lead.name}`);
+            console.log(`⏭️ Skipping duplicate lead: ${lead.name}`);
             continue;
           } else if (duplicateConfig.duplicateAction === 'update') {
-            console.log(`Updating existing lead: ${lead.name}`);
+            console.log(`🔄 Updating existing lead: ${lead.name}`);
             
-            // Merge custom fields
-            const mergedCustomFields = {
-              ...(existingLead.custom_fields || {}),
-              ...lead.custom_fields
-            };
+            try {
+              // Merge custom fields
+              const mergedCustomFields = {
+                ...(existingLead.custom_fields || {}),
+                ...lead.custom_fields
+              };
 
-            const updateData = { ...lead };
-            updateData.custom_fields = mergedCustomFields;
-            delete updateData.team_id; // Don't update team_id
+              const updateData = { ...lead };
+              updateData.custom_fields = mergedCustomFields;
+              delete updateData.team_id; // Don't update team_id
+              delete updateData.created_at; // Don't update created_at
 
-            const { error: updateError } = await supabaseAdmin
-              .from('leads')
-              .update(updateData)
-              .eq('id', existingLead.id);
+              console.log(`💾 Updating lead with data:`, {
+                id: existingLead.id,
+                name: updateData.name,
+                fieldsToUpdate: Object.keys(updateData).filter(k => k !== 'custom_fields'),
+                customFieldsToUpdate: Object.keys(updateData.custom_fields)
+              });
 
-            if (updateError) {
-              console.error(`Failed to update lead ${lead.name}:`, updateError);
+              const { data: updateResult, error: updateError } = await supabaseAdmin
+                .from('leads')
+                .update(updateData)
+                .eq('id', existingLead.id)
+                .select('id, name');
+
+              if (updateError) {
+                console.error(`❌ Failed to update lead ${lead.name}:`, updateError);
+                console.error('Update error details:', {
+                  code: updateError.code,
+                  message: updateError.message,
+                  details: updateError.details,
+                  hint: updateError.hint
+                });
+                failedRecords++;
+                detailedErrors.push(`Row ${rowIndex + 1}: Update failed - ${updateError.message}`);
+              } else {
+                console.log(`✅ Successfully updated lead:`, updateResult);
+                updatedRecords++;
+                processedRecords++;
+              }
+            } catch (updateException) {
+              console.error(`❌ Update exception for lead ${lead.name}:`, updateException);
               failedRecords++;
-            } else {
-              updatedRecords++;
-              processedRecords++;
+              detailedErrors.push(`Row ${rowIndex + 1}: Update exception - ${updateException.message}`);
             }
             continue;
           }
           // For 'create_new', continue with normal creation
+          console.log(`➕ Creating new lead despite duplicate: ${lead.name}`);
         }
 
-        // Create new lead
-        leads.push(lead);
+        // Create new lead with detailed error handling
+        console.log(`💾 Attempting to insert new lead: ${lead.name}`);
+        console.log(`📊 Final lead data structure:`, JSON.stringify(lead, null, 2));
+        
+        try {
+          const { data: insertResult, error: insertError } = await supabaseAdmin
+            .from('leads')
+            .insert([lead])
+            .select('id, name, team_id, created_at');
 
-      } catch (error) {
-        console.error(`Error processing row ${rowIndex + 1}:`, error);
+          if (insertError) {
+            console.error(`❌ Insert failed for lead ${lead.name}:`, insertError);
+            console.error('Insert error details:', {
+              code: insertError.code,
+              message: insertError.message,
+              details: insertError.details,
+              hint: insertError.hint
+            });
+            failedRecords++;
+            detailedErrors.push(`Row ${rowIndex + 1}: Insert failed - ${insertError.message}`);
+          } else if (!insertResult || insertResult.length === 0) {
+            console.error(`❌ Insert returned no data for lead ${lead.name}`);
+            failedRecords++;
+            detailedErrors.push(`Row ${rowIndex + 1}: Insert returned no data`);
+          } else {
+            console.log(`✅ Successfully inserted lead:`, insertResult[0]);
+            newRecords++;
+            processedRecords++;
+          }
+        } catch (insertException) {
+          console.error(`❌ Insert exception for lead ${lead.name}:`, insertException);
+          console.error('Exception stack:', insertException.stack);
+          failedRecords++;
+          detailedErrors.push(`Row ${rowIndex + 1}: Insert exception - ${insertException.message}`);
+        }
+
+      } catch (rowError) {
+        console.error(`❌ Error processing row ${rowIndex + 1}:`, rowError);
+        console.error('Row error stack:', rowError.stack);
+        console.log('Problematic row data:', row);
         failedRecords++;
+        detailedErrors.push(`Row ${rowIndex + 1}: Processing error - ${rowError.message}`);
       }
 
-      // Log progress every 100 rows
-      if ((rowIndex + 1) % 100 === 0) {
-        console.log(`Progress: ${rowIndex + 1}/${csvData.length} rows processed`);
+      // Log progress every 10 rows
+      if ((rowIndex + 1) % 10 === 0) {
+        console.log(`📊 Progress: ${rowIndex + 1}/${csvData.length} rows processed (${newRecords} new, ${updatedRecords} updated, ${failedRecords} failed)`);
       }
     }
 
-    // Batch insert new leads
-    if (leads.length > 0) {
-      console.log(`🔄 Inserting ${leads.length} new leads...`);
-      
-      // Insert in batches of 1000
-      const batchSize = 1000;
-      for (let i = 0; i < leads.length; i += batchSize) {
-        const batch = leads.slice(i, i + batchSize);
-        
-        const { data: insertedLeads, error: insertError } = await supabaseAdmin
-          .from('leads')
-          .insert(batch)
-          .select('id');
+    // Final verification - check if leads actually exist in database
+    console.log('🔍 FINAL VERIFICATION - Checking database for imported leads...');
+    try {
+      const { data: verificationLeads, error: verificationError } = await supabaseAdmin
+        .from('leads')
+        .select('id, name, created_at')
+        .eq('team_id', teamId)
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-        if (insertError) {
-          console.error(`Failed to insert batch ${i / batchSize + 1}:`, insertError);
-          failedRecords += batch.length;
-        } else {
-          const insertedCount = insertedLeads?.length || 0;
-          newRecords += insertedCount;
-          processedRecords += insertedCount;
-          console.log(`✅ Inserted batch ${i / batchSize + 1}: ${insertedCount} leads`);
-        }
+      if (verificationError) {
+        console.error('❌ Verification query failed:', verificationError);
+      } else {
+        const recentLeads = verificationLeads?.filter(lead => {
+          const createdTime = new Date(lead.created_at).getTime();
+          const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+          return createdTime > fiveMinutesAgo;
+        }) || [];
+
+        console.log('✅ Database verification completed');
+        console.log(`📊 Total leads in database for team: ${verificationLeads?.length || 0}`);
+        console.log(`🕐 Recently created leads (last 5 min): ${recentLeads.length}`);
+        console.log('Recent leads:', recentLeads.map(l => ({ id: l.id, name: l.name, created_at: l.created_at })));
       }
+    } catch (verificationException) {
+      console.error('❌ Verification exception:', verificationException);
     }
 
     // Update job status if provided
@@ -351,7 +487,7 @@ serve(async (req) => {
       console.log('📝 Updating import job status...');
       try {
         const finalStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
-        await supabaseAdmin
+        const { error: jobUpdateError } = await supabaseAdmin
           .from('import_jobs')
           .update({
             status: finalStatus,
@@ -362,56 +498,73 @@ serve(async (req) => {
               updated_records: updatedRecords,
               duplicate_records: duplicateRecords,
               failed_records: failedRecords,
-              summary: `Import completed: ${newRecords} new, ${updatedRecords} updated, ${duplicateRecords} skipped, ${failedRecords} failed`
+              detailed_errors: detailedErrors.slice(0, 10), // Limit error details
+              summary: `Import completed: ${newRecords} new, ${updatedRecords} updated, ${duplicateRecords} duplicates, ${failedRecords} failed`
             },
             completed_at: new Date().toISOString()
           })
           .eq('id', jobId);
-        console.log('✅ Job status updated');
+
+        if (jobUpdateError) {
+          console.warn('⚠️ Could not update job status:', jobUpdateError);
+        } else {
+          console.log('✅ Job status updated successfully');
+        }
       } catch (updateError) {
-        console.warn('Could not update job status:', updateError);
+        console.warn('⚠️ Job update exception:', updateError);
       }
     }
 
-    // Final verification
-    const { data: verificationLeads, error: verificationError } = await supabaseAdmin
-      .from('leads')
-      .select('id')
-      .eq('team_id', teamId);
-
-    const actualLeadCount = verificationLeads?.length || 0;
-
     console.log('=== FINAL IMPORT RESULTS ===');
-    console.log(`✅ Import completed successfully!`);
-    console.log(`📊 Total leads processed: ${processedRecords}`);
-    console.log(`🆕 New records: ${newRecords}`);
-    console.log(`🔄 Updated records: ${updatedRecords}`);
+    console.log(`📊 Total CSV rows processed: ${csvData.length}`);
+    console.log(`✅ Successfully processed: ${processedRecords}`);
+    console.log(`🆕 New records created: ${newRecords}`);
+    console.log(`🔄 Existing records updated: ${updatedRecords}`);
     console.log(`⏭️ Duplicate records skipped: ${duplicateRecords}`);
     console.log(`❌ Failed records: ${failedRecords}`);
-    console.log(`📈 Total leads in database: ${actualLeadCount}`);
+    
+    if (detailedErrors.length > 0) {
+      console.log('❌ Detailed errors:');
+      detailedErrors.slice(0, 10).forEach(error => console.log(`  - ${error}`));
+      if (detailedErrors.length > 10) {
+        console.log(`  ... and ${detailedErrors.length - 10} more errors`);
+      }
+    }
+
+    const finalResponse = {
+      success: true,
+      processedRecords: processedRecords,
+      newRecords: newRecords,
+      updatedRecords: updatedRecords,
+      duplicateRecords: duplicateRecords,
+      failedRecords: failedRecords,
+      totalRows: csvData.length,
+      detailedErrors: detailedErrors.slice(0, 5), // Include some errors in response
+      message: `Import completed: ${processedRecords}/${csvData.length} leads processed successfully (${newRecords} new, ${updatedRecords} updated)`
+    };
+
+    console.log('📤 Sending final response:', finalResponse);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        processedRecords: processedRecords,
-        newRecords: newRecords,
-        updatedRecords: updatedRecords,
-        duplicateRecords: duplicateRecords,
-        failedRecords: failedRecords,
-        actualLeadCount: actualLeadCount,
-        message: `Successfully imported ${processedRecords} leads (${newRecords} new, ${updatedRecords} updated). Database now contains ${actualLeadCount} total leads.`
-      }),
+      JSON.stringify(finalResponse),
       { status: 200, headers: responseHeaders }
     );
 
   } catch (error) {
-    console.error('❌ Critical Edge Function error:', error);
-    console.error('Error stack:', error.stack);
+    console.error('❌ CRITICAL Edge Function error:', error);
+    console.error('Critical error stack:', error.stack);
+    console.error('Critical error details:', {
+      name: error.name,
+      message: error.message,
+      cause: error.cause
+    });
+    
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
+        details: 'Check Edge Function logs for detailed debugging information'
       }),
       { status: 500, headers: responseHeaders }
     );
