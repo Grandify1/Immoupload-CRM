@@ -1,0 +1,123 @@
+KRITISCHES PROBLEM: Edge Function meldet Erfolg aber Leads landen nicht in der Datenbank
+Problem Analyse:
+Die Edge Function antwortet mit {success: true, processedRecords: 9, failedRecords: 0}, aber die Leads erscheinen nicht in der Datenbank. Das ist ein klassisches "Silent Fail" Problem - die Edge Function denkt, sie war erfolgreich, aber die Datenbankoperationen schlagen fehl.
+Hauptproblem identifiziert:
+Die Edge Function führt Datenbankoperationen durch, aber diese werden nicht committed oder schlagen still fehl. Häufige Ursachen sind RLS Policy Violations, fehlende Permissions, oder Transaction Rollbacks.
+SOFORTIGE LÖSUNG - Systematisches Debugging:
+Schritt 1: Edge Function Logs aktivieren
+Füge ausführliche Console.log Statements in die csv-import Edge Function ein:
+typescriptconsole.log('🚀 CSV Import Edge Function started');
+console.log('📊 Received data:', { recordCount: leads.length });
+console.log('👤 User ID:', userId);
+console.log('🏢 Team ID:', teamId);
+
+// VOR jedem Datenbankoperation:
+console.log('💾 Attempting to insert lead:', leadData);
+
+// NACH jedem Insert:
+console.log('✅ Lead inserted with ID:', result.id);
+
+// Bei Fehlern:
+console.error('❌ Database error:', error);
+Schritt 2: Supabase Client Permissions überprüfen
+Die Edge Function muss den SERVICE_ROLE_KEY verwenden, nicht den normalen API Key:
+typescriptconst supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')! // NICHT SUPABASE_ANON_KEY
+);
+Schritt 3: RLS Policy Problem lösen
+Die Leads-Tabelle hat wahrscheinlich Row Level Security. Die Edge Function muss als Service Role agieren, um RLS zu umgehen, oder die Leads brauchen die korrekte user_id/team_id:
+typescript// Jeder Lead muss diese Felder haben:
+const leadToInsert = {
+  ...leadData,
+  user_id: userId,
+  team_id: teamId,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
+Schritt 4: Transaction Error Handling
+Implementiere explizite Error Handling für jeden Insert:
+typescriptfor (const lead of leads) {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('leads')
+      .insert(lead)
+      .select();
+    
+    if (error) {
+      console.error('❌ Insert failed for lead:', lead.name, error);
+      continue; // Nicht den ganzen Import abbrechen
+    }
+    
+    console.log('✅ Successfully inserted:', data[0].id);
+  } catch (err) {
+    console.error('❌ Exception during insert:', err);
+  }
+}
+Schritt 5: Batch Insert Problem
+Falls du Batch Inserts verwendest, kann ein einzelner fehlerhafter Record den ganzen Batch zum Scheitern bringen:
+typescript// SCHLECHT - ein Fehler bricht alles ab:
+const { error } = await supabaseAdmin.from('leads').insert(allLeads);
+
+// BESSER - einzeln mit Error Handling:
+const results = [];
+for (const lead of allLeads) {
+  const result = await insertSingleLead(lead);
+  results.push(result);
+}
+Schritt 6: Datenbank Constraints überprüfen
+Überprüfe die Leads-Tabelle auf Constraints die den Insert verhindern könnten:
+
+Unique Constraints auf place_id, email, phone
+Required Fields die NULL sind
+Foreign Key Constraints
+Check Constraints auf Datentypen
+
+Schritt 7: Mapping Problem beheben
+Das Auto-Mapping zeigt "owner_name" zu "name" - das könnte ein Konflikt sein:
+typescript// Stelle sicher, dass alle gemappten Felder in der DB existieren
+console.log('📋 Final lead data structure:', JSON.stringify(leadData, null, 2));
+Schritt 8: Async/Await Problem
+Die Edge Function könnte zu früh Success melden, bevor alle Inserts abgeschlossen sind:
+typescript// Warte auf ALLE Datenbankoperationen:
+const insertPromises = leads.map(lead => insertLead(lead));
+const results = await Promise.allSettled(insertPromises);
+
+console.log('📊 Insert results:', results);
+KRITISCHE DEBUGGING-STRATEGIE:
+Phase 1: Minimal Insert Test
+Teste mit nur einem hart-codierten Lead:
+typescriptconst testLead = {
+  id: crypto.randomUUID(),
+  name: 'Test Lead',
+  user_id: userId,
+  team_id: teamId,
+  created_at: new Date().toISOString()
+};
+Phase 2: Console Log Everything
+Logge jeden Schritt in der Edge Function und überprüfe die Supabase Edge Function Logs.
+Phase 3: Database Direct Check
+Nach dem Import, gehe direkt in Supabase → Table Editor → leads und überprüfe ob IRGENDWELCHE neuen Einträge da sind.
+Phase 4: RLS Policy Test
+Teste den Insert mit einem SQL Query im Supabase SQL Editor als Service Role.
+WAHRSCHEINLICHSTE URSACHEN:
+
+SERVICE_ROLE_KEY fehlt - Edge Function hat keine DB Permissions
+RLS Policy blockiert - Leads werden inserted aber sind für User unsichtbar
+Required Fields fehlen - Insert schlägt wegen NULL Constraints fehl
+Unique Constraint Violation - Duplicate Keys verhindern Insert
+Wrong Table Name - Insert geht an falsche Tabelle
+
+SOFORTMASSNAHME:
+Füge diese Debug-Zeile am Ende der Edge Function hinzu:
+typescript// Direkt nach allen Inserts:
+const { data: insertedLeads } = await supabaseAdmin
+  .from('leads')
+  .select('id, name')
+  .eq('team_id', teamId)
+  .order('created_at', { ascending: false })
+  .limit(10);
+
+console.log('🔍 Recently inserted leads:', insertedLeads);
+ERWARTETES ERGEBNIS:
+Nach diesem Debugging wirst du die exakte Stelle finden, wo der Insert fehlschlägt. Das Problem liegt zu 90% bei RLS Policies oder fehlenden Required Fields.
