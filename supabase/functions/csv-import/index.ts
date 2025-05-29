@@ -127,8 +127,9 @@ serve(async (req) => {
               // Handle standard database fields
               if (mapping.fieldName === 'status') {
                 // Ensure status is valid, default to 'potential'
-                if (['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
-                  leadData[mapping.fieldName] = value;
+                const validStatuses = ['potential', 'contacted', 'qualified', 'closed'];
+                if (validStatuses.includes(value.toLowerCase())) {
+                  leadData[mapping.fieldName] = value.toLowerCase();
                 } else {
                   leadData[mapping.fieldName] = 'potential';
                 }
@@ -142,23 +143,33 @@ serve(async (req) => {
           }
         });
 
-        // Ensure required fields
+        // Ensure required fields and set defaults
         if (!leadData.name || !leadData.name.trim()) {
           errors.push(`Row ${i + 1}: Missing required 'name' field`);
           failedRecords++;
           continue;
         }
 
-        // Set default status if not provided
-        if (!leadData.status) {
+        // ALWAYS set default status to 'potential' if not provided or invalid
+        if (!leadData.status || !['potential', 'contacted', 'qualified', 'closed'].includes(leadData.status)) {
           leadData.status = 'potential';
         }
 
         console.log(`📋 Lead data for row ${i + 1}:`, {
           name: leadData.name,
           status: leadData.status,
-          customFieldsCount: Object.keys(leadData.custom_fields).length
+          team_id: leadData.team_id,
+          customFieldsCount: Object.keys(leadData.custom_fields).length,
+          hasRequiredFields: !!(leadData.name && leadData.team_id && leadData.status)
         });
+
+        // Validate required fields before proceeding
+        if (!leadData.team_id) {
+          console.error(`❌ Missing team_id for row ${i + 1}`);
+          errors.push(`Row ${i + 1}: Missing team_id`);
+          failedRecords++;
+          continue;
+        }
 
         // Handle duplicate detection
         let existingLead = null;
@@ -229,27 +240,46 @@ serve(async (req) => {
 
         // Insert new lead
         console.log(`➕ Creating new lead: ${leadData.name}`);
+        console.log(`📊 Final lead data being inserted:`, JSON.stringify(leadData, null, 2));
 
         // Add import job reference if available
         if (jobId) {
           leadData.import_job_id = jobId;
         }
 
-        const { data: insertedLead, error: insertError } = await supabaseAdmin
-          .from('leads')
-          .insert([leadData])
-          .select('id, name')
-          .single();
+        // Ensure created_at and updated_at are set
+        const now = new Date().toISOString();
+        leadData.created_at = now;
+        leadData.updated_at = now;
 
-        if (insertError) {
-          console.error(`❌ Error inserting lead for row ${i + 1}:`, insertError);
-          console.error('Lead data that failed:', leadData);
-          errors.push(`Row ${i + 1}: Insert failed - ${insertError.message}`);
+        try {
+          const { data: insertedLead, error: insertError } = await supabaseAdmin
+            .from('leads')
+            .insert([leadData])
+            .select('id, name, status, team_id')
+            .single();
+
+          if (insertError) {
+            console.error(`❌ Error inserting lead for row ${i + 1}:`, insertError);
+            console.error('📄 Lead data that failed:', JSON.stringify(leadData, null, 2));
+            console.error('🔍 Error details:', {
+              code: insertError.code,
+              message: insertError.message,
+              details: insertError.details,
+              hint: insertError.hint
+            });
+            errors.push(`Row ${i + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+            failedRecords++;
+          } else {
+            console.log(`✅ Created new lead: ${insertedLead.name} (ID: ${insertedLead.id}, Status: ${insertedLead.status}, Team: ${insertedLead.team_id})`);
+            newRecords++;
+            processedRecords++;
+          }
+        } catch (error) {
+          console.error(`❌ Unexpected error inserting lead for row ${i + 1}:`, error);
+          console.error('📄 Lead data that failed:', JSON.stringify(leadData, null, 2));
+          errors.push(`Row ${i + 1}: Unexpected insert error - ${error.message}`);
           failedRecords++;
-        } else {
-          console.log(`✅ Created new lead: ${insertedLead.name} (ID: ${insertedLead.id})`);
-          newRecords++;
-          processedRecords++;
         }
 
       } catch (error) {
