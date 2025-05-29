@@ -4,27 +4,40 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 // Dynamic CORS headers based on request origin
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get('origin');
+  console.log('🔍 CORS Debug - Request origin:', origin);
+  
   const allowedOrigins = [
     'https://immoupload.com',
     'https://crm.immoupload.com',
     /^https:\/\/.*\.replit\.dev$/,
     /^https:\/\/.*\.pike\.replit\.dev$/,
-    /^https:\/\/.*\.repl\.co$/
+    /^https:\/\/.*\.repl\.co$/,
+    /^https:\/\/[a-f0-9-]+\.pike\.replit\.dev$/
   ];
 
-  let allowOrigin = 'null';
+  let allowOrigin = '*'; // Fallback zu * für Entwicklung
 
   if (origin) {
-    const isAllowed = allowedOrigins.some(allowed => 
-      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
-    );
+    const isAllowed = allowedOrigins.some(allowed => {
+      const result = typeof allowed === 'string' ? allowed === origin : allowed.test(origin);
+      console.log(`🔍 Testing origin ${origin} against ${allowed}: ${result}`);
+      return result;
+    });
 
     if (isAllowed) {
       allowOrigin = origin;
+      console.log('✅ Origin allowed:', origin);
+    } else {
+      console.log('⚠️ Origin not in allowlist, using fallback:', origin);
+      // Für Replit Entwicklung, erlauben wir alle Replit Domains
+      if (origin.includes('replit.dev') || origin.includes('pike.replit.dev')) {
+        allowOrigin = origin;
+        console.log('✅ Replit domain detected, allowing:', origin);
+      }
     }
   }
 
-  return {
+  const headers = {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, accept-encoding, accept-language, cache-control, pragma',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
@@ -32,6 +45,9 @@ function getCorsHeaders(request: Request): Record<string, string> {
     'Access-Control-Allow-Credentials': 'true',
     'Vary': 'Origin'
   };
+
+  console.log('🔧 CORS Headers generated:', headers);
+  return headers;
 }
 
 interface MappingType {
@@ -63,11 +79,16 @@ const BATCH_SIZE = 25; // Optimiert für Stabilität
 const MAX_ROWS_PER_FUNCTION_CALL = 20000; // Erhöht um alle Daten in einem Call zu verarbeiten
 
 serve(async (req) => {
+  console.log('🚀 CSV Import Edge Function - Request method:', req.method);
+  console.log('🚀 CSV Import Edge Function - Request URL:', req.url);
+  console.log('🚀 CSV Import Edge Function - Request headers:', Object.fromEntries(req.headers.entries()));
+  
   const corsHeaders = getCorsHeaders(req);
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
+    console.log('✅ CORS preflight request handled');
+    return new Response('OK', {
       status: 200,
       headers: corsHeaders,
     });
