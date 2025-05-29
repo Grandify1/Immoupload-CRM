@@ -109,12 +109,44 @@ serve(async (req) => {
     console.log('👤 User ID:', userId);
     console.log('🏢 Team ID:', teamId);
 
-    // Initialize Supabase client with SERVICE_ROLE_KEY
+    // Initialize Supabase client with SERVICE_ROLE_KEY to bypass RLS
     console.log('🔌 Creating Supabase client with SERVICE_ROLE_KEY...');
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Test database connection and permissions
     console.log('🔍 Testing database connection and permissions...');
+    
+    // Verify team exists and user belongs to it
+    console.log('🔍 Verifying team and user permissions...');
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('team_id')
+      .eq('id', userId)
+      .single();
+      
+    if (profileError || !profileData?.team_id) {
+      console.error('❌ Profile/Team verification failed:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'User profile or team not found' }),
+        { status: 403, headers: responseHeaders }
+      );
+    }
+    
+    if (profileData.team_id !== teamId) {
+      console.error('❌ Team ID mismatch:', { provided: teamId, actual: profileData.team_id });
+      return new Response(
+        JSON.stringify({ error: 'Team ID mismatch' }),
+        { status: 403, headers: responseHeaders }
+      );
+    }
+    
+    console.log('✅ Team verification successful:', teamId);
+    
     try {
       const { data: testData, error: testError } = await supabaseAdmin
         .from('leads')
