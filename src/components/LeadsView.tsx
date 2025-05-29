@@ -106,7 +106,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const [activeFilters, setActiveFilters] = useState<Array<{field: string, operator: string, value: string}>>([]);
 
   // Smart Views
-  const [smartViews, setSmartViews] = useState<Array<{name: string, filters: Array<{field: string, operator: string, value: string}>}>>(() => {
+  const [smartViews, setSmartViews] = useState<Array<{id: string, name: string, filters: Array<{field: string, operator: string, value: string}>, createdAt: string}>>(() => {
     const savedViews = localStorage.getItem('smartViews');
     if (savedViews) {
       return JSON.parse(savedViews);
@@ -415,13 +415,20 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const saveSmartView = () => {
     if (newViewName.trim() && activeFilters.length > 0) {
       const newSmartView = {
+        id: `smartview_${Date.now()}`,
         name: newViewName.trim(),
-        filters: [...activeFilters]
+        filters: [...activeFilters],
+        createdAt: new Date().toISOString()
       };
 
       const updatedViews = [...smartViews, newSmartView];
       setSmartViews(updatedViews);
       localStorage.setItem('smartViews', JSON.stringify(updatedViews));
+
+      toast({
+        title: "SmartView gespeichert",
+        description: `"${newViewName.trim()}" wurde erfolgreich als SmartView gespeichert.`,
+      });
 
       setNewViewName('');
       setShowSaveViewDialog(false);
@@ -429,17 +436,26 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   };
 
   // Funktion zum Laden einer Smart View
-  const loadSmartView = (viewIndex: number) => {
-    if (viewIndex >= 0 && viewIndex < smartViews.length) {
-      setActiveFilters(smartViews[viewIndex].filters);
+  const loadSmartView = (viewId: string) => {
+    const view = smartViews.find(v => v.id === viewId);
+    if (view) {
+      setActiveFilters(view.filters);
+      toast({
+        title: "SmartView geladen",
+        description: `Filter von "${view.name}" wurden angewendet.`,
+      });
     }
   };
 
   // Funktion zum Löschen einer Smart View
-  const deleteSmartView = (viewIndex: number) => {
-    const updatedViews = smartViews.filter((_, index) => index !== viewIndex);
+  const deleteSmartView = (viewId: string) => {
+    const updatedViews = smartViews.filter(view => view.id !== viewId);
     setSmartViews(updatedViews);
     localStorage.setItem('smartViews', JSON.stringify(updatedViews));
+    toast({
+      title: "SmartView gelöscht",
+      description: "SmartView wurde erfolgreich gelöscht.",
+    });
   };
 
   // Funktion zum Entfernen eines Filters
@@ -848,23 +864,25 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="flex items-center h-7 px-2 text-xs">
                   <Eye className="w-3 h-3 mr-1" />
-                  Smart Views
+                  Smart Views ({smartViews.length})
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2">
+              <PopoverContent className="w-64 p-2">
                 <div className="space-y-1">
                   <h4 className="text-sm font-medium mb-2">Saved Views</h4>
-                  {smartViews.map((view, index) => (
-                    <div key={index} className="flex items-center justify-between">
+                  {smartViews.map((view) => (
+                    <div key={view.id} className="flex items-center justify-between group">
                       <button
-                        className="text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 w-full"
-                        onClick={() => loadSmartView(index)}
+                        className="text-left px-2 py-1.5 text-sm rounded hover:bg-gray-100 flex-1 truncate"
+                        onClick={() => loadSmartView(view.id)}
+                        title={view.name}
                       >
                         {view.name}
                       </button>
                       <button
-                        onClick={() => deleteSmartView(index)}
-                        className="text-gray-400 hover:text-gray-600 p-1"
+                        onClick={() => deleteSmartView(view.id)}
+                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 p-1 transition-all"
+                        title="SmartView löschen"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -1093,15 +1111,14 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             {filterField === 'status' && filterOperator === 'is_any_of' && (
               <div className="mb-3">
                 <label className="block text-sm mb-1 font-medium">Select Status</label>
-                <div className="space-y-1 mt-1">
+                <div className="space-y-2 mt-1">
                   {Object.entries(statusLabels).map(([value, label]) => (
                     <div key={value} className="flex items-center">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         id={`status-${value}`}
                         checked={selectedStatusFilters.includes(value)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             setSelectedStatusFilters(prev => [...prev, value]);
                           } else {
                             setSelectedStatusFilters(prev => prev.filter(s => s !== value));
@@ -1109,7 +1126,13 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                         }}
                         className="mr-2"
                       />
-                      <label htmlFor={`status-${value}`} className="text-sm">{label}</label>
+                      <label htmlFor={`status-${value}`} className="text-sm cursor-pointer flex items-center">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full mr-2",
+                          statusColors[value as keyof typeof statusColors]
+                        )} />
+                        {label}
+                      </label>
                     </div>
                   ))}
                 </div>

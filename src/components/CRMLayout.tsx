@@ -37,6 +37,7 @@ const CRMLayout = () => {
   const [showCustomFieldForm, setShowCustomFieldForm] = useState(false);
   const [showActivityTemplateForm, setShowActivityTemplateForm] = useState(false);
   const [emailRecipient, setEmailRecipient] = useState<string | undefined>(undefined);
+  const [smartViews, setSmartViews] = useState<SavedFilter[]>([]);
 
   // Einmaliges Laden der Daten beim Initialisieren der Komponente
   useEffect(() => {
@@ -150,6 +151,7 @@ const CRMLayout = () => {
       setSavedFilters(savedFilters);
       setCustomFields(customFields);
       setActivityTemplates(activityTemplates);
+      setSmartViews(savedFilters); // Assuming all saved filters are smart views
 
       console.log(`fetchData: Successfully loaded ${leads.length} leads, ${activities.length} activities, ${deals.length} deals`);
 
@@ -954,6 +956,10 @@ const CRMLayout = () => {
     }
   };
 
+    const handleSmartViewSelect = (filters: any) => {
+        setCurrentFilters(filters);
+    };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar 
@@ -962,6 +968,8 @@ const CRMLayout = () => {
         savedFilters={savedFilters}
         currentFilters={currentFilters}
         onFilterSelect={(filters) => setCurrentFilters(filters)}
+        smartViews={smartViews}
+        onSmartViewSelect={handleSmartViewSelect}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
