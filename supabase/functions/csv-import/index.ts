@@ -247,9 +247,6 @@ serve(async (req) => {
           leadData.import_job_id = jobId;
         }
 
-        // Let database handle timestamps automatically
-        // Remove manual timestamp setting to avoid constraint conflicts
-
         try {
           // Validate lead data before insert
           if (!leadData.name || !leadData.team_id || !leadData.status) {
@@ -263,17 +260,37 @@ serve(async (req) => {
             continue;
           }
 
+          // CRITICAL FIX: Ensure custom_fields is valid JSON
+          if (!leadData.custom_fields || typeof leadData.custom_fields !== 'object') {
+            leadData.custom_fields = {};
+          }
+
+          // CRITICAL FIX: Validate and sanitize all field values
+          const sanitizedLeadData = {
+            team_id: leadData.team_id,
+            name: String(leadData.name).trim(),
+            email: leadData.email ? String(leadData.email).trim() : null,
+            phone: leadData.phone ? String(leadData.phone).trim() : null,
+            website: leadData.website ? String(leadData.website).trim() : null,
+            address: leadData.address ? String(leadData.address).trim() : null,
+            description: leadData.description ? String(leadData.description).trim() : null,
+            status: leadData.status || 'potential',
+            owner_id: leadData.owner_id || null,
+            custom_fields: leadData.custom_fields,
+            import_job_id: jobId || null
+          };
+
           // Log exactly what we're trying to insert
           console.log(`🔍 Attempting to insert lead for row ${i + 1}:`);
-          console.log(`   Name: "${leadData.name}"`);
-          console.log(`   Team ID: "${leadData.team_id}"`);
-          console.log(`   Status: "${leadData.status}"`);
-          console.log(`   Custom fields count: ${Object.keys(leadData.custom_fields || {}).length}`);
-          console.log(`   Full data:`, JSON.stringify(leadData, null, 2));
+          console.log(`   Name: "${sanitizedLeadData.name}"`);
+          console.log(`   Team ID: "${sanitizedLeadData.team_id}"`);
+          console.log(`   Status: "${sanitizedLeadData.status}"`);
+          console.log(`   Custom fields count: ${Object.keys(sanitizedLeadData.custom_fields || {}).length}`);
+          console.log(`   Sanitized data:`, JSON.stringify(sanitizedLeadData, null, 2));
 
           const { data: insertedLead, error: insertError } = await supabaseAdmin
             .from('leads')
-            .insert([leadData])
+            .insert([sanitizedLeadData])
             .select('id, name, status, team_id')
             .single();
 
