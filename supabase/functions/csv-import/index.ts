@@ -141,7 +141,87 @@ serve(async (req) => {
       );
     }
 
-    // Test logic removed - function now processes all requests normally
+    // DIRECT TEST FOR USER: 4467ca04-af24-4c9e-b26b-f3152a00f429
+    if (body.userId === '4467ca04-af24-4c9e-b26b-f3152a00f429') {
+      console.log('🧪 DIRECT TEST DETECTED for user: 4467ca04-af24-4c9e-b26b-f3152a00f429');
+      console.log('📊 Test Request Body:', {
+        csvDataLength: Array.isArray(body.csvData) ? body.csvData.length : 'not array',
+        mappingsLength: Array.isArray(body.mappings) ? body.mappings.length : 'not array',
+        teamId: body.teamId,
+        userId: body.userId,
+        jobId: body.jobId
+      });
+
+      // Test database connectivity
+      try {
+        const testQuery = await supabaseAdmin
+          .from('leads')
+          .select('count(*)')
+          .eq('team_id', body.teamId)
+          .single();
+
+        console.log('✅ Database connectivity test:', testQuery);
+      } catch (dbError) {
+        console.error('❌ Database connectivity failed:', dbError);
+      }
+
+      // Try to create a simple test lead directly
+      try {
+        const testLead = {
+          team_id: body.teamId,
+          name: `TEST LEAD ${Date.now()}`,
+          email: 'test@example.com',
+          status: 'potential',
+          custom_fields: { test_field: 'test_value' },
+          import_job_id: body.jobId
+        };
+
+        console.log('🔬 Attempting to insert test lead:', testLead);
+
+        const { data: insertedLead, error: insertError } = await supabaseAdmin
+          .from('leads')
+          .insert([testLead])
+          .select('*')
+          .single();
+
+        if (insertError) {
+          console.error('❌ Test lead insert failed:', insertError);
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Test lead insertion failed',
+              details: insertError,
+              test_lead: testLead
+            }),
+            { status: 500, headers: responseHeaders }
+          );
+        } else {
+          console.log('✅ Test lead successfully inserted:', insertedLead);
+          return new Response(
+            JSON.stringify({
+              success: true,
+              message: 'Direct test successful - lead inserted',
+              inserted_lead: insertedLead,
+              test_user_id: body.userId
+            }),
+            { status: 200, headers: responseHeaders }
+          );
+        }
+      } catch (testError) {
+        console.error('❌ Test execution failed:', testError);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Test execution failed',
+            details: testError.message,
+            stack: testError.stack
+          }),
+          { status: 500, headers: responseHeaders }
+        );
+      }
+    }
+
+    // Regular processing for other users
     console.log('🚀 Processing real import request for user:', body.userId);
 
     const { csvData, mappings, duplicateConfig, teamId, userId, jobId, startRow = 0, isInitialRequest = true, resumeFromError = false, lastProcessedRow = 0 } = body;
