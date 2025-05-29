@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -107,65 +108,135 @@ serve(async (req) => {
         );
       }
 
-      // Vereinfachter Job-Creation Test
-      const jobId = `test-job-${Date.now()}`;
-      console.log('🏗️ Creating simplified test job:', jobId);
+      // Check import_jobs table structure first
+      console.log('🔍 Checking import_jobs table structure...');
+      try {
+        const { data: tableStructure, error: structureError } = await supabaseAdmin
+          .rpc('get_table_columns', { table_name: 'import_jobs' });
+
+        if (structureError) {
+          console.log('⚠️ Could not get table structure, proceeding anyway:', structureError);
+        } else {
+          console.log('📋 Table structure:', tableStructure);
+        }
+      } catch (err) {
+        console.log('⚠️ Table structure check failed, continuing:', err);
+      }
+
+      // Vereinfachter Job-Creation Test mit minimalsten Daten
+      const jobId = `test-${Date.now()}`;
+      console.log('🏗️ Creating minimal test job:', jobId);
 
       try {
-        // Prüfe erst ob import_jobs Tabelle existiert
-        const { data: tableCheck, error: tableError } = await supabaseAdmin
-          .from('import_jobs')
-          .select('id')
-          .limit(1);
+        // Erstelle Job mit nur absolut notwendigen Feldern
+        const jobData = {
+          id: jobId,
+          team_id: body.teamId,
+          created_by: body.userId,
+          file_name: 'dashboard-test.csv',
+          total_records: 2,
+          status: 'processing'
+        };
 
-        if (tableError) {
-          console.error('❌ import_jobs table check failed:', tableError);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'import_jobs table not accessible',
-              details: tableError
-            }),
-            { status: 500, headers: responseHeaders }
-          );
-        }
+        console.log('📝 Attempting to insert job data:', jobData);
 
-        console.log('✅ import_jobs table accessible');
-
-        // Erstelle Job mit minimalen Daten
         const { data: testJob, error: jobError } = await supabaseAdmin
           .from('import_jobs')
-          .insert({
-            id: jobId,
-            team_id: body.teamId,
-            created_by: body.userId,
-            file_name: 'dashboard-test.csv',
-            total_records: 2,
-            status: 'processing',
-            processed_records: 0,
-            failed_records: 0
-          })
+          .insert(jobData)
           .select()
           .single();
 
         if (jobError) {
           console.error('❌ Job creation failed:', jobError);
+          console.error('❌ Job error details:', JSON.stringify(jobError, null, 2));
+          
+          // Try alternative approach - create without ID
+          console.log('🔄 Trying job creation without explicit ID...');
+          const { data: altJob, error: altError } = await supabaseAdmin
+            .from('import_jobs')
+            .insert({
+              team_id: body.teamId,
+              created_by: body.userId,
+              file_name: 'dashboard-test.csv',
+              total_records: 2,
+              status: 'processing'
+            })
+            .select()
+            .single();
+
+          if (altError) {
+            console.error('❌ Alternative job creation also failed:', altError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'Job creation failed',
+                primary_error: jobError,
+                alternative_error: altError,
+                attempted_data: jobData
+              }),
+              { status: 500, headers: responseHeaders }
+            );
+          }
+
+          console.log('✅ Alternative job created:', altJob);
+          const finalJob = altJob;
+          
+          // Continue with lead test using alternative job
+          console.log('🔄 Testing lead insertion with alternative job...');
+          const testLeadData = {
+            team_id: body.teamId,
+            name: 'Test Lead Dashboard Alt',
+            email: 'test-alt@dashboard.com',
+            status: 'potential',
+            import_job_id: finalJob.id
+          };
+
+          const { data: insertedLead, error: leadError } = await supabaseAdmin
+            .from('leads')
+            .insert([testLeadData])
+            .select('id, name, email')
+            .single();
+
+          if (leadError) {
+            console.error('❌ Lead insertion failed:', leadError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'Lead insertion failed with alternative job',
+                details: leadError,
+                job_created: true,
+                job_id: finalJob.id
+              }),
+              { status: 500, headers: responseHeaders }
+            );
+          }
+
+          // Update job to completed
+          await supabaseAdmin
+            .from('import_jobs')
+            .update({
+              status: 'completed',
+              processed_records: 1,
+              completed_at: new Date().toISOString()
+            })
+            .eq('id', finalJob.id);
+
           return new Response(
             JSON.stringify({
-              success: false,
-              error: 'Job creation failed',
-              details: jobError,
-              attempted_data: {
-                id: jobId,
-                team_id: body.teamId,
-                created_by: body.userId
+              success: true,
+              message: 'Dashboard test completed with alternative approach!',
+              results: {
+                job_id: finalJob.id,
+                lead_created: insertedLead,
+                test_passed: true,
+                note: 'Used alternative job creation method'
               }
             }),
-            { status: 500, headers: responseHeaders }
+            { status: 200, headers: responseHeaders }
           );
         }
 
-        console.log('✅ Test job created:', testJob);
+        console.log('✅ Primary job creation successful:', testJob);
 
         // Einfacher Lead-Insert Test
         console.log('🔄 Testing lead insertion...');
@@ -174,7 +245,7 @@ serve(async (req) => {
           name: 'Test Lead Dashboard',
           email: 'test@dashboard.com',
           status: 'potential',
-          import_job_id: jobId
+          import_job_id: testJob.id
         };
 
         const { data: insertedLead, error: leadError } = await supabaseAdmin
@@ -194,7 +265,7 @@ serve(async (req) => {
               failed_records: 1,
               error_details: { error: leadError.message }
             })
-            .eq('id', jobId);
+            .eq('id', testJob.id);
 
           return new Response(
             JSON.stringify({
@@ -202,7 +273,7 @@ serve(async (req) => {
               error: 'Lead insertion failed',
               details: leadError,
               job_created: true,
-              job_id: jobId
+              job_id: testJob.id
             }),
             { status: 500, headers: responseHeaders }
           );
@@ -218,14 +289,14 @@ serve(async (req) => {
             processed_records: 1,
             completed_at: new Date().toISOString()
           })
-          .eq('id', jobId);
+          .eq('id', testJob.id);
 
         return new Response(
           JSON.stringify({
             success: true,
             message: 'Dashboard test completed successfully!',
             results: {
-              job_id: jobId,
+              job_id: testJob.id,
               lead_created: insertedLead,
               test_passed: true
             }
@@ -235,6 +306,7 @@ serve(async (req) => {
 
       } catch (testError) {
         console.error('❌ Test execution failed:', testError);
+        console.error('❌ Test error stack:', testError.stack);
         return new Response(
           JSON.stringify({
             success: false,
@@ -258,6 +330,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Critical error:', error);
+    console.error('❌ Critical error stack:', error.stack);
     return new Response(
       JSON.stringify({ 
         success: false,
