@@ -599,31 +599,53 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     }
 
     try {
-      // Abrufen ALLER Lead-IDs aus der Datenbank ohne Limit
-      const { data, error } = await supabase
-        .from('leads')
-        .select('id')
-        .eq('team_id', team.id); // Nur Leads des aktuellen Teams
+      // Abrufen ALLER Lead-IDs aus der Datenbank ohne Limit - RPC für große Mengen
+      let allLeadIds: string[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      if (error) {
-        console.error("Fehler beim Abrufen aller Lead-IDs:", error);
-        toast({
-          title: "Fehler",
-          description: "Beim Abrufen aller Leads ist ein Fehler aufgetreten.",
-          variant: "destructive",
-        });
-        return;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('leads')
+          .select('id')
+          .eq('team_id', team.id)
+          .range(from, from + batchSize - 1)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error("Fehler beim Abrufen aller Lead-IDs:", error);
+          toast({
+            title: "Fehler",
+            description: "Beim Abrufen aller Leads ist ein Fehler aufgetreten.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data && data.length > 0) {
+          allLeadIds.push(...data.map(lead => lead.id));
+          from += batchSize;
+          hasMore = data.length === batchSize; // Wenn weniger als batchSize zurückkommt, sind wir fertig
+        } else {
+          hasMore = false;
+        }
       }
 
-      if (data) {
-        const allLeadIds = new Set(data.map(lead => lead.id));
-        setSelectedLeads(allLeadIds);
+      if (allLeadIds.length > 0) {
+        const allLeadIdsSet = new Set(allLeadIds);
+        setSelectedLeads(allLeadIdsSet);
         setAllLeadsSelected(true);
         toast({
           title: "Alle Leads ausgewählt",
-          description: `Alle ${allLeadIds.size} Leads aus der Datenbank wurden ausgewählt.`,
+          description: `Alle ${allLeadIdsSet.size} Leads aus der Datenbank wurden ausgewählt.`,
         });
-        console.log(`✅ Selected all ${allLeadIds.size} leads from database`);
+        console.log(`✅ Selected all ${allLeadIdsSet.size} leads from database`);
+      } else {
+        toast({
+          title: "Keine Leads gefunden",
+          description: "Es wurden keine Leads in der Datenbank gefunden.",
+        });
       }
     } catch (error) {
       console.error("Unerwarteter Fehler beim Auswählen aller Leads:", error);
