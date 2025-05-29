@@ -40,6 +40,7 @@ const ImportStatusBar: React.FC = () => {
   useEffect(() => {
     const fetchActiveImports = async () => {
       try {
+        console.log('🔄 Fetching import jobs...');
         const { data } = await supabase
           .from('import_jobs')
           .select('*')
@@ -47,6 +48,8 @@ const ImportStatusBar: React.FC = () => {
           .order('created_at', { ascending: false });
 
         if (data) {
+          console.log(`📋 Found ${data.length} import jobs total`);
+          
           // On initial load, mark all imports as already seen to prevent duplicate toasts
           if (initialLoad) {
             const allJobIds = data.map(job => job.id);
@@ -116,7 +119,17 @@ const ImportStatusBar: React.FC = () => {
             job.status === 'pending' || job.status === 'processing'
           );
           
-          console.log('Active import jobs:', activeJobs.length);
+          console.log(`🟢 Active import jobs: ${activeJobs.length}`);
+          if (activeJobs.length > 0) {
+            console.log('Active jobs details:', activeJobs.map(job => ({
+              id: job.id,
+              status: job.status,
+              fileName: job.file_name,
+              processed: job.processed_records,
+              total: job.total_records
+            })));
+          }
+          
           setActiveImports(activeJobs);
         }
       } catch (error) {
@@ -126,8 +139,8 @@ const ImportStatusBar: React.FC = () => {
 
     fetchActiveImports();
 
-    // Poll every 3 seconds for updates (reduced frequency to prevent spam)
-    const interval = setInterval(fetchActiveImports, 3000);
+    // Poll every 2 seconds for more responsive updates
+    const interval = setInterval(fetchActiveImports, 2000);
 
     return () => clearInterval(interval);
   }, [completedImports, initialLoad]);

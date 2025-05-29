@@ -352,11 +352,23 @@ serve(async (req) => {
     if (jobId) {
       try {
         const jobStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
-        const errorDetails = errors.length > 0 
-          ? { summary: `Import completed: ${processedRecords} processed, ${failedRecords} failed`, errors: errors }
-          : { summary: `Import completed: ${processedRecords} processed, ${failedRecords} failed` };
+        const errorDetails = {
+          summary: `Import completed: ${processedRecords} processed, ${newRecords} new, ${updatedRecords} updated, ${failedRecords} failed`,
+          new_records: newRecords,
+          updated_records: updatedRecords,
+          failed_records: failedRecords,
+          errors: errors.length > 0 ? errors : undefined
+        };
 
-        const { error: jobUpdateError } = await supabaseAdmin
+        console.log(`🔄 Updating import job ${jobId} with status: ${jobStatus}`);
+        console.log(`📊 Job update data:`, {
+          status: jobStatus,
+          processed_records: processedRecords,
+          failed_records: failedRecords,
+          error_details: errorDetails
+        });
+
+        const { data: updatedJob, error: jobUpdateError } = await supabaseAdmin
           .from('import_jobs')
           .update({
             status: jobStatus,
@@ -365,15 +377,25 @@ serve(async (req) => {
             error_details: errorDetails,
             completed_at: new Date().toISOString()
           })
-          .eq('id', jobId);
+          .eq('id', jobId)
+          .select()
+          .single();
 
         if (jobUpdateError) {
           console.error('❌ Failed to update import job:', jobUpdateError);
+          console.error('❌ Job update error details:', {
+            code: jobUpdateError.code,
+            message: jobUpdateError.message,
+            details: jobUpdateError.details,
+            hint: jobUpdateError.hint
+          });
         } else {
-          console.log(`✅ Import job ${jobId} updated with status: ${jobStatus}`);
+          console.log(`✅ Import job ${jobId} updated successfully with status: ${jobStatus}`);
+          console.log(`✅ Updated job data:`, updatedJob);
         }
       } catch (error) {
         console.error('❌ Error updating import job:', error);
+        console.error('❌ Error stack:', error.stack);
       }
     }
 
@@ -384,10 +406,13 @@ serve(async (req) => {
       newRecords,
       updatedRecords,
       failedRecords,
+      totalRows: csvData.length,
+      jobId: jobId,
       errors: errors.length > 0 ? errors : undefined
     };
 
-    console.log('📊 Import Summary:', response);
+    console.log('📊 Final Import Summary:', response);
+    console.log(`✅ Import completed successfully: ${newRecords} new leads, ${updatedRecords} updated leads, ${failedRecords} failed`);
 
     return new Response(
       JSON.stringify(response),
