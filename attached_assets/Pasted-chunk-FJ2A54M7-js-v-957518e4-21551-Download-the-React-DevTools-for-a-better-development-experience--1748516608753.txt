@@ -1,0 +1,122 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 0 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CSVImport.tsx:114 === PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:115 Raw customFields: Array(20)
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:166 Final lead custom fields: Array(20)
+CSVImport.tsx:167 === END PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:228 CSV delimiter detection: Array(4) Selected: ;
+CSVImport.tsx:248 CSV quote character detected: "
+CSVImport.tsx:345 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:346 Headers detected: Array(22)
+CSVImport.tsx:371 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:427 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:427 Auto-mapped "name" to "name"
+CSVImport.tsx:427 Auto-mapped "description" to "description"
+CSVImport.tsx:427 Auto-mapped "is_spending_on_ads" to "is_spending_on_ads"
+CSVImport.tsx:427 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:427 Auto-mapped "rating" to "rating"
+CSVImport.tsx:427 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:427 Auto-mapped "website" to "website"
+CSVImport.tsx:427 Auto-mapped "phone" to "phone"
+CSVImport.tsx:427 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:427 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:427 Auto-mapped "owner_profile_link" to "owner_profile_link"
+CSVImport.tsx:427 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:427 Auto-mapped "main_category" to "main_category"
+CSVImport.tsx:427 Auto-mapped "categories" to "categories"
+CSVImport.tsx:427 Auto-mapped "workday_timing" to "workday_timing"
+CSVImport.tsx:427 Auto-mapped "is_temporarily_closed" to "is_temporarily_closed"
+CSVImport.tsx:427 Auto-mapped "closed_on" to "closed_on"
+CSVImport.tsx:427 Auto-mapped "address" to "address"
+CSVImport.tsx:427 Auto-mapped "review_keywords" to "review_keywords"
+CSVImport.tsx:457 No auto-mapping found for "link"
+CSVImport.tsx:427 Auto-mapped "query" to "query"
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: gmb_url
+CSVImport.tsx:754 CSV column: link
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: gmb_url
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: gmb_url
+CSVImport.tsx:493 Index: 20
+CSVImport.tsx:517 Sanitized fieldName: gmb_url
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:568 Name mapping found: Array(2)
+csvImportService.ts:272 🚀 Starting SimpleCSVImportService.processCSVImport...
+CSVImport.tsx:633 0%: Import wird gestartet...
+csvImportService.ts:38 🚀 Starting CSV import with cURL approach...
+csvImportService.ts:58 ✅ Import job created: f27c5e73-69d4-4882-b43f-d3f28b84a5a0
+csvImportService.ts:78 📤 Executing cURL command for CSV import...
+csvImportService.ts:114 ✅ cURL-style CSV import response: Object
+CSVImport.tsx:633 50%: Import-Job wurde erstellt, verarbeite Daten...
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 9 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 9 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CSVImport.tsx:633 100%: Status: completed
+CSVImport.tsx:633 100%: Import abgeschlossen!
