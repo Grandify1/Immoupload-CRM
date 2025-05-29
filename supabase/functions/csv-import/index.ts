@@ -181,22 +181,62 @@ serve(async (req) => {
       if (existingCustomFields && existingCustomFields.length > 0) {
         console.log('📋 Existing custom fields details:');
         existingCustomFields.forEach((field, index) => {
-          console.log(`  ${index + 1}. ${field.name} (${field.field_type}) - ID: ${field.id}`);
+          console.log(`  ${index + 1}. "${field.name}" (${field.field_type}) - ID: ${field.id}`);
         });
       }
     }
 
-    // Create a comprehensive map for easy lookup of custom fields
-    const customFieldsMap = new Map();
-    const customFieldsList = [];
-    
-    if (existingCustomFields && existingCustomFields.length > 0) {
-      existingCustomFields.forEach(field => {
-        customFieldsList.push(field);
-        
-        // Multiple lookup keys for flexible matching
-        const originalName = field.name;
-        const normalizedName = field.name
+    // Enhanced Custom Field Matching Function
+    function findCustomField(customFields, fieldName) {
+      console.log(`🔍 Finding custom field for: "${fieldName}"`);
+      console.log(`Available custom fields:`, customFields.map(f => f.name));
+      
+      // 1. Exact match (case-sensitive)
+      let field = customFields.find(f => f.name === fieldName);
+      if (field) {
+        console.log(`✅ Exact match found: "${field.name}"`);
+        return field;
+      }
+      
+      // 2. Case-insensitive exact match
+      field = customFields.find(f => f.name.toLowerCase() === fieldName.toLowerCase());
+      if (field) {
+        console.log(`✅ Case-insensitive match found: "${field.name}"`);
+        return field;
+      }
+      
+      // 3. Normalized search (frontend sends normalized names)
+      const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '_');
+      field = customFields.find(f => {
+        const normalized = f.name.toLowerCase().replace(/\s+/g, '_');
+        return normalized === normalizedFieldName;
+      });
+      if (field) {
+        console.log(`✅ Normalized match found: "${fieldName}" -> "${field.name}"`);
+        return field;
+      }
+      
+      // 4. Reverse normalization (denormalize the fieldName to find original)
+      const denormalizedFieldName = fieldName.replace(/_/g, ' ');
+      field = customFields.find(f => f.name === denormalizedFieldName);
+      if (field) {
+        console.log(`✅ Denormalized match found: "${fieldName}" -> "${field.name}"`);
+        return field;
+      }
+      
+      // 5. Advanced normalization with special characters
+      const advancedNormalized = fieldName
+        .toLowerCase()
+        .replace(/[äöüßÄÖÜ]/g, (match) => {
+          const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
+          return replacements[match] || match;
+        })
+        .replace(/[^a-z0-9]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      
+      field = customFields.find(f => {
+        const fieldAdvancedNormalized = f.name
           .toLowerCase()
           .replace(/[äöüßÄÖÜ]/g, (match) => {
             const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
@@ -205,22 +245,19 @@ serve(async (req) => {
           .replace(/[^a-z0-9]/g, '_')
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '');
-        
-        const spacesToUnderscores = originalName.toLowerCase().replace(/\s+/g, '_');
-        
-        // Add various lookup keys for comprehensive matching
-        customFieldsMap.set(originalName, field);
-        customFieldsMap.set(originalName.toLowerCase(), field);
-        customFieldsMap.set(normalizedName, field);
-        customFieldsMap.set(spacesToUnderscores, field);
-        customFieldsMap.set(field.id, field);
-        
-        console.log(`📝 Custom field mapping: "${originalName}" -> normalized: "${normalizedName}" -> spaces: "${spacesToUnderscores}"`);
+        return fieldAdvancedNormalized === advancedNormalized;
       });
+      
+      if (field) {
+        console.log(`✅ Advanced normalized match found: "${fieldName}" -> "${field.name}"`);
+        return field;
+      }
+      
+      console.warn(`❌ No custom field match found for: "${fieldName}"`);
+      return null;
     }
 
-    console.log('📋 Custom fields map size:', customFieldsMap.size);
-    console.log('📋 Custom fields list length:', customFieldsList.length);
+    console.log('📋 Custom field finder function initialized');
 
     // Standard lead fields
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
@@ -290,8 +327,7 @@ serve(async (req) => {
 
         // Map CSV columns to lead fields with enhanced custom field handling
         console.log(`🗺️ Processing ${mappings.length} mappings for row ${rowIndex + 1}`);
-        console.log(`🗂️ Available custom fields in map:`, Array.from(customFieldsMap.keys()));
-        console.log(`🗂️ Available custom fields in list:`, customFieldsList.map(cf => cf.name));
+        console.log(`🗂️ Available custom fields:`, existingCustomFields?.map(cf => cf.name) || []);
         
         mappings.forEach((mapping, index) => {
           if (mapping.fieldName && index < row.length) {
@@ -310,57 +346,27 @@ serve(async (req) => {
                 console.log(`✅ Standard field: ${mapping.fieldName} = ${value}`);
               }
             } else {
-              // Enhanced custom field handling with reverse mapping
-              console.log(`🔍 Checking if "${mapping.fieldName}" is a custom field...`);
+              // Enhanced custom field handling using the findCustomField function
+              console.log(`🔍 Searching for custom field: "${mapping.fieldName}"`);
               
-              // Try to find custom field by mapping fieldName first
-              let customField = customFieldsMap.get(mapping.fieldName);
-              
-              if (!customField) {
-                // If not found, try to reverse-engineer the original name
-                // Check if mapping.fieldName might be a normalized version of an existing custom field
-                console.log(`🔄 Trying reverse lookup for normalized field: ${mapping.fieldName}`);
-                
-                customField = customFieldsList.find(cf => {
-                  // Create all possible normalized versions of the custom field name
-                  const normalizations = [
-                    cf.name,
-                    cf.name.toLowerCase(),
-                    cf.name.toLowerCase().replace(/\s+/g, '_'),
-                    cf.name.toLowerCase()
-                      .replace(/[äöüßÄÖÜ]/g, (match) => {
-                        const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
-                        return replacements[match] || match;
-                      })
-                      .replace(/[^a-z0-9]/g, '_')
-                      .replace(/_+/g, '_')
-                      .replace(/^_|_$/g, '')
-                  ];
-                  
-                  // Check if any normalization matches the mapping fieldName
-                  const isMatch = normalizations.includes(mapping.fieldName);
-                  if (isMatch) {
-                    console.log(`🎯 Found match: "${cf.name}" normalizes to "${mapping.fieldName}"`);
-                    console.log(`   Normalizations tested:`, normalizations);
-                  }
-                  return isMatch;
-                });
-              }
+              const customField = findCustomField(existingCustomFields || [], mapping.fieldName);
               
               if (customField) {
-                console.log(`✅ Found existing custom field: ${customField.name} (ID: ${customField.id})`);
+                console.log(`✅ Found existing custom field: "${customField.name}" (ID: ${customField.id})`);
+                console.log(`   Mapping: "${mapping.fieldName}" -> "${customField.name}"`);
                 // CRITICAL: Use the actual custom field name from database, NOT the mapping fieldName
                 lead.custom_fields[customField.name] = value;
                 console.log(`   Stored as: custom_fields["${customField.name}"] = "${value}"`);
               } else if (mapping.createCustomField) {
-                console.log(`➕ Will create new custom field: ${mapping.fieldName}`);
+                console.log(`➕ Will create new custom field: "${mapping.fieldName}"`);
                 lead.custom_fields[mapping.fieldName] = value;
                 console.log(`   Stored as: custom_fields["${mapping.fieldName}"] = "${value}"`);
               } else {
-                console.log(`📊 Adding as new custom field (no match found): ${mapping.fieldName} = ${value}`);
-                // Use the mapping fieldName as provided by frontend
+                console.log(`⚠️ Custom field not found and not creating new: "${mapping.fieldName}"`);
+                console.log(`   Available fields: ${existingCustomFields?.map(cf => `"${cf.name}"`).join(', ') || 'none'}`);
+                // Still store it, but with a warning
                 lead.custom_fields[mapping.fieldName] = value;
-                console.log(`   Stored as: custom_fields["${mapping.fieldName}"] = "${value}"`);
+                console.log(`   Stored anyway as: custom_fields["${mapping.fieldName}"] = "${value}"`);
               }
             }
           }
@@ -381,7 +387,9 @@ serve(async (req) => {
           phone: lead.phone,
           team_id: lead.team_id,
           status: lead.status,
-          custom_fields_count: Object.keys(lead.custom_fields).length
+          custom_fields_count: Object.keys(lead.custom_fields).length,
+          custom_fields_keys: Object.keys(lead.custom_fields),
+          custom_fields_preview: Object.entries(lead.custom_fields).slice(0, 3).map(([k, v]) => `${k}=${v}`)
         });
 
         // Handle duplicates
@@ -504,11 +512,35 @@ serve(async (req) => {
         }
         
         try {
-          console.log(`💾 Final lead data being inserted:`, JSON.stringify(lead, null, 2));
+          // Validate and sanitize custom_fields before insert
+          const sanitizedCustomFields = {};
+          if (lead.custom_fields && typeof lead.custom_fields === 'object') {
+            for (const [key, value] of Object.entries(lead.custom_fields)) {
+              if (key && value !== null && value !== undefined) {
+                sanitizedCustomFields[key] = String(value);
+              }
+            }
+          }
           
+          // Prepare final lead data with sanitized custom fields
+          const finalLeadData = {
+            ...lead,
+            custom_fields: sanitizedCustomFields
+          };
+          
+          console.log(`💾 Final lead data being inserted:`, {
+            name: finalLeadData.name,
+            team_id: finalLeadData.team_id,
+            status: finalLeadData.status,
+            custom_fields_count: Object.keys(sanitizedCustomFields).length,
+            custom_fields_keys: Object.keys(sanitizedCustomFields),
+            custom_fields_sample: Object.entries(sanitizedCustomFields).slice(0, 2)
+          });
+          
+          // Atomic insert with transaction-like behavior
           const { data: insertResult, error: insertError } = await supabaseAdmin
             .from('leads')
-            .insert([lead])
+            .insert([finalLeadData])
             .select('id, name, team_id, created_at, custom_fields');
 
           if (insertError) {
@@ -518,7 +550,7 @@ serve(async (req) => {
               message: insertError.message,
               details: insertError.details,
               hint: insertError.hint,
-              leadData: JSON.stringify(lead, null, 2)
+              custom_fields_attempted: Object.keys(sanitizedCustomFields)
             });
             failedRecords++;
             detailedErrors.push(`Row ${rowIndex + 1}: Insert failed - ${insertError.message}`);
@@ -531,11 +563,22 @@ serve(async (req) => {
               id: insertResult[0].id,
               name: insertResult[0].name,
               team_id: insertResult[0].team_id,
-              custom_fields: insertResult[0].custom_fields
+              custom_fields_saved: Object.keys(insertResult[0].custom_fields || {}).length
             });
             
-            // Immediate verification with detailed custom fields check
-            console.log(`🔍 Verifying lead was actually inserted...`);
+            // Immediate verification with detailed custom fields analysis
+            console.log(`🔍 Custom Fields Verification for Lead ${insertResult[0].id}:`);
+            console.log(`   Expected custom fields:`, Object.keys(sanitizedCustomFields));
+            console.log(`   Saved custom fields:`, Object.keys(insertResult[0].custom_fields || {}));
+            console.log(`   Custom fields match:`, JSON.stringify(insertResult[0].custom_fields) === JSON.stringify(sanitizedCustomFields));
+            
+            if (insertResult[0].custom_fields) {
+              for (const [key, value] of Object.entries(insertResult[0].custom_fields)) {
+                console.log(`   ✓ "${key}" = "${value}"`);
+              }
+            }
+            
+            // Additional database verification
             try {
               const { data: verifyLead, error: verifyError } = await supabaseAdmin
                 .from('leads')
@@ -546,13 +589,22 @@ serve(async (req) => {
               if (verifyError) {
                 console.error(`❌ Verification failed for lead ${insertResult[0].id}:`, verifyError);
               } else {
-                console.log(`✅ Lead verified in database:`, {
-                  id: verifyLead.id,
-                  name: verifyLead.name,
-                  custom_fields: verifyLead.custom_fields
-                });
-                console.log(`🎯 Custom fields saved:`, Object.keys(verifyLead.custom_fields || {}));
-                console.log(`🎯 Custom field values:`, verifyLead.custom_fields);
+                console.log(`🔍 Double-verification from database:`);
+                console.log(`   Lead exists: ${verifyLead ? 'YES' : 'NO'}`);
+                console.log(`   Custom fields count: ${Object.keys(verifyLead.custom_fields || {}).length}`);
+                
+                // Check if all expected custom fields are present
+                const expectedKeys = Object.keys(sanitizedCustomFields);
+                const actualKeys = Object.keys(verifyLead.custom_fields || {});
+                const missingKeys = expectedKeys.filter(k => !actualKeys.includes(k));
+                const extraKeys = actualKeys.filter(k => !expectedKeys.includes(k));
+                
+                if (missingKeys.length > 0) {
+                  console.warn(`⚠️ Missing custom fields: ${missingKeys.join(', ')}`);
+                }
+                if (extraKeys.length > 0) {
+                  console.log(`ℹ️ Extra custom fields: ${extraKeys.join(', ')}`);
+                }
               }
             } catch (verifyException) {
               console.warn(`⚠️ Verification exception:`, verifyException);
@@ -567,7 +619,8 @@ serve(async (req) => {
           console.error('Exception details:', {
             name: insertException.name,
             message: insertException.message,
-            cause: insertException.cause
+            cause: insertException.cause,
+            custom_fields_attempted: Object.keys(lead.custom_fields || {})
           });
           failedRecords++;
           detailedErrors.push(`Row ${rowIndex + 1}: Insert exception - ${insertException.message}`);
