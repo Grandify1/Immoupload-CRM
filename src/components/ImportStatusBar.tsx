@@ -341,9 +341,9 @@ const ImportStatusBar: React.FC = () => {
                 
                 <div className="flex justify-between text-xs text-gray-600">
                   <span>
-                    {importJob.processed_records} von {importJob.total_records}
+                    {importJob.processed_records || 0} von {importJob.total_records || 0}
                   </span>
-                  {importJob.failed_records > 0 && (
+                  {(importJob.failed_records || 0) > 0 && (
                     <span className="text-red-600 font-medium">
                       {importJob.failed_records} Fehler
                     </span>

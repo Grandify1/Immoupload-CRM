@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -305,11 +304,14 @@ serve(async (req) => {
             });
 
             // Try fallback: Insert without custom_fields if that's the issue
+            // Replacing the code to enhance error recovery by using `sanitizedLeadData` in the fallback and adjust the row number in the log
             if (insertError.code === '23502' || insertError.message?.includes('custom_fields')) {
               console.log(`🔄 Attempting fallback: Insert without custom_fields for row ${i + 1}`);
-              const fallbackData = { ...leadData };
+              const fallbackData = {
+                ...sanitizedLeadData
+              };
               delete fallbackData.custom_fields;
-              
+
               const { data: fallbackLead, error: fallbackError } = await supabaseAdmin
                 .from('leads')
                 .insert([fallbackData])
@@ -430,7 +432,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Critical Edge Function error:', error);
-    
+
     // Try to update import job with error status
     if (body?.jobId) {
       try {
