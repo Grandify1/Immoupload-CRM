@@ -1,230 +1,249 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-interface MappingType {
-  csvHeader: string;
-  fieldName: string | null;
-  createCustomField: boolean;
-  customFieldType: 'text' | 'number' | 'date' | 'select';
+export interface ImportJobProgress {
+  id: string;
+  status: 'pending' | 'processing' | 'completed' | 'completed_with_errors' | 'failed' | 'paused';
+  processed_records: number;
+  total_records: number;
+  failed_records: number;
+  error_details?: any;
+  file_name: string;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
 }
 
-interface DuplicateHandlingConfig {
-  duplicateDetectionField: 'name' | 'email' | 'phone' | 'none';
-  duplicateAction: 'skip' | 'update' | 'create_new';
-}
-
-export class SimpleCSVImportService {
+export class CSVImportService {
   
-  static async processCSVImport(
+  static async importCSVData(
     csvData: string[][],
-    mappings: MappingType[],
-    duplicateConfig: DuplicateHandlingConfig,
+    mappings: any[],
+    duplicateConfig: any,
     teamId: string,
     userId: string,
-    onProgress?: (progress: number, message: string) => void
-  ) {
+    fileName: string
+  ): Promise<{ success: boolean; jobId: string; message?: string }> {
     try {
-      onProgress?.(10, 'Starting import...');
-
-      const BATCH_SIZE = 50;
-      const totalRows = csvData.length;
-      let processedRows = 0;
-      let newRecords = 0;
-      let updatedRecords = 0;
-      let failedRecords = 0;
-      const errors: string[] = [];
-
-      // Create import job
-      const { data: importJob, error: jobError } = await supabase
+      console.log('🚀 Starting CSV import with cURL approach...');
+      
+      // Create import job first
+      const { data: job, error: jobError } = await supabase
         .from('import_jobs')
         .insert({
-          file_name: 'csv_import.csv',
-          total_records: totalRows,
-          processed_records: 0,
-          failed_records: 0,
-          status: 'processing',
           team_id: teamId,
           created_by: userId,
-          undo_status: 'active'
+          file_name: fileName,
+          total_records: csvData.length,
+          status: 'pending'
         })
         .select()
         .single();
 
       if (jobError) {
-        console.warn('Could not create import job, continuing without tracking:', jobError);
+        console.error('❌ Failed to create import job:', jobError);
+        throw new Error(`Failed to create import job: ${jobError.message}`);
       }
 
-      onProgress?.(20, 'Processing data...');
+      console.log(`✅ Import job created: ${job.id}`);
 
-      // Process in batches
-      for (let batchStart = 0; batchStart < totalRows; batchStart += BATCH_SIZE) {
-        const batchEnd = Math.min(batchStart + BATCH_SIZE, totalRows);
-        const currentBatch = csvData.slice(batchStart, batchEnd);
+      // Prepare the payload for cURL command
+      const payload = {
+        csvData,
+        mappings,
+        duplicateConfig,
+        teamId,
+        userId,
+        jobId: job.id,
+        startRow: 0,
+        isInitialRequest: true
+      };
 
-        for (let i = 0; i < currentBatch.length; i++) {
-          try {
-            const row = currentBatch[i];
-            const rowNumber = batchStart + i + 1;
+      // Execute cURL command
+      const curlCommand = `curl -L -X POST 'https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/csv-import' \\
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5Y3lkaWd2d2ZxYXBqeHNzdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxODMxOTUsImV4cCI6MjA2Mzc1OTE5NX0.YbPnhnt0qLAVhffOU5yGBRt-2hMjsc9NEGyeIViwQac' \\
+  -H 'Content-Type: application/json' \\
+  --data '${JSON.stringify(payload).replace(/'/g, "\\'")}'`;
 
-            // Build lead object
-            const leadData: any = {
-              team_id: teamId,
-              custom_fields: {}
-            };
+      console.log('📤 Executing cURL command for CSV import...');
+      
+      // Execute the cURL command using fetch as fallback (since we can't execute shell commands directly in browser)
+      // But we'll structure it to be more reliable
+      const response = await fetch('https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/csv-import', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5Y3lkaWd2d2ZxYXBqeHNzdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxODMxOTUsImV4cCI6MjA2Mzc1OTE5NX0.YbPnhnt0qLAVhffOU5yGBRt-2hMjsc9NEGyeIViwQac',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
-            // Apply mappings
-            mappings.forEach((mapping, mappingIndex) => {
-              if (mapping.fieldName && mappingIndex < row.length) {
-                const value = row[mappingIndex]?.trim();
-                if (!value) return;
-
-                const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
-                
-                if (standardFields.includes(mapping.fieldName)) {
-                  if (mapping.fieldName === 'status') {
-                    const validStatuses = ['potential', 'contacted', 'qualified', 'closed'];
-                    leadData[mapping.fieldName] = validStatuses.includes(value.toLowerCase()) ? value.toLowerCase() : 'potential';
-                  } else {
-                    leadData[mapping.fieldName] = value;
-                  }
-                } else {
-                  leadData.custom_fields[mapping.fieldName] = value;
-                }
-              }
-            });
-
-            // Validate required fields
-            if (!leadData.name?.trim()) {
-              errors.push(`Row ${rowNumber}: Missing required 'name' field`);
-              failedRecords++;
-              continue;
-            }
-
-            if (!leadData.status) leadData.status = 'potential';
-
-            // Handle duplicates
-            let existingLead = null;
-            if (duplicateConfig.duplicateDetectionField !== 'none' && leadData[duplicateConfig.duplicateDetectionField]) {
-              const { data: duplicate } = await supabase
-                .from('leads')
-                .select('id, custom_fields')
-                .eq('team_id', teamId)
-                .eq(duplicateConfig.duplicateDetectionField, leadData[duplicateConfig.duplicateDetectionField])
-                .single();
-
-              if (duplicate) existingLead = duplicate;
-            }
-
-            // Process duplicate action
-            if (existingLead) {
-              if (duplicateConfig.duplicateAction === 'skip') {
-                processedRows++;
-                continue;
-              } else if (duplicateConfig.duplicateAction === 'update') {
-                const mergedCustomFields = {
-                  ...(existingLead.custom_fields || {}),
-                  ...leadData.custom_fields
-                };
-
-                const { error: updateError } = await supabase
-                  .from('leads')
-                  .update({
-                    ...leadData,
-                    custom_fields: mergedCustomFields,
-                    updated_at: new Date().toISOString()
-                  })
-                  .eq('id', existingLead.id);
-
-                if (updateError) {
-                  errors.push(`Row ${rowNumber}: Update failed - ${updateError.message}`);
-                  failedRecords++;
-                } else {
-                  updatedRecords++;
-                  processedRows++;
-                }
-                continue;
-              }
-            }
-
-            // Insert new lead
-            const { error: insertError } = await supabase
-              .from('leads')
-              .insert([{
-                ...leadData,
-                import_job_id: importJob?.id || null
-              }]);
-
-            if (insertError) {
-              errors.push(`Row ${rowNumber}: Insert failed - ${insertError.message}`);
-              failedRecords++;
-            } else {
-              newRecords++;
-              processedRows++;
-            }
-
-          } catch (error) {
-            const rowNumber = batchStart + i + 1;
-            errors.push(`Row ${rowNumber}: Unexpected error - ${error.message}`);
-            failedRecords++;
-          }
-        }
-
-        // Update progress
-        const progress = Math.round(20 + (processedRows / totalRows) * 70);
-        onProgress?.(progress, `Processed ${processedRows}/${totalRows} rows...`);
-
-        // Update job status
-        if (importJob) {
-          await supabase
-            .from('import_jobs')
-            .update({
-              processed_records: processedRows,
-              failed_records: failedRecords,
-              error_details: {
-                new_records: newRecords,
-                updated_records: updatedRecords,
-                failed_records: failedRecords,
-                errors: errors.slice(-20) // Only keep last 20 errors
-              }
-            })
-            .eq('id', importJob.id);
-        }
-      }
-
-      // Final update
-      if (importJob) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ cURL-style request failed:', response.status, errorText);
+        
+        // Update job status to failed
         await supabase
           .from('import_jobs')
           .update({
-            status: failedRecords === 0 ? 'completed' : 'completed_with_errors',
-            processed_records: processedRows,
-            failed_records: failedRecords,
-            completed_at: new Date().toISOString(),
+            status: 'failed',
             error_details: {
-              new_records: newRecords,
-              updated_records: updatedRecords,
-              failed_records: failedRecords,
-              errors: errors.slice(-50)
-            }
+              summary: 'Import request failed',
+              error: errorText,
+              status_code: response.status
+            },
+            completed_at: new Date().toISOString()
           })
-          .eq('id', importJob.id);
+          .eq('id', job.id);
+          
+        throw new Error(`Import request failed: ${response.status} - ${errorText}`);
       }
 
-      onProgress?.(100, 'Import completed!');
+      const result = await response.json();
+      console.log('✅ cURL-style CSV import response:', result);
 
-      return {
-        success: true,
-        processedRecords: processedRows,
-        newRecords,
-        updatedRecords,
-        failedRecords,
-        errors: errors.slice(-20),
-        jobId: importJob?.id
-      };
+      if (result.success) {
+        return {
+          success: true,
+          jobId: job.id,
+          message: `Import started successfully. Processing ${csvData.length} records.`
+        };
+      } else {
+        // Update job status to failed
+        await supabase
+          .from('import_jobs')
+          .update({
+            status: 'failed',
+            error_details: {
+              summary: 'Import processing failed',
+              error: result.error || 'Unknown error',
+              details: result
+            },
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', job.id);
+          
+        throw new Error(`Import failed: ${result.error || 'Unknown error'}`);
+      }
 
     } catch (error) {
-      console.error('CSV Import Service Error:', error);
+      console.error('❌ CSV Import Service Error:', error);
       throw new Error(`Import failed: ${error.message}`);
     }
+  }
+
+  static async getImportJobStatus(jobId: string): Promise<ImportJobProgress | null> {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (error) {
+        console.error('❌ Failed to fetch import job status:', error);
+        return null;
+      }
+
+      return data as ImportJobProgress;
+    } catch (error) {
+      console.error('❌ Error fetching import job status:', error);
+      return null;
+    }
+  }
+
+  static async getImportJobs(teamId: string, limit: number = 20): Promise<ImportJobProgress[]> {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('team_id', teamId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('❌ Failed to fetch import jobs:', error);
+        return [];
+      }
+
+      return data as ImportJobProgress[];
+    } catch (error) {
+      console.error('❌ Error fetching import jobs:', error);
+      return [];
+    }
+  }
+
+  static async resumeFailedImport(jobId: string, lastProcessedRow?: number): Promise<{ success: boolean; message?: string }> {
+    try {
+      console.log(`🔄 Resuming failed import: ${jobId}`);
+
+      // Get the original job data
+      const { data: job, error: jobError } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (jobError || !job) {
+        throw new Error('Import job not found');
+      }
+
+      if (!job.error_details?.original_data) {
+        throw new Error('Original import data not found - cannot resume');
+      }
+
+      const originalData = job.error_details.original_data;
+      const resumePayload = {
+        ...originalData,
+        jobId: jobId,
+        startRow: lastProcessedRow || job.processed_records || 0,
+        isInitialRequest: false,
+        resumeFromError: true,
+        lastProcessedRow: lastProcessedRow || job.processed_records || 0
+      };
+
+      // Execute resume request with cURL approach
+      const response = await fetch('https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/csv-import', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5Y3lkaWd2d2ZxYXBqeHNzdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxODMxOTUsImV4cCI6MjA2Mzc1OTE5NX0.YbPnhnt0qLAVhffOU5yGBRt-2hMjsc9NEGyeIViwQac',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(resumePayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Resume request failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Resume import response:', result);
+
+      if (result.success) {
+        return {
+          success: true,
+          message: `Import resumed successfully from row ${lastProcessedRow || job.processed_records || 0}.`
+        };
+      } else {
+        throw new Error(`Resume failed: ${result.error || 'Unknown error'}`);
+      }
+
+    } catch (error) {
+      console.error('❌ Resume import error:', error);
+      throw new Error(`Resume failed: ${error.message}`);
+    }
+  }
+
+  static logCurlCommand(payload: any): void {
+    const curlCommand = `curl -L -X POST 'https://eycydigvwfqapjxssvqc.supabase.co/functions/v1/csv-import' \\
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5Y3lkaWd2d2ZxYXBqeHNzdnFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgxODMxOTUsImV4cCI6MjA2Mzc1OTE5NX0.YbPnhnt0qLAVhffOU5yGBRt-2hMjsc9NEGyeIViwQac' \\
+  -H 'Content-Type: application/json' \\
+  --data '${JSON.stringify(payload).replace(/'/g, "\\'")}'`;
+    
+    console.log('📋 Equivalent cURL command:');
+    console.log(curlCommand);
   }
 }
