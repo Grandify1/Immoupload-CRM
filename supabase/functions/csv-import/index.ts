@@ -153,29 +153,12 @@ serve(async (req) => {
       );
     }
 
-    // Check leads table structure
-    console.log('🔍 Checking leads table structure...');
-    try {
-      const { data: tableInfo, error: tableError } = await supabaseAdmin
-        .from('leads')
-        .select('*')
-        .limit(0);
-
-      if (tableError) {
-        console.error('❌ Table structure check failed:', tableError);
-      } else {
-        console.log('✅ Leads table accessible');
-      }
-    } catch (structureError) {
-      console.warn('⚠️ Could not check table structure:', structureError);
-    }
-
     // Process CSV import
     console.log('=== STARTING CSV IMPORT PROCESSING ===');
     console.log(`📊 Processing ${csvData.length} rows with ${mappings.length} mappings`);
     console.log('🔄 Duplicate config:', duplicateConfig);
 
-    // Load existing custom fields for the team with detailed debugging
+    // Load existing custom fields for the team
     console.log('📋 Loading existing custom fields...');
     console.log('🔍 Team ID for custom fields lookup:', teamId);
     
@@ -209,7 +192,6 @@ serve(async (req) => {
     
     if (existingCustomFields && existingCustomFields.length > 0) {
       existingCustomFields.forEach(field => {
-        // Store original field data
         customFieldsList.push(field);
         
         // Multiple lookup keys for flexible matching
