@@ -5,35 +5,19 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
 
-interface CSVMapping {
-  csvHeader: string;
-  fieldName: string | null;
-  createCustomField: boolean;
-  customFieldType: 'text' | 'number' | 'date' | 'select';
-}
-
-interface DuplicateConfig {
-  duplicateDetectionField: 'name' | 'email' | 'phone' | 'none';
-  duplicateAction: 'skip' | 'update' | 'create_new';
-}
-
-interface RequestBody {
-  csvData: string[][];
-  mappings: CSVMapping[];
-  duplicateConfig: DuplicateConfig;
-  teamId: string;
-  userId: string;
-  jobId?: string;
-}
-
 serve(async (req) => {
-  console.log('🚀 CSV Import Edge Function started');
+  console.log('🚀 CSV Import Edge Function called');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers present:', Object.keys(Object.fromEntries(req.headers.entries())));
 
+  // CORS preflight handling
   if (req.method === 'OPTIONS') {
+    console.log('✅ Handling CORS preflight request');
     return new Response('ok', {
       status: 200,
       headers: corsHeaders,
@@ -46,26 +30,70 @@ serve(async (req) => {
   };
 
   try {
+    console.log('📋 Starting CSV import processing...');
+
     if (req.method !== 'POST') {
+      console.log('❌ Invalid method:', req.method);
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
         { status: 405, headers: responseHeaders }
       );
     }
 
-    const body: RequestBody = await req.json();
-    console.log('📥 Request received with data:', {
-      csvDataLength: body.csvData?.length,
-      mappingsLength: body.mappings?.length,
-      teamId: body.teamId,
-      userId: body.userId,
-      jobId: body.jobId
-    });
+    // Environment variables check
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    console.log('Environment check:');
+    console.log('- SUPABASE_URL:', supabaseUrl ? 'Present' : 'Missing');
+    console.log('- SERVICE_KEY:', supabaseServiceKey ? 'Present' : 'Missing');
 
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Missing Supabase environment variables');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error - Missing environment variables' }),
+        { status: 500, headers: responseHeaders }
+      );
+    }
+
+    // Request body parsing with error handling
+    let body;
+    try {
+      const rawBody = await req.text();
+      console.log('📄 Request body length:', rawBody.length, 'bytes');
+      
+      if (rawBody.length === 0) {
+        throw new Error('Empty request body');
+      }
+
+      body = JSON.parse(rawBody);
+      console.log('✅ Request body parsed successfully');
+      console.log('- csvData rows:', body.csvData?.length || 'undefined');
+      console.log('- mappings:', body.mappings?.length || 'undefined');
+      console.log('- teamId:', body.teamId ? 'Present' : 'Missing');
+      console.log('- userId:', body.userId ? 'Present' : 'Missing');
+    } catch (parseError) {
+      console.error('❌ Failed to parse request body:', parseError.message);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request body', 
+          details: parseError.message 
+        }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    // Validate required fields
     const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = body;
 
     if (!csvData || !mappings || !teamId || !userId) {
       console.error('❌ Missing required fields');
+      console.log('Missing fields:', {
+        csvData: !csvData,
+        mappings: !mappings,
+        teamId: !teamId,
+        userId: !userId
+      });
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields', 
@@ -75,19 +103,34 @@ serve(async (req) => {
       );
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    console.log('✅ All required fields present');
 
-    if (!Deno.env.get('SUPABASE_URL') || !Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
-      console.error('❌ Missing Supabase environment variables');
+    // Initialize Supabase client
+    console.log('🔌 Creating Supabase client...');
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Test database connection
+    console.log('🔍 Testing database connection...');
+    const { data: testData, error: testError } = await supabaseAdmin
+      .from('leads')
+      .select('id')
+      .eq('team_id', teamId)
+      .limit(1);
+
+    if (testError) {
+      console.error('❌ Database connection test failed:', testError);
       return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
+        JSON.stringify({ 
+          error: 'Database connection failed', 
+          details: testError.message 
+        }),
         { status: 500, headers: responseHeaders }
       );
     }
 
+    console.log('✅ Database connection successful');
+
+    // Process CSV import
     console.log('=== STARTING CSV IMPORT PROCESSING ===');
     console.log(`Processing ${csvData.length} rows with ${mappings.length} mappings`);
     console.log('Duplicate config:', duplicateConfig);
@@ -102,16 +145,9 @@ serve(async (req) => {
 
     if (customFieldsError) {
       console.error('❌ Error loading custom fields:', customFieldsError);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to load custom fields', 
-          details: customFieldsError.message 
-        }),
-        { status: 500, headers: responseHeaders }
-      );
+    } else {
+      console.log(`✅ Loaded ${existingCustomFields?.length || 0} existing custom fields`);
     }
-
-    console.log(`✅ Loaded ${existingCustomFields?.length || 0} existing custom fields`);
 
     // Create a map for easy lookup of custom fields
     const customFieldsMap = new Map();
@@ -127,19 +163,17 @@ serve(async (req) => {
       });
     }
 
-    console.log('Custom fields map keys:', Array.from(customFieldsMap.keys()));
+    console.log('Custom fields map size:', customFieldsMap.size);
 
     // Standard lead fields
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
 
-    // Process CSV data into leads
-    console.log('🔄 Processing CSV data into leads...');
-    const leads: any[] = [];
+    // Initialize counters
     let processedRecords = 0;
     let failedRecords = 0;
     let updatedRecords = 0;
     let duplicateRecords = 0;
-    let rowsProcessed = 0;
+    let newRecords = 0;
 
     // Create custom fields that don't exist yet
     console.log('➕ Creating new custom fields...');
@@ -178,9 +212,14 @@ serve(async (req) => {
     }
 
     // Process each row
-    for (const row of csvData) {
+    console.log('🔄 Processing CSV rows...');
+    const leads = [];
+    
+    for (let rowIndex = 0; rowIndex < csvData.length; rowIndex++) {
+      const row = csvData[rowIndex];
+      
       try {
-        const lead: any = {
+        const lead = {
           team_id: teamId,
           status: 'potential',
           custom_fields: {}
@@ -200,7 +239,7 @@ serve(async (req) => {
                 lead[mapping.fieldName] = value;
               }
             } else {
-              // Handle custom fields - always store in custom_fields object
+              // Handle custom fields
               lead.custom_fields[mapping.fieldName] = value;
             }
           }
@@ -208,14 +247,14 @@ serve(async (req) => {
 
         // Ensure we have at least a name to create the lead
         if (!lead.name || !lead.name.trim()) {
-          console.warn('Skipping row without name:', row.slice(0, 3));
+          console.warn(`Skipping row ${rowIndex + 1} without name`);
           failedRecords++;
           continue;
         }
 
         // Handle duplicates
         let existingLead = null;
-        if (duplicateConfig.duplicateDetectionField !== 'none') {
+        if (duplicateConfig && duplicateConfig.duplicateDetectionField !== 'none') {
           const searchField = duplicateConfig.duplicateDetectionField;
           const searchValue = lead[searchField];
           
@@ -246,7 +285,7 @@ serve(async (req) => {
               ...lead.custom_fields
             };
 
-            const updateData: any = { ...lead };
+            const updateData = { ...lead };
             updateData.custom_fields = mergedCustomFields;
             delete updateData.team_id; // Don't update team_id
 
@@ -268,58 +307,50 @@ serve(async (req) => {
         }
 
         // Create new lead
-        const { error: insertError } = await supabaseAdmin
-          .from('leads')
-          .insert([lead]);
-
-        if (insertError) {
-          console.error(`Failed to insert lead ${lead.name}:`, insertError);
-          failedRecords++;
-        } else {
-          processedRecords++;
-        }
+        leads.push(lead);
 
       } catch (error) {
-        console.error('Error processing row:', error);
+        console.error(`Error processing row ${rowIndex + 1}:`, error);
         failedRecords++;
       }
 
-      rowsProcessed++;
+      // Log progress every 100 rows
+      if ((rowIndex + 1) % 100 === 0) {
+        console.log(`Progress: ${rowIndex + 1}/${csvData.length} rows processed`);
+      }
+    }
+
+    // Batch insert new leads
+    if (leads.length > 0) {
+      console.log(`🔄 Inserting ${leads.length} new leads...`);
       
-      // Update job progress every 1000 records
-      if (jobId && rowsProcessed % 1000 === 0) {
-        const progress = Math.round((rowsProcessed / csvData.length) * 100);
-        try {
-          await supabaseAdmin
-            .from('import_jobs')
-            .update({
-              processed_records: processedRecords,
-              failed_records: failedRecords,
-              progress: progress
-            })
-            .eq('id', jobId);
-        } catch (updateError) {
-          console.warn('Could not update job progress:', updateError);
+      // Insert in batches of 1000
+      const batchSize = 1000;
+      for (let i = 0; i < leads.length; i += batchSize) {
+        const batch = leads.slice(i, i + batchSize);
+        
+        const { data: insertedLeads, error: insertError } = await supabaseAdmin
+          .from('leads')
+          .insert(batch)
+          .select('id');
+
+        if (insertError) {
+          console.error(`Failed to insert batch ${i / batchSize + 1}:`, insertError);
+          failedRecords += batch.length;
+        } else {
+          const insertedCount = insertedLeads?.length || 0;
+          newRecords += insertedCount;
+          processedRecords += insertedCount;
+          console.log(`✅ Inserted batch ${i / batchSize + 1}: ${insertedCount} leads`);
         }
       }
     }
 
-    // Final status update
-    const finalStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
-    const newRecords = processedRecords - updatedRecords;
-    
-    console.log('=== FINAL IMPORT RESULTS ===');
-    console.log(`✅ Import completed successfully!`);
-    console.log(`📊 Total leads processed: ${processedRecords}`);
-    console.log(`🆕 New records: ${newRecords}`);
-    console.log(`🔄 Updated records: ${updatedRecords}`);
-    console.log(`⏭️ Duplicate records skipped: ${duplicateRecords}`);
-    console.log(`❌ Failed records: ${failedRecords}`);
-    console.log(`📈 Final status: ${finalStatus}`);
-    
-    // Final job update
+    // Update job status if provided
     if (jobId) {
+      console.log('📝 Updating import job status...');
       try {
+        const finalStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
         await supabaseAdmin
           .from('import_jobs')
           .update({
@@ -336,19 +367,28 @@ serve(async (req) => {
             completed_at: new Date().toISOString()
           })
           .eq('id', jobId);
-      } catch (finalUpdateError) {
-        console.warn('Could not update final job status:', finalUpdateError);
+        console.log('✅ Job status updated');
+      } catch (updateError) {
+        console.warn('Could not update job status:', updateError);
       }
     }
 
-    // Final verification - count actual leads in database
+    // Final verification
     const { data: verificationLeads, error: verificationError } = await supabaseAdmin
       .from('leads')
       .select('id')
       .eq('team_id', teamId);
 
     const actualLeadCount = verificationLeads?.length || 0;
-    console.log(`✅ FINAL VERIFICATION: ${actualLeadCount} leads now exist in database for team ${teamId}`);
+
+    console.log('=== FINAL IMPORT RESULTS ===');
+    console.log(`✅ Import completed successfully!`);
+    console.log(`📊 Total leads processed: ${processedRecords}`);
+    console.log(`🆕 New records: ${newRecords}`);
+    console.log(`🔄 Updated records: ${updatedRecords}`);
+    console.log(`⏭️ Duplicate records skipped: ${duplicateRecords}`);
+    console.log(`❌ Failed records: ${failedRecords}`);
+    console.log(`📈 Total leads in database: ${actualLeadCount}`);
 
     return new Response(
       JSON.stringify({
@@ -358,7 +398,6 @@ serve(async (req) => {
         updatedRecords: updatedRecords,
         duplicateRecords: duplicateRecords,
         failedRecords: failedRecords,
-        status: finalStatus,
         actualLeadCount: actualLeadCount,
         message: `Successfully imported ${processedRecords} leads (${newRecords} new, ${updatedRecords} updated). Database now contains ${actualLeadCount} total leads.`
       }),
@@ -367,6 +406,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Critical Edge Function error:', error);
+    console.error('Error stack:', error.stack);
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
