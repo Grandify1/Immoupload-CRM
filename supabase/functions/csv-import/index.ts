@@ -166,61 +166,141 @@ serve(async (req) => {
         jobId: body.jobId
       });
 
-      // Test database connectivity
       try {
-        const testQuery = await supabaseAdmin
-          .from('leads')
-          .select('count(*)')
-          .eq('team_id', body.teamId)
+        // Create a proper test import job first
+        console.log('🏗️ Creating test import job...');
+        const { data: testJob, error: jobError } = await supabaseAdmin
+          .from('import_jobs')
+          .insert({
+            id: body.jobId || `test-job-${Date.now()}`,
+            team_id: body.teamId,
+            created_by: body.userId,
+            file_name: 'dashboard-test.csv',
+            total_records: body.csvData?.length || 0,
+            status: 'processing',
+            processed_records: 0,
+            failed_records: 0
+          })
+          .select()
           .single();
 
-        console.log('✅ Database connectivity test:', testQuery);
-      } catch (dbError) {
-        console.error('❌ Database connectivity failed:', dbError);
-      }
+        if (jobError) {
+          console.error('❌ Test job creation failed:', jobError);
+          // Try to update existing job instead
+          const { data: existingJob, error: updateError } = await supabaseAdmin
+            .from('import_jobs')
+            .update({
+              status: 'processing',
+              total_records: body.csvData?.length || 0,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', body.jobId)
+            .select()
+            .single();
 
-      // Try to create a simple test lead directly
-      try {
-        const testLead = {
-          team_id: body.teamId,
-          name: `TEST LEAD ${Date.now()}`,
-          email: 'test@example.com',
-          status: 'potential',
-          custom_fields: { test_field: 'test_value' },
-          import_job_id: body.jobId
-        };
-
-        console.log('🔬 Attempting to insert test lead:', testLead);
-
-        const { data: insertedLead, error: insertError } = await supabaseAdmin
-          .from('leads')
-          .insert([testLead])
-          .select('*')
-          .single();
-
-        if (insertError) {
-          console.error('❌ Test lead insert failed:', insertError);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'Test lead insertion failed',
-              details: insertError,
-              test_lead: testLead
-            }),
-            { status: 500, headers: responseHeaders }
-          );
+          if (updateError) {
+            console.error('❌ Job update also failed:', updateError);
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'Test job creation/update failed',
+                details: { jobError, updateError }
+              }),
+              { status: 500, headers: responseHeaders }
+            );
+          }
+          console.log('✅ Using existing job:', existingJob);
         } else {
-          console.log('✅ Test lead successfully inserted:', insertedLead);
-          return new Response(
-            JSON.stringify({
-              success: true,
-              message: 'Direct test successful - lead inserted',
-              inserted_lead: insertedLead,
-              test_user_id: body.userId
-            }),
-            { status: 200, headers: responseHeaders }
-          );
+          console.log('✅ Test job created successfully:', testJob);
         }
+
+        // Now test the actual CSV import logic
+        const { csvData, mappings, duplicateConfig } = body;
+        let processedCount = 0;
+        let errors = [];
+
+        console.log('🔄 Processing test CSV data...');
+        
+        for (let i = 0; i < csvData.length; i++) {
+          try {
+            const row = csvData[i];
+            const leadData = {
+              team_id: body.teamId,
+              custom_fields: {}
+            };
+
+            // Apply mappings
+            mappings.forEach((mapping, mappingIndex) => {
+              if (mapping.fieldName && mappingIndex < row.length) {
+                const value = row[mappingIndex]?.trim();
+                if (value) {
+                  if (['name', 'email', 'phone', 'website', 'address', 'description'].includes(mapping.fieldName)) {
+                    leadData[mapping.fieldName] = value;
+                  } else {
+                    leadData.custom_fields[mapping.fieldName] = value;
+                  }
+                }
+              }
+            });
+
+            // Set defaults
+            if (!leadData.name) {
+              errors.push(`Row ${i + 1}: Missing name`);
+              continue;
+            }
+            leadData.status = 'potential';
+            leadData.import_job_id = body.jobId;
+
+            // Insert lead
+            const { data: insertedLead, error: insertError } = await supabaseAdmin
+              .from('leads')
+              .insert([leadData])
+              .select('id, name, email')
+              .single();
+
+            if (insertError) {
+              console.error(`❌ Row ${i + 1} insert failed:`, insertError);
+              errors.push(`Row ${i + 1}: ${insertError.message}`);
+            } else {
+              console.log(`✅ Row ${i + 1} inserted:`, insertedLead);
+              processedCount++;
+            }
+          } catch (rowError) {
+            console.error(`❌ Row ${i + 1} processing failed:`, rowError);
+            errors.push(`Row ${i + 1}: ${rowError.message}`);
+          }
+        }
+
+        // Update job status
+        const finalStatus = errors.length === 0 ? 'completed' : 'completed_with_errors';
+        await supabaseAdmin
+          .from('import_jobs')
+          .update({
+            status: finalStatus,
+            processed_records: processedCount,
+            failed_records: errors.length,
+            error_details: errors.length > 0 ? { errors } : null,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', body.jobId);
+
+        console.log('✅ Test completed successfully');
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Dashboard test completed successfully',
+            results: {
+              processedRecords: processedCount,
+              failedRecords: errors.length,
+              totalRows: csvData.length,
+              errors: errors.length > 0 ? errors : undefined
+            },
+            test_user_id: body.userId,
+            job_id: body.jobId
+          }),
+          { status: 200, headers: responseHeaders }
+        );
+
       } catch (testError) {
         console.error('❌ Test execution failed:', testError);
         return new Response(
