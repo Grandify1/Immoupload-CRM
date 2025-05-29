@@ -99,11 +99,26 @@ serve(async (req) => {
     // Parse request body
     let body: ImportRequest;
     try {
-      body = await req.json();
+      const rawBody = await req.text();
+      console.log('📝 Raw request body length:', rawBody.length);
+      console.log('📝 Raw request body preview:', rawBody.substring(0, 500));
+      
+      body = JSON.parse(rawBody);
+      console.log('✅ JSON parsed successfully');
+      console.log('📊 Body keys:', Object.keys(body));
     } catch (error) {
       console.error('❌ Invalid JSON in request body:', error);
+      console.error('❌ JSON parsing error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: error.message,
+          error_type: error.name
+        }),
         { status: 400, headers: responseHeaders }
       );
     }
@@ -112,10 +127,45 @@ serve(async (req) => {
 
     // Validate required fields
     if (!csvData || !mappings || !teamId || !userId) {
+      console.error('❌ Missing required fields:', { 
+        csvData: !!csvData, 
+        mappings: !!mappings, 
+        teamId: !!teamId, 
+        userId: !!userId 
+      });
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields', 
-          required: ['csvData', 'mappings', 'teamId', 'userId'] 
+          required: ['csvData', 'mappings', 'teamId', 'userId'],
+          received: {
+            csvData: !!csvData,
+            mappings: !!mappings, 
+            teamId: !!teamId,
+            userId: !!userId
+          }
+        }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    // Additional validation for array types
+    if (!Array.isArray(csvData)) {
+      console.error('❌ csvData is not an array:', typeof csvData);
+      return new Response(
+        JSON.stringify({ 
+          error: 'csvData must be an array',
+          received: typeof csvData
+        }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    if (!Array.isArray(mappings)) {
+      console.error('❌ mappings is not an array:', typeof mappings);
+      return new Response(
+        JSON.stringify({ 
+          error: 'mappings must be an array',
+          received: typeof mappings
         }),
         { status: 400, headers: responseHeaders }
       );
@@ -527,6 +577,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Critical Edge Function error:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Request body received:', body);
 
     // Try to update import job with error status
     if (body?.jobId) {
@@ -544,7 +596,8 @@ serve(async (req) => {
               summary: 'Import failed due to critical error', 
               error: error.message,
               stack: error.stack,
-              function_call_range: body.startRow ? `${body.startRow + 1}-${Math.min(body.startRow + MAX_ROWS_PER_FUNCTION_CALL, body.csvData?.length || 0)}` : 'unknown'
+              function_call_range: body.startRow ? `${body.startRow + 1}-${Math.min(body.startRow + MAX_ROWS_PER_FUNCTION_CALL, body.csvData?.length || 0)}` : 'unknown',
+              raw_body: body
             },
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
@@ -559,7 +612,14 @@ serve(async (req) => {
       JSON.stringify({ 
         success: false,
         error: 'Internal server error',
-        message: error.message
+        message: error.message,
+        stack: error.stack,
+        details: {
+          body_received: !!body,
+          body_type: typeof body,
+          error_name: error.name,
+          error_constructor: error.constructor.name
+        }
       }),
       { status: 500, headers: responseHeaders }
     );
