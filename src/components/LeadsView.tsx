@@ -159,9 +159,15 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         }
 
         // Status-Filter
-        if (field === 'status' && operator === 'is_any_of') {
-          const statusValues = value.split(',');
-          return statusValues.includes(lead.status);
+        if (field === 'status') {
+          if (operator === 'is_any_of') {
+            const statusValues = value.split(',');
+            return statusValues.includes(lead.status);
+          } else if (operator === 'equals') {
+            return lead.status === value;
+          } else if (operator === 'not_equals') {
+            return lead.status !== value;
+          }
         }
 
         // Standardfilter für andere Felder
@@ -393,8 +399,25 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       let value = filterValue;
 
       // Für Status-Filter
-      if (filterField === 'status' && filterOperator === 'is_any_of') {
-        value = selectedStatusFilters.join(',');
+      if (filterField === 'status') {
+        if (filterOperator === 'is_any_of') {
+          if (selectedStatusFilters.length === 0) {
+            toast({
+              title: "Fehler",
+              description: "Bitte wählen Sie mindestens einen Status aus.",
+              variant: "destructive",
+            });
+            return;
+          }
+          value = selectedStatusFilters.join(',');
+        } else if ((filterOperator === 'equals' || filterOperator === 'not_equals') && !filterValue) {
+          toast({
+            title: "Fehler",
+            description: "Bitte wählen Sie einen Status aus.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       if ((filterField === 'website' || filterField === 'email') && 
@@ -911,7 +934,9 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               <span>
                 {filter.operator === 'is_empty' ? 'Is empty' : 
                  filter.operator === 'is_not_empty' ? 'Is not empty' : 
-                 filter.operator === 'is_any_of' ? `Is any of [${filter.value}]` : 
+                 filter.operator === 'is_any_of' ? `Is any of [${filter.value.split(',').map(status => statusLabels[status as keyof typeof statusLabels] || status).join(', ')}]` :
+                 filter.operator === 'equals' ? `Equals ${statusLabels[filter.value as keyof typeof statusLabels] || filter.value}` :
+                 filter.operator === 'not_equals' ? `Not equals ${statusLabels[filter.value as keyof typeof statusLabels] || filter.value}` :
                  filter.value}
               </span>
               <button 
@@ -1073,7 +1098,13 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               <select 
                 className="w-full border border-gray-300 rounded-md p-2 text-sm"
                 value={filterOperator}
-                onChange={(e) => setFilterOperator(e.target.value)}
+                onChange={(e) => {
+                  setFilterOperator(e.target.value);
+                  // Reset selected status filters when operator changes
+                  if (filterField === 'status') {
+                    setSelectedStatusFilters([]);
+                  }
+                }}
               >
                 {filterField === 'website' || filterField === 'email' ? (
                   <>
@@ -1084,6 +1115,8 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 ) : filterField === 'status' ? (
                   <>
                     <option value="is_any_of">Is any of</option>
+                    <option value="equals">Equals</option>
+                    <option value="not_equals">Not equals</option>
                   </>
                 ) : (
                   <option value="contains">Contains</option>
@@ -1104,6 +1137,23 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                   value={filterValue}
                   onChange={(e) => setFilterValue(e.target.value)}
                 />
+              </div>
+            )}
+
+            {/* Status Single Select für equals/not_equals */}
+            {filterField === 'status' && (filterOperator === 'equals' || filterOperator === 'not_equals') && (
+              <div className="mb-3">
+                <label className="block text-sm mb-1 font-medium">Select Status</label>
+                <select 
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                >
+                  <option value="">Select a status...</option>
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
               </div>
             )}
 
@@ -1135,6 +1185,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                       </label>
                     </div>
                   ))}
+                </div>
+                <div className="mt-2 text-xs text-gray-500">
+                  {selectedStatusFilters.length > 0 ? 
+                    `${selectedStatusFilters.length} Status ausgewählt` : 
+                    'Keine Status ausgewählt'
+                  }
                 </div>
               </div>
             )}
