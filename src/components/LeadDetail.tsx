@@ -19,7 +19,8 @@ import {
   User,
   FolderOpen,
   Briefcase,
-  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Lead,
@@ -875,7 +876,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               className="h-8 w-8 p-0 hover:bg-gray-100"
               title="Vorheriger Lead"
             >
-              <ArrowUpDown className="w-4 h-4 rotate-90" />
+              <ChevronLeft className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
@@ -885,7 +886,7 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
               className="h-8 w-8 p-0 hover:bg-gray-100"
               title="Nächster Lead"
             >
-              <ArrowUpDown className="w-4 h-4 -rotate-90" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
           <Button variant="ghost" size="sm" onClick={handleToggleEdit}>
