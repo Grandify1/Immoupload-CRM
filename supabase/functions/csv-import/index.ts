@@ -31,8 +31,8 @@ interface ImportRequest {
   isInitialRequest?: boolean;
 }
 
-const BATCH_SIZE = 100; // Kleinere Batches für bessere Stabilität
-const MAX_ROWS_PER_FUNCTION_CALL = 500; // Reduziert für bessere Performance
+const BATCH_SIZE = 50; // Optimiert für große Imports
+const MAX_ROWS_PER_FUNCTION_CALL = 1000; // Erhöht für bessere Durchsatzrate bei großen Imports
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -143,7 +143,7 @@ serve(async (req) => {
     const totalBatches = Math.ceil(currentBatchData.length / BATCH_SIZE);
     console.log(`📦 Processing ${currentBatchData.length} leads in ${totalBatches} batches of ${BATCH_SIZE}`);
 
-    for (let batchIndex = 0; batchIndex = totalBatches; batchIndex++) {
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
       const batchStart = batchIndex * BATCH_SIZE;
       const batchEnd = Math.min(batchStart + BATCH_SIZE, currentBatchData.length);
       const currentBatch = currentBatchData.slice(batchStart, batchEnd);
@@ -156,11 +156,8 @@ serve(async (req) => {
       let batchFailedRecords = 0;
       const batchErrors: string[] = [];
 
-      // Process rows in parallel for better performance
-      const batchPromises = currentBatch.map(async (row, i) => {
-        const absoluteRowNumber = startRow + batchStart + i + 1;
-        let result = { processed: 0, newRecords: 0, updatedRecords: 0, failedRecords: 0, errors: [] as string[] };
-
+      // Process rows sequentially for better memory management with large imports
+      for (let i = 0; i < currentBatch.length; i++) {
         try {
           const row = currentBatch[i];
           const absoluteRowNumber = startRow + batchStart + i + 1;
@@ -330,13 +327,13 @@ serve(async (req) => {
           batchErrors.push(`Row ${absoluteRowNumber}: Unexpected error - ${error.message}`);
           batchFailedRecords++;
         }
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-
-      batchResults.forEach(() => {
-        // Update totals (already updated inside the promises)
-      });
+        
+        // Memory cleanup for large imports
+        if (i % 10 === 0) {
+          // Allow garbage collection every 10 records
+          await new Promise(resolve => setTimeout(resolve, 1));
+        }
+      }
 
       // Update totals
       totalProcessed += batchProcessed;
@@ -387,7 +384,12 @@ serve(async (req) => {
         }
       }
 
+      const batchTime = Date.now() - startTime;
+      const avgTimePerRecord = batchTime / Math.max(batchProcessed, 1);
+      const estimatedTotalTime = (avgTimePerRecord * csvData.length) / 1000;
+      
       console.log(`✅ Batch ${batchIndex + 1}/${totalBatches} completed: +${batchNewRecords} new, +${batchUpdatedRecords} updated, +${batchFailedRecords} failed`);
+      console.log(`⏱️ Performance: ${avgTimePerRecord.toFixed(0)}ms/record, estimated total: ${estimatedTotalTime.toFixed(0)}s`);
     }
 
     // Bestimme ob wir weitere Function Calls brauchen
