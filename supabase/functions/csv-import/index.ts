@@ -1,13 +1,38 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, accept-encoding, accept-language, cache-control, pragma',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
-  'Access-Control-Max-Age': '86400',
-  'Access-Control-Allow-Credentials': 'true',
-};
+// Dynamic CORS headers based on request origin
+function getCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get('origin');
+  const allowedOrigins = [
+    'https://immoupload.com',
+    'https://crm.immoupload.com',
+    /^https:\/\/.*\.replit\.dev$/,
+    /^https:\/\/.*\.pike\.replit\.dev$/,
+    /^https:\/\/.*\.repl\.co$/
+  ];
+
+  let allowOrigin = 'null';
+  
+  if (origin) {
+    const isAllowed = allowedOrigins.some(allowed => 
+      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+    );
+    
+    if (isAllowed) {
+      allowOrigin = origin;
+    }
+  }
+
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, accept-encoding, accept-language, cache-control, pragma',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+    'Access-Control-Max-Age': '86400',
+    'Access-Control-Allow-Credentials': 'true',
+    'Vary': 'Origin'
+  };
+}
 
 interface MappingType {
   csvHeader: string;
@@ -34,10 +59,12 @@ interface ImportRequest {
   lastProcessedRow?: number;
 }
 
-const BATCH_SIZE = 50; // Optimiert für große Imports
-const MAX_ROWS_PER_FUNCTION_CALL = 1000; // Erhöht für bessere Durchsatzrate bei großen Imports
+const BATCH_SIZE = 25; // Reduziert für Stabilität bei großen Imports
+const MAX_ROWS_PER_FUNCTION_CALL = 500; // Reduziert wegen Memory-Limits
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {

@@ -34,7 +34,7 @@ const ImportStatusBar: React.FC = React.memo(() => {
   const [isVisible, setIsVisible] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState(0);
 
-  // Optimierte Fetch-Funktion mit Caching
+  // Update active jobs query to include failed/paused jobs
   const fetchActiveJobs = useCallback(async () => {
     if (!team?.id) return;
 
@@ -52,7 +52,7 @@ const ImportStatusBar: React.FC = React.memo(() => {
           updated_at, completed_at
         `)
         .eq('team_id', team.id)
-        .in('status', ['processing'])
+        .in('status', ['processing', 'failed', 'paused']) // Include failed/paused
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -67,7 +67,7 @@ const ImportStatusBar: React.FC = React.memo(() => {
     }
   }, [team?.id, lastFetchTime]);
 
-  // Optimierter useEffect mit intelligenter Intervall-Anpassung
+  // Optimized useEffect with intelligenter Intervall-Anpassung
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
@@ -126,7 +126,7 @@ const ImportStatusBar: React.FC = React.memo(() => {
     };
   }, [team?.id, fetchActiveJobs, lastFetchTime]);
 
-  // Memoized visibility logic
+  // Optimized visibility logic
   const shouldShowBar = useMemo(() => {
     return activeJobs.length > 0;
   }, [activeJobs.length]);
