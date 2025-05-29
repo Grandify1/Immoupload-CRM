@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { LeadDetail } from './LeadDetail';
+import { useProfile } from '@/hooks/useProfile';
 
 interface LeadsViewProps {
   leads: Lead[];
@@ -32,6 +33,7 @@ interface LeadsViewProps {
   customFields?: CustomField[];
   activityTemplates?: ActivityTemplate[];
   onNavigateToEmail?: (recipientEmail?: string) => void;
+  team?: any;
 }
 
 const statusColors = {
@@ -61,8 +63,11 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   onAddCustomField,
   customFields,
   activityTemplates = [],
-  onNavigateToEmail
+  onNavigateToEmail,
+  team: teamProp
 }) => {
+  const { team: profileTeam } = useProfile();
+  const team = teamProp || profileTeam;
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewLeadForm, setShowNewLeadForm] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -453,8 +458,10 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
     if (checked) {
       const allLeadIds = new Set(filteredLeads.map(lead => lead.id));
       setSelectedLeads(allLeadIds);
+      setAllLeadsSelected(false); // Reset global selection when using table selection
     } else {
       setSelectedLeads(new Set());
+      setAllLeadsSelected(false);
     }
   };
 
@@ -466,6 +473,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
       newSelected.delete(leadId);
     }
     setSelectedLeads(newSelected);
+    setAllLeadsSelected(false); // Reset global selection when manually selecting/deselecting
   };
 
   const handleBulkDelete = async () => {
@@ -581,13 +589,21 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const [allLeadsSelected, setAllLeadsSelected] = useState(false);
 
   const handleSelectAllInDatabase = async () => {
-    // Implementiere die Logik, um ALLE Leads aus der Datenbank auszuwählen
-    // Aktualisiere den selectedLeads State mit den IDs aller Leads
-    // Setze den allLeadsSelected State auf true
+    if (!team?.id) {
+      toast({
+        title: "Fehler",
+        description: "Team-ID nicht verfügbar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Abrufen ALLER Lead-IDs aus der Datenbank ohne Limit
       const { data, error } = await supabase
         .from('leads')
-        .select('id'); // Nur die IDs auswählen, um die Datenmenge zu reduzieren
+        .select('id')
+        .eq('team_id', team.id); // Nur Leads des aktuellen Teams
 
       if (error) {
         console.error("Fehler beim Abrufen aller Lead-IDs:", error);
@@ -605,8 +621,9 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         setAllLeadsSelected(true);
         toast({
           title: "Alle Leads ausgewählt",
-          description: `Alle ${allLeadIds.size} Leads wurden ausgewählt.`,
+          description: `Alle ${allLeadIds.size} Leads aus der Datenbank wurden ausgewählt.`,
         });
+        console.log(`✅ Selected all ${allLeadIds.size} leads from database`);
       }
     } catch (error) {
       console.error("Unerwarteter Fehler beim Auswählen aller Leads:", error);
@@ -653,7 +670,12 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                   size="sm"
                   className="flex items-center h-7 px-2 text-xs"
                 >
-                  <span className="mr-1">{selectedLeads.size} ausgewählt</span>
+                  <span className="mr-1">
+                    {allLeadsSelected 
+                      ? `${selectedLeads.size} (alle) ausgewählt` 
+                      : `${selectedLeads.size} ausgewählt`
+                    }
+                  </span>
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
