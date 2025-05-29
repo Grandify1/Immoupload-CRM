@@ -175,8 +175,10 @@ serve(async (req) => {
     console.log(`📊 Processing ${csvData.length} rows with ${mappings.length} mappings`);
     console.log('🔄 Duplicate config:', duplicateConfig);
 
-    // Load existing custom fields for the team
+    // Load existing custom fields for the team with detailed debugging
     console.log('📋 Loading existing custom fields...');
+    console.log('🔍 Team ID for custom fields lookup:', teamId);
+    
     const { data: existingCustomFields, error: customFieldsError } = await supabaseAdmin
       .from('custom_fields')
       .select('*')
@@ -185,25 +187,55 @@ serve(async (req) => {
 
     if (customFieldsError) {
       console.error('❌ Error loading custom fields:', customFieldsError);
+      console.error('Custom fields error details:', {
+        code: customFieldsError.code,
+        message: customFieldsError.message,
+        details: customFieldsError.details,
+        hint: customFieldsError.hint
+      });
     } else {
       console.log(`✅ Loaded ${existingCustomFields?.length || 0} existing custom fields`);
+      if (existingCustomFields && existingCustomFields.length > 0) {
+        console.log('📋 Existing custom fields details:');
+        existingCustomFields.forEach((field, index) => {
+          console.log(`  ${index + 1}. ${field.name} (${field.field_type}) - ID: ${field.id}`);
+        });
+      }
     }
 
-    // Create a map for easy lookup of custom fields
+    // Create a comprehensive map for easy lookup of custom fields
     const customFieldsMap = new Map();
-    if (existingCustomFields) {
+    const customFieldsList = [];
+    
+    if (existingCustomFields && existingCustomFields.length > 0) {
       existingCustomFields.forEach(field => {
+        // Store original field data
+        customFieldsList.push(field);
+        
+        // Multiple lookup keys for flexible matching
+        const originalName = field.name;
         const normalizedName = field.name
           .toLowerCase()
+          .replace(/[äöüßÄÖÜ]/g, (match) => {
+            const replacements = { 'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss', 'Ä': 'ae', 'Ö': 'oe', 'Ü': 'ue' };
+            return replacements[match] || match;
+          })
           .replace(/[^a-z0-9]/g, '_')
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '');
+        
+        // Add various lookup keys
+        customFieldsMap.set(originalName, field);
+        customFieldsMap.set(originalName.toLowerCase(), field);
         customFieldsMap.set(normalizedName, field);
-        customFieldsMap.set(field.name, field);
+        customFieldsMap.set(field.id, field);
+        
+        console.log(`📝 Custom field mapping: "${originalName}" -> normalized: "${normalizedName}"`);
       });
     }
 
     console.log('📋 Custom fields map size:', customFieldsMap.size);
+    console.log('📋 Custom fields list length:', customFieldsList.length);
 
     // Standard lead fields
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
@@ -271,13 +303,13 @@ serve(async (req) => {
           updated_at: new Date().toISOString()
         };
 
-        // Map CSV columns to lead fields
+        // Map CSV columns to lead fields with enhanced custom field handling
         mappings.forEach((mapping, index) => {
           if (mapping.fieldName && index < row.length) {
             const value = row[index]?.toString().trim();
             if (!value || value === '') return;
 
-            console.log(`📋 Mapping column "${mapping.csvHeader}" -> "${mapping.fieldName}" = "${value}"`);
+            console.log(`📋 Processing mapping: "${mapping.csvHeader}" -> "${mapping.fieldName}" = "${value}"`);
 
             // Check if it's a standard field
             if (standardFields.includes(mapping.fieldName)) {
@@ -286,11 +318,27 @@ serve(async (req) => {
                 console.log(`🔄 Normalized status from "${value}" to "potential"`);
               } else {
                 lead[mapping.fieldName] = value;
+                console.log(`✅ Standard field: ${mapping.fieldName} = ${value}`);
               }
             } else {
-              // Handle custom fields
-              lead.custom_fields[mapping.fieldName] = value;
-              console.log(`📊 Added custom field: ${mapping.fieldName} = ${value}`);
+              // Enhanced custom field handling
+              console.log(`🔍 Checking if "${mapping.fieldName}" is a custom field...`);
+              
+              // Check if this field exists in our custom fields
+              const customField = customFieldsMap.get(mapping.fieldName) || 
+                                 customFieldsMap.get(mapping.fieldName.toLowerCase()) ||
+                                 customFieldsList.find(cf => cf.name === mapping.fieldName);
+              
+              if (customField) {
+                console.log(`✅ Found existing custom field: ${customField.name} (ID: ${customField.id})`);
+                lead.custom_fields[customField.name] = value;
+              } else if (mapping.createCustomField) {
+                console.log(`➕ Will create new custom field: ${mapping.fieldName}`);
+                lead.custom_fields[mapping.fieldName] = value;
+              } else {
+                console.log(`📊 Adding as custom field: ${mapping.fieldName} = ${value}`);
+                lead.custom_fields[mapping.fieldName] = value;
+              }
             }
           }
         });
@@ -404,15 +452,41 @@ serve(async (req) => {
           console.log(`➕ Creating new lead despite duplicate: ${lead.name}`);
         }
 
-        // Create new lead with detailed error handling
+        // Create new lead with enhanced error handling and validation
         console.log(`💾 Attempting to insert new lead: ${lead.name}`);
-        console.log(`📊 Final lead data structure:`, JSON.stringify(lead, null, 2));
+        console.log(`📊 Lead data summary:`, {
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          team_id: lead.team_id,
+          status: lead.status,
+          custom_fields_count: Object.keys(lead.custom_fields).length,
+          custom_field_keys: Object.keys(lead.custom_fields)
+        });
+        
+        // Validate required fields before insert
+        if (!lead.name || !lead.team_id) {
+          console.error(`❌ Missing required fields for lead:`, { name: lead.name, team_id: lead.team_id });
+          failedRecords++;
+          detailedErrors.push(`Row ${rowIndex + 1}: Missing required fields (name or team_id)`);
+          continue;
+        }
+        
+        // Validate custom_fields is proper JSON
+        try {
+          JSON.stringify(lead.custom_fields);
+        } catch (jsonError) {
+          console.error(`❌ Invalid custom_fields JSON for lead ${lead.name}:`, jsonError);
+          lead.custom_fields = {};
+        }
         
         try {
+          console.log(`💾 Final lead data being inserted:`, JSON.stringify(lead, null, 2));
+          
           const { data: insertResult, error: insertError } = await supabaseAdmin
             .from('leads')
             .insert([lead])
-            .select('id, name, team_id, created_at');
+            .select('id, name, team_id, created_at, custom_fields');
 
           if (insertError) {
             console.error(`❌ Insert failed for lead ${lead.name}:`, insertError);
@@ -420,7 +494,8 @@ serve(async (req) => {
               code: insertError.code,
               message: insertError.message,
               details: insertError.details,
-              hint: insertError.hint
+              hint: insertError.hint,
+              leadData: JSON.stringify(lead, null, 2)
             });
             failedRecords++;
             detailedErrors.push(`Row ${rowIndex + 1}: Insert failed - ${insertError.message}`);
@@ -429,13 +504,42 @@ serve(async (req) => {
             failedRecords++;
             detailedErrors.push(`Row ${rowIndex + 1}: Insert returned no data`);
           } else {
-            console.log(`✅ Successfully inserted lead:`, insertResult[0]);
+            console.log(`✅ Successfully inserted lead:`, {
+              id: insertResult[0].id,
+              name: insertResult[0].name,
+              team_id: insertResult[0].team_id,
+              custom_fields: insertResult[0].custom_fields
+            });
+            
+            // Immediate verification
+            console.log(`🔍 Verifying lead was actually inserted...`);
+            try {
+              const { data: verifyLead, error: verifyError } = await supabaseAdmin
+                .from('leads')
+                .select('id, name, custom_fields')
+                .eq('id', insertResult[0].id)
+                .single();
+                
+              if (verifyError) {
+                console.error(`❌ Verification failed for lead ${insertResult[0].id}:`, verifyError);
+              } else {
+                console.log(`✅ Lead verified in database:`, verifyLead);
+              }
+            } catch (verifyException) {
+              console.warn(`⚠️ Verification exception:`, verifyException);
+            }
+            
             newRecords++;
             processedRecords++;
           }
         } catch (insertException) {
           console.error(`❌ Insert exception for lead ${lead.name}:`, insertException);
           console.error('Exception stack:', insertException.stack);
+          console.error('Exception details:', {
+            name: insertException.name,
+            message: insertException.message,
+            cause: insertException.cause
+          });
           failedRecords++;
           detailedErrors.push(`Row ${rowIndex + 1}: Insert exception - ${insertException.message}`);
         }
