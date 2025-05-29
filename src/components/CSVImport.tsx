@@ -618,8 +618,15 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         }
       }
 
-      // Show progress
-      setStep('importing');
+      // Show initial toast
+      toast.info('CSV Import gestartet', {
+        description: `${csvData.length} Leads werden verarbeitet...`,
+        duration: 3000,
+      });
+
+      // Close modal immediately
+      resetState();
+      onClose();
       
       // Start import with progress callback
       const result = await SimpleCSVImportService.processCSVImport(
@@ -629,18 +636,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         profile.team_id,
         user.id,
         (progress, message) => {
-          setImportProgress(progress);
           console.log(`${progress}%: ${message}`);
+          // Don't show progress toasts, just log them
         }
       );
 
-      // Close modal after small delay
-      setTimeout(() => {
-        resetState();
-        onClose();
-      }, 500);
-
-      // Show results
+      // Show final results
       if (result.failedRecords > 0) {
         toast.warning('Import mit Fehlern abgeschlossen', {
           description: `${result.processedRecords} Leads verarbeitet (${result.newRecords} neu, ${result.updatedRecords} aktualisiert, ${result.failedRecords} Fehler)`,
@@ -661,14 +662,16 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
     } catch (error: any) {
       console.error('Import Error:', error);
-      setError(`Import fehlgeschlagen: ${error.message}`);
-      setStep('preview');
       
       const { toast } = await import('sonner');
       toast.error('Import fehlgeschlagen', {
         description: error.message,
         duration: 4000,
       });
+
+      // Don't go back to preview step, just close
+      resetState();
+      onClose();
     } finally {
       setIsImporting(false);
     }
@@ -677,16 +680,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) {
-        if (step === 'importing') {
-          const confirmClose = window.confirm(
-            'Der Import ist noch nicht abgeschlossen. Wenn Sie jetzt schließen, wird der Import abgebrochen. Möchten Sie wirklich schließen?'
-          );
-          if (confirmClose) {
-            onClose();
-          }
-        } else {
-          onClose();
-        }
+        onClose();
       }
     }}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -1158,24 +1152,12 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           </div>
         )}
 
-        {step === 'importing' && (
-          <div className="py-8 text-center">
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: `${importProgress}%` }}
-              ></div>
-            </div>
-            <p className="text-gray-600">Importing leads... {importProgress}%</p>
-          </div>
-        )}
+        
 
         <DialogFooter>
-          {step !== 'importing' && (
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-          )}
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
 
           {step === 'upload' && file && (
             <Button onClick={() => setStep('map')}>
@@ -1205,13 +1187,6 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               ) : (
                 `Import ${csvData.length} Leads`
               )}
-            </Button>
-          )}
-
-          {step === 'importing' && importProgress === 100 && (
-            <Button className="bg-green-600 hover:bg-green-700">
-              <Check className="mr-2 h-4 w-4" />
-              Import Complete
             </Button>
           )}
         </DialogFooter>
