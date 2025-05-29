@@ -1,0 +1,43 @@
+KRITISCHES PROBLEM: CSV Import Fehlschlägt - Systematische Fehlerbehebung erforderlich
+Problem Analyse:
+Der CSV Import-Prozess läuft scheinbar erfolgreich durch alle Schritte (Parsing, Mapping, Edge Function Call), aber die importierten Leads erscheinen nicht in der CRM-Ansicht. Das deutet auf ein Problem in der Datenpersistierung oder im Refresh-Mechanismus hin.
+Debugging-Strategie:
+Schritt 1: Edge Function Logs überprüfen
+Gehe in die Supabase Dashboard → Edge Functions → Logs und überprüfe die Logs der CSV Import Edge Function. Suche nach Fehlern während der Datenbankoperationen. Die Edge Function könnte erfolgreich antworten, aber intern beim Speichern in die Datenbank fehlschlagen.
+Schritt 2: Supabase Database Logs analysieren
+Öffne Supabase → Database → Logs und filtere nach der Zeit des Import-Versuchs. Suche nach SQL-Fehlern, Constraint-Violations, oder Permission-Problemen. Häufige Probleme sind fehlende Spalten, falsche Datentypen, oder RLS-Policy-Verletzungen.
+Schritt 3: Import Job Status verifizieren
+Der Import Job wird mit ID "d3740fe1-45a7-48e7-9706-147f5b4fa3d8" erstellt. Überprüfe in der Supabase-Tabelle den Status dieses Jobs. Ist er auf "completed", "failed", oder hängt er bei "processing"? Das zeigt dir, wo der Prozess abbricht.
+Schritt 4: RLS Policies überprüfen
+Row Level Security könnte die importierten Leads für den aktuellen User unsichtbar machen. Überprüfe die RLS Policies für die "leads" oder "businesses" Tabelle. Stelle sicher, dass importierte Leads die richtige user_id und team_id haben.
+Schritt 5: Datentyp-Kompatibilität prüfen
+Das CSV enthält verschiedene Datentypen (place_id, is_spending_on_ads, rating, etc.). Überprüfe ob alle Spalten in der Datenbank die richtigen Datentypen haben und die CSV-Werte kompatibel sind.
+Schritt 6: Duplicate Detection Problem
+Der Log zeigt "Duplicate Detection Config". Möglicherweise werden alle Leads als Duplikate erkannt und daher nicht importiert. Überprüfe die Duplikat-Erkennungslogik und teste den Import mit komplett neuen, eindeutigen Daten.
+Schritt 7: Transaction Rollback Problem
+Die Edge Function könnte eine Transaktion starten, aber diese wird zurückgerollt wenn ein einzelner Lead fehlschlägt. Implementiere bessere Error Handling, das einzelne fehlgeschlagene Leads überspringt statt den ganzen Import abzubrechen.
+Schritt 8: Refresh-Timing Problem
+Die multiplen Refresh-Versuche deuten darauf hin, dass die Daten noch nicht verfügbar sind wenn gefetcht wird. Die Edge Function könnte asynchron arbeiten. Implementiere einen echten Polling-Mechanismus oder WebSocket-Updates statt sofortiger Refreshs.
+Debugging Code hinzufügen:
+In der Edge Function:
+Füge ausführliche Console.log Statements hinzu für jeden Schritt: Datenempfang, Validierung, Datenbankoperationen, Erfolgsmeldungen. Logge auch die tatsächlich in die Datenbank geschriebenen IDs.
+Im Frontend:
+Nach dem Edge Function Call, mache einen direkten Supabase Query um zu überprüfen ob die Leads tatsächlich in der Datenbank sind. Vergleiche die Anzahl vor und nach dem Import.
+Häufige Ursachen und Lösungen:
+Problem: RLS Policy blockiert Import
+Lösung: Stelle sicher, dass importierte Leads die korrekte user_id und team_id des importierenden Users haben.
+Problem: Constraint Violations
+Lösung: Validiere alle Daten vor dem Insert und handle NULL-Werte korrekt.
+Problem: Asynchrone Edge Function
+Lösung: Implementiere einen Job-Status-Polling-Mechanismus statt sofortiger Refreshs.
+Problem: Duplikat-Erkennung zu strikt
+Lösung: Überprüfe die Duplikat-Kriterien und mache sie weniger restriktiv für Test-Zwecke.
+Sofortmaßnahmen:
+Test 1: Importiere nur einen einzelnen Lead um die Grundfunktionalität zu testen.
+Test 2: Deaktiviere temporär die Duplikat-Erkennung.
+Test 3: Überprüfe manuell die Datenbank nach dem Import-Versuch.
+Test 4: Teste den Import mit einem anderen User/Team.
+Erwartete Lösung:
+Nach systematischem Debugging solltest du die exakte Stelle finden, wo der Import fehlschlägt. Häufig ist es ein RLS-Problem oder ein Datentyp-Konflikt. Das Problem liegt wahrscheinlich NICHT im Frontend-Code, sondern in der Edge Function oder den Datenbankoperationen.
+Kritischer Hinweis:
+Der Import-Prozess scheint bis zur Edge Function zu funktionieren. Das Problem liegt sehr wahrscheinlich in der Server-seitigen Datenpersistierung. Konzentriere dich auf Supabase Logs und Datenbankoperationen, nicht auf das Frontend.
