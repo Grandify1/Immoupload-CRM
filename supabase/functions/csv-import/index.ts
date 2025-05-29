@@ -275,7 +275,7 @@ serve(async (req) => {
     const customFieldsToCreate = mappings.filter(m => 
       m.createCustomField && 
       m.fieldName && 
-      !customFieldsMap.has(m.fieldName)
+      !findCustomField(existingCustomFields || [], m.fieldName)
     );
 
     for (const mapping of customFieldsToCreate) {
@@ -299,7 +299,8 @@ serve(async (req) => {
             detailedErrors.push(`Custom field creation failed: ${mapping.fieldName} - ${createError.message}`);
           } else {
             console.log(`✅ Created custom field: ${mapping.fieldName}`);
-            customFieldsMap.set(mapping.fieldName, newField);
+            existingCustomFields = existingCustomFields || [];
+            existingCustomFields.push(newField);
           }
         } catch (error) {
           console.warn(`⚠️ Exception creating custom field ${mapping.fieldName}:`, error);
@@ -358,15 +359,27 @@ serve(async (req) => {
                 lead.custom_fields[customField.name] = value;
                 console.log(`   Stored as: custom_fields["${customField.name}"] = "${value}"`);
               } else if (mapping.createCustomField) {
-                console.log(`➕ Will create new custom field: "${mapping.fieldName}"`);
+                console.log(`➕ Will store as new custom field: "${mapping.fieldName}"`);
+                // For new custom fields, use the original name as it will be created
                 lead.custom_fields[mapping.fieldName] = value;
                 console.log(`   Stored as: custom_fields["${mapping.fieldName}"] = "${value}"`);
               } else {
                 console.log(`⚠️ Custom field not found and not creating new: "${mapping.fieldName}"`);
                 console.log(`   Available fields: ${existingCustomFields?.map(cf => `"${cf.name}"`).join(', ') || 'none'}`);
-                // Still store it, but with a warning
-                lead.custom_fields[mapping.fieldName] = value;
-                console.log(`   Stored anyway as: custom_fields["${mapping.fieldName}"] = "${value}"`);
+                
+                // Try to find the field with reverse matching (denormalize the frontend name)
+                const denormalizedName = mapping.fieldName.replace(/_/g, ' ');
+                const reverseMatch = existingCustomFields?.find(cf => cf.name === denormalizedName);
+                
+                if (reverseMatch) {
+                  console.log(`✅ Found field through reverse matching: "${reverseMatch.name}"`);
+                  lead.custom_fields[reverseMatch.name] = value;
+                  console.log(`   Stored as: custom_fields["${reverseMatch.name}"] = "${value}"`);
+                } else {
+                  // As fallback, still store with the provided name
+                  lead.custom_fields[mapping.fieldName] = value;
+                  console.log(`   Stored anyway as: custom_fields["${mapping.fieldName}"] = "${value}"`);
+                }
               }
             }
           }
