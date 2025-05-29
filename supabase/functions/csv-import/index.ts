@@ -1,0 +1,341 @@
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
+
+interface MappingType {
+  csvHeader: string;
+  fieldName: string | null;
+  createCustomField: boolean;
+  customFieldType: 'text' | 'number' | 'date' | 'select';
+}
+
+interface DuplicateHandlingConfig {
+  duplicateDetectionField: 'name' | 'email' | 'phone' | 'none';
+  duplicateAction: 'skip' | 'update' | 'create_new';
+}
+
+interface ImportRequest {
+  csvData: string[][];
+  mappings: MappingType[];
+  duplicateConfig: DuplicateHandlingConfig;
+  teamId: string;
+  userId: string;
+  jobId: string;
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: corsHeaders,
+    });
+  }
+
+  const responseHeaders = {
+    ...corsHeaders,
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    console.log('🚀 CSV Import Edge Function started');
+
+    if (req.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { status: 405, headers: responseHeaders }
+      );
+    }
+
+    // Parse request body
+    let body: ImportRequest;
+    try {
+      body = await req.json();
+    } catch (error) {
+      console.error('❌ Invalid JSON in request body:', error);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = body;
+
+    // Validate required fields
+    if (!csvData || !mappings || !teamId || !userId) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing required fields', 
+          required: ['csvData', 'mappings', 'teamId', 'userId'] 
+        }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    console.log(`📊 Processing ${csvData.length} rows for team ${teamId}`);
+    console.log(`🔄 Duplicate config: ${duplicateConfig.duplicateDetectionField} -> ${duplicateConfig.duplicateAction}`);
+
+    // Initialize Supabase Admin Client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    if (!Deno.env.get('SUPABASE_URL') || !Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+      console.error('❌ Missing Supabase environment variables');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: responseHeaders }
+      );
+    }
+
+    // Standard field names that map directly to database columns
+    const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
+
+    let processedRecords = 0;
+    let newRecords = 0;
+    let updatedRecords = 0;
+    let failedRecords = 0;
+    const errors: string[] = [];
+
+    // Process each CSV row
+    for (let i = 0; i < csvData.length; i++) {
+      try {
+        const row = csvData[i];
+        console.log(`📝 Processing row ${i + 1}/${csvData.length}`);
+
+        // Build lead object from mappings
+        const leadData: any = {
+          team_id: teamId,
+          custom_fields: {}
+        };
+
+        // Process each mapping
+        mappings.forEach((mapping, mappingIndex) => {
+          if (mapping.fieldName && mappingIndex < row.length) {
+            const value = row[mappingIndex]?.trim();
+            if (!value) return; // Skip empty values
+
+            if (standardFields.includes(mapping.fieldName)) {
+              // Handle standard database fields
+              if (mapping.fieldName === 'status') {
+                // Ensure status is valid, default to 'potential'
+                if (['potential', 'contacted', 'qualified', 'closed'].includes(value)) {
+                  leadData[mapping.fieldName] = value;
+                } else {
+                  leadData[mapping.fieldName] = 'potential';
+                }
+              } else {
+                leadData[mapping.fieldName] = value;
+              }
+            } else {
+              // Handle custom fields
+              leadData.custom_fields[mapping.fieldName] = value;
+            }
+          }
+        });
+
+        // Ensure required fields
+        if (!leadData.name || !leadData.name.trim()) {
+          errors.push(`Row ${i + 1}: Missing required 'name' field`);
+          failedRecords++;
+          continue;
+        }
+
+        // Set default status if not provided
+        if (!leadData.status) {
+          leadData.status = 'potential';
+        }
+
+        console.log(`📋 Lead data for row ${i + 1}:`, {
+          name: leadData.name,
+          status: leadData.status,
+          customFieldsCount: Object.keys(leadData.custom_fields).length
+        });
+
+        // Handle duplicate detection
+        let existingLead = null;
+        if (duplicateConfig.duplicateDetectionField !== 'none' && leadData[duplicateConfig.duplicateDetectionField]) {
+          console.log(`🔍 Checking for duplicates by ${duplicateConfig.duplicateDetectionField}: ${leadData[duplicateConfig.duplicateDetectionField]}`);
+
+          const { data: duplicateCheck, error: duplicateError } = await supabaseAdmin
+            .from('leads')
+            .select('id, name, email, phone, custom_fields')
+            .eq('team_id', teamId)
+            .eq(duplicateConfig.duplicateDetectionField, leadData[duplicateConfig.duplicateDetectionField])
+            .single();
+
+          if (duplicateError && duplicateError.code !== 'PGRST116') {
+            console.error(`❌ Error checking duplicates for row ${i + 1}:`, duplicateError);
+            errors.push(`Row ${i + 1}: Duplicate check failed - ${duplicateError.message}`);
+            failedRecords++;
+            continue;
+          }
+
+          if (duplicateCheck) {
+            existingLead = duplicateCheck;
+            console.log(`🔄 Found duplicate lead: ${existingLead.name} (ID: ${existingLead.id})`);
+          }
+        }
+
+        // Handle duplicate action
+        if (existingLead) {
+          if (duplicateConfig.duplicateAction === 'skip') {
+            console.log(`⏭️ Skipping duplicate: ${leadData.name}`);
+            processedRecords++;
+            continue;
+          } else if (duplicateConfig.duplicateAction === 'update') {
+            console.log(`🔄 Updating existing lead: ${existingLead.id}`);
+
+            // Merge custom fields
+            const mergedCustomFields = {
+              ...(existingLead.custom_fields || {}),
+              ...leadData.custom_fields
+            };
+
+            const updateData = {
+              ...leadData,
+              custom_fields: mergedCustomFields,
+              updated_at: new Date().toISOString()
+            };
+
+            delete updateData.team_id; // Don't update team_id
+
+            const { error: updateError } = await supabaseAdmin
+              .from('leads')
+              .update(updateData)
+              .eq('id', existingLead.id);
+
+            if (updateError) {
+              console.error(`❌ Error updating lead ${existingLead.id}:`, updateError);
+              errors.push(`Row ${i + 1}: Update failed - ${updateError.message}`);
+              failedRecords++;
+            } else {
+              console.log(`✅ Updated lead: ${leadData.name}`);
+              updatedRecords++;
+              processedRecords++;
+            }
+            continue;
+          }
+          // For 'create_new', we continue with normal insert
+        }
+
+        // Insert new lead
+        console.log(`➕ Creating new lead: ${leadData.name}`);
+
+        // Add import job reference if available
+        if (jobId) {
+          leadData.import_job_id = jobId;
+        }
+
+        const { data: insertedLead, error: insertError } = await supabaseAdmin
+          .from('leads')
+          .insert([leadData])
+          .select('id, name')
+          .single();
+
+        if (insertError) {
+          console.error(`❌ Error inserting lead for row ${i + 1}:`, insertError);
+          console.error('Lead data that failed:', leadData);
+          errors.push(`Row ${i + 1}: Insert failed - ${insertError.message}`);
+          failedRecords++;
+        } else {
+          console.log(`✅ Created new lead: ${insertedLead.name} (ID: ${insertedLead.id})`);
+          newRecords++;
+          processedRecords++;
+        }
+
+      } catch (error) {
+        console.error(`❌ Unexpected error processing row ${i + 1}:`, error);
+        errors.push(`Row ${i + 1}: Unexpected error - ${error.message}`);
+        failedRecords++;
+      }
+    }
+
+    // Update import job status
+    if (jobId) {
+      try {
+        const jobStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
+        const errorDetails = errors.length > 0 
+          ? { summary: `Import completed: ${processedRecords} processed, ${failedRecords} failed`, errors: errors }
+          : { summary: `Import completed: ${processedRecords} processed, ${failedRecords} failed` };
+
+        const { error: jobUpdateError } = await supabaseAdmin
+          .from('import_jobs')
+          .update({
+            status: jobStatus,
+            processed_records: processedRecords,
+            failed_records: failedRecords,
+            error_details: errorDetails,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', jobId);
+
+        if (jobUpdateError) {
+          console.error('❌ Failed to update import job:', jobUpdateError);
+        } else {
+          console.log(`✅ Import job ${jobId} updated with status: ${jobStatus}`);
+        }
+      } catch (error) {
+        console.error('❌ Error updating import job:', error);
+      }
+    }
+
+    // Prepare response
+    const response = {
+      success: true,
+      processedRecords,
+      newRecords,
+      updatedRecords,
+      failedRecords,
+      errors: errors.length > 0 ? errors : undefined
+    };
+
+    console.log('📊 Import Summary:', response);
+
+    return new Response(
+      JSON.stringify(response),
+      { status: 200, headers: responseHeaders }
+    );
+
+  } catch (error) {
+    console.error('❌ Critical Edge Function error:', error);
+    
+    // Try to update import job with error status
+    if (body?.jobId) {
+      try {
+        const supabaseAdmin = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+
+        await supabaseAdmin
+          .from('import_jobs')
+          .update({
+            status: 'failed',
+            error_details: { summary: 'Import failed due to critical error', error: error.message },
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', body.jobId);
+      } catch (jobError) {
+        console.error('❌ Failed to update job with error status:', jobError);
+      }
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        error: 'Internal server error',
+        message: error.message
+      }),
+      { status: 500, headers: responseHeaders }
+    );
+  }
+});
