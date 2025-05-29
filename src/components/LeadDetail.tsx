@@ -160,6 +160,25 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
   const [draggedField, setDraggedField] = useState<string | null>(null);
   const [dragOverGroup, setDragOverGroup] = useState<string | null>(null);
 
+  // Navigation logic
+  const currentLeadIndex = allLeads.findIndex(l => l.id === lead.id);
+  const canNavigatePrevious = currentLeadIndex > 0;
+  const canNavigateNext = currentLeadIndex < allLeads.length - 1;
+
+  const handlePreviousLead = () => {
+    if (canNavigatePrevious) {
+      const previousLead = allLeads[currentLeadIndex - 1];
+      onLeadSelect(previousLead);
+    }
+  };
+
+  const handleNextLead = () => {
+    if (canNavigateNext) {
+      const nextLead = allLeads[currentLeadIndex + 1];
+      onLeadSelect(nextLead);
+    }
+  };
+
   useEffect(() => {
     setEditForm(lead);
     setIsEditing(false);
@@ -846,6 +865,29 @@ export const LeadDetail: React.FC<LeadDetailProps> = ({
           </Popover>
         </div>
         <div className="flex items-center space-x-2">
+          {/* Navigation Buttons */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePreviousLead}
+              disabled={!canNavigatePrevious}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              title="Vorheriger Lead"
+            >
+              <ArrowUpDown className="w-4 h-4 rotate-90" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNextLead}
+              disabled={!canNavigateNext}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              title="Nächster Lead"
+            >
+              <ArrowUpDown className="w-4 h-4 -rotate-90" />
+            </Button>
+          </div>
           <Button variant="ghost" size="sm" onClick={handleToggleEdit}>
             <Edit2 className="w-4 h-4" />
           </Button>
