@@ -96,6 +96,20 @@ serve(async (req) => {
       );
     }
 
+    // Initialize Supabase Admin Client FIRST
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    if (!Deno.env.get('SUPABASE_URL') || !Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+      console.error('❌ Missing Supabase environment variables');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: responseHeaders }
+      );
+    }
+
     // Parse request body
     let body: ImportRequest;
     try {
@@ -277,19 +291,7 @@ serve(async (req) => {
     console.log(`🔗 Function Call Details: isInitialRequest=${isInitialRequest}, jobId=${jobId}`);
     console.log(`📊 Batch Configuration: BATCH_SIZE=${BATCH_SIZE}, MAX_ROWS=${MAX_ROWS_PER_FUNCTION_CALL}`);
 
-    // Initialize Supabase Admin Client
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    if (!Deno.env.get('SUPABASE_URL') || !Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
-      console.error('❌ Missing Supabase environment variables');
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }),
-        { status: 500, headers: responseHeaders }
-      );
-    }
+    // Supabase Admin Client already initialized above
 
     // Standard field names that map directly to database columns
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
