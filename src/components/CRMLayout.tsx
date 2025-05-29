@@ -61,7 +61,7 @@ const CRMLayout = () => {
     console.log('fetchData: Starting optimized data fetch...');
     setIsFetching(true);
     setLoading(true);
-    
+
     try {
       // Optimierte Datenbankabfragen mit Limits und spezifischen Feldern
       const [leadsDataResult, activitiesDataResult, dealsDataResult, savedFiltersResult, customFieldsResult, activityTemplatesResult] = await Promise.all([
@@ -912,6 +912,7 @@ const CRMLayout = () => {
             onAddCustomField={addCustomField}
             customFields={customFields}
             onNavigateToEmail={handleNavigateToEmail}
+            team={team}
           />
         );
       case 'opportunities':

@@ -242,7 +242,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   // Gefilterte Spalten basierend auf Suchbegriff
   const filteredAvailableColumns = React.useMemo(() => {
     if (!columnSearchTerm) return availableColumns;
-    
+
     return availableColumns.filter(column =>
       column.label.toLowerCase().includes(columnSearchTerm.toLowerCase())
     );
@@ -275,7 +275,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const tableRef = useRef<HTMLTableElement>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [resizingColumn, setResizingColumn] = useState<string | null>(null);
-  
+
   // Refs für optimierte Resize-Performance
   const resizeDataRef = useRef<{
     startX: number;
@@ -317,7 +317,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     const startX = e.clientX;
     const startWidth = columnWidths[columnKey] || 150;
-    
+
     // Speichere Resize-Daten in einem Ref für bessere Performance
     resizeDataRef.current = {
       startX,
@@ -328,11 +328,11 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!resizeDataRef.current) return;
-      
+
       const { startX, startWidth, columnKey, tempWidths } = resizeDataRef.current;
       const diff = e.clientX - startX;
       const newWidth = Math.max(80, startWidth + diff); // Mindestbreite von 80px
-      
+
       // Aktualisiere direkt das DOM für sofortige visuelle Feedback
       if (tableRef.current) {
         const headerCells = tableRef.current.querySelectorAll(`th`);
@@ -340,7 +340,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         if (headerCells[columnIndex]) {
           (headerCells[columnIndex] as HTMLElement).style.width = `${newWidth}px`;
         }
-        
+
         // Aktualisiere auch alle Zellen in dieser Spalte
         const rows = tableRef.current.querySelectorAll('tbody tr');
         rows.forEach(row => {
@@ -350,24 +350,24 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           }
         });
       }
-      
+
       // Aktualisiere temporäre Breiten für den State (throttled)
       tempWidths[columnKey] = newWidth;
     };
 
     const handleMouseUp = () => {
       if (!resizeDataRef.current) return;
-      
+
       const { tempWidths } = resizeDataRef.current;
-      
+
       // Aktualisiere den State nur einmal am Ende
       setColumnWidths(tempWidths);
       localStorage.setItem('columnWidths', JSON.stringify(tempWidths));
-      
+
       setIsResizing(false);
       setResizingColumn(null);
       resizeDataRef.current = null;
-      
+
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -470,29 +470,29 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
   const handleBulkDelete = async () => {
     if (selectedLeads.size === 0) return;
-    
+
     const confirmed = window.confirm(`Sind Sie sicher, dass Sie ${selectedLeads.size} Lead(s) löschen möchten?`);
     if (!confirmed) return;
 
     try {
       const leadsToDelete = Array.from(selectedLeads);
-      
+
       // Leads in kleineren Batches löschen um URL-Längenbeschränkungen zu vermeiden
       const batchSize = 50; // Kleinere Batches verwenden
       let totalDeleted = 0;
       let failedDeletes: string[] = [];
-      
+
       for (let i = 0; i < leadsToDelete.length; i += batchSize) {
         const batch = leadsToDelete.slice(i, i + batchSize);
-        
+
         const { error, count } = await supabase
           .from('leads')
           .delete({ count: 'exact' })
           .in('id', batch);
-          
+
         if (error) {
           console.error('Error deleting batch:', error);
-          
+
           // Prüfe ob es ein Foreign Key Constraint Fehler ist
           if (error.code === '23503') {
             // Versuche jeden Lead einzeln zu löschen, um herauszufinden, welche problematisch sind
@@ -501,7 +501,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 .from('leads')
                 .delete()
                 .eq('id', leadId);
-                
+
               if (singleError) {
                 if (singleError.code === '23503') {
                   failedDeletes.push(leadId);
@@ -538,7 +538,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           variant: "destructive",
         });
       }
-      
+
       setSelectedLeads(new Set());
       setShowBulkActionsMenu(false);
       onRefresh();
@@ -554,14 +554,14 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
   const handleBulkCreateDeals = async () => {
     if (selectedLeads.size === 0) return;
-    
+
     try {
       // Hier würde die tatsächliche Deal-Erstellungslogik implementiert werden
       toast({
         title: "Deals erstellt",
         description: `${selectedLeads.size} Deal(s) wurden erfolgreich aus den ausgewählten Leads erstellt.`,
       });
-      
+
       setSelectedLeads(new Set());
       setShowBulkActionsMenu(false);
       onRefresh();
@@ -577,6 +577,46 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   // Prüfen ob alle sichtbaren Leads ausgewählt sind
   const isAllSelected = filteredLeads.length > 0 && filteredLeads.every(lead => selectedLeads.has(lead.id));
   const isIndeterminate = selectedLeads.size > 0 && !isAllSelected;
+
+  const [allLeadsSelected, setAllLeadsSelected] = useState(false);
+
+  const handleSelectAllInDatabase = async () => {
+    // Implementiere die Logik, um ALLE Leads aus der Datenbank auszuwählen
+    // Aktualisiere den selectedLeads State mit den IDs aller Leads
+    // Setze den allLeadsSelected State auf true
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('id'); // Nur die IDs auswählen, um die Datenmenge zu reduzieren
+
+      if (error) {
+        console.error("Fehler beim Abrufen aller Lead-IDs:", error);
+        toast({
+          title: "Fehler",
+          description: "Beim Abrufen aller Leads ist ein Fehler aufgetreten.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data) {
+        const allLeadIds = new Set(data.map(lead => lead.id));
+        setSelectedLeads(allLeadIds);
+        setAllLeadsSelected(true);
+        toast({
+          title: "Alle Leads ausgewählt",
+          description: `Alle ${allLeadIds.size} Leads wurden ausgewählt.`,
+        });
+      }
+    } catch (error) {
+      console.error("Unerwarteter Fehler beim Auswählen aller Leads:", error);
+      toast({
+        title: "Fehler",
+        description: "Beim Auswählen aller Leads ist ein unerwarteter Fehler aufgetreten.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const TableView = () => (
     <div className="bg-white rounded-lg border">
@@ -605,6 +645,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
           {/* Bulk Actions Menu - nur anzeigen wenn Leads ausgewählt sind */}
           {selectedLeads.size > 0 && (
+            <>
             <Popover open={showBulkActionsMenu} onOpenChange={setShowBulkActionsMenu}>
               <PopoverTrigger asChild>
                 <Button 
@@ -642,6 +683,19 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 </div>
               </PopoverContent>
             </Popover>
+
+              {/* Button zum Auswählen aller Leads aus der Datenbank */}
+              {!allLeadsSelected && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleSelectAllInDatabase}
+                  className="flex items-center h-7 px-2 text-xs"
+                >
+                  Alle auswählen
+                </Button>
+              )}
+            </>
           )}
 
           {/* Smart Views Dropdown */}
@@ -740,7 +794,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
               />
             </div>
           </div>
-          
+
           <div className="max-h-80 overflow-y-auto">
             {/* Standard Fields Section */}
             <div className="p-3">
@@ -785,8 +839,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     </svg>
                   </button>
                 </h4>
-                <div className="space-y-1">
-                  {filteredAvailableColumns
+                <div className="space-y-1">                  {filteredAvailableColumns
                     .filter(column => column.isCustom)
                     .map(column => (
                       <div key={column.key} className="flex items-center p-1 hover:bg-gray-50 rounded">
@@ -1045,7 +1098,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 </td>
                 {visibleColumns.map(column => {
                   const cellStyle = { width: `${getColumnWidth(column.key)}px` };
-                  
+
                   // Render standard fields
                   if (column.key === 'name') {
                     return (
@@ -1213,7 +1266,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                       </td>
                     );
                   }
-                  
+
                   return (
                     <td 
                       key={column.key} 
@@ -1642,8 +1695,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                 });
               }}>
                 Abbrechen
-              </Button>
-              <Button onClick={async () => {
+              </Button>              <Button onClick={async () => {
                 if (onAddCustomField) {
                   await onAddCustomField({
                     name: newCustomField.name,
