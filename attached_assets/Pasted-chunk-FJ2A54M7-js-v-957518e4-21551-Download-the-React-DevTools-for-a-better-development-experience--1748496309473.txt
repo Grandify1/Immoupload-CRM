@@ -1,0 +1,131 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+CSVImport.tsx:114 === PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:115 Raw customFields: Array(20)
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:166 Final lead custom fields: Array(20)
+CSVImport.tsx:167 === END PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Objectentity_type: "lead"field_type: "text"id: "c91b08a1-51d0-4320-8a84-18d876fa92d9"name: "competitors"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 8: Objectentity_type: "lead"field_type: "text"id: "68c253b5-5ed2-4358-b728-fd02ce033442"name: "can_claim"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 9: Objectentity_type: "lead"field_type: "text"id: "0374ad99-1e2d-443f-9356-010c8c499a13"name: "owner_profile_link"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 10: Objectentity_type: "lead"field_type: "text"id: "bba728e3-066f-41e2-b219-b133eda52e4c"name: "featured_image"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Objectentity_type: "lead"field_type: "text"id: "2a5ec18c-f8ac-4328-8cf6-2e78f2b80ffd"name: "categories"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 13: Objectentity_type: "lead"field_type: "text"id: "9b41bded-7efc-413d-8647-6bcd3a2536d0"name: "workday_timing"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 14: Objectentity_type: "lead"field_type: "text"id: "265bbcb2-ee75-4743-b6ce-3e068ee4286d"name: "is_temporarily_closed"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Objectentity_type: "lead"field_type: "text"id: "4792deab-03d5-403d-a76b-497715c7e6de"name: "review_keywords"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 17: Objectentity_type: "lead"field_type: "text"id: "74afa3c3-fe37-4bbd-a4db-a174927fa6dd"name: "query"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 18: Objectentity_type: "lead"field_type: "text"id: "35140eb9-ada3-4b86-9ca4-11e7e86f8f84"name: "reviews"sort_order: 0[[Prototype]]: Object
+CSVImport.tsx:50 Custom Field 19: Objectentity_type: "lead"field_type: "text"id: "c0aaf445-645c-4796-a27f-36c5df8652de"name: "Review count"sort_order: 1[[Prototype]]: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:228 CSV delimiter detection: Array(4)0: {delimiter: ';', count: 23}1: {delimiter: ',', count: 3}2: {delimiter: '\t', count: 0}3: {delimiter: '|', count: 0}length: 4[[Prototype]]: Array(0) Selected: ;
+CSVImport.tsx:248 CSV quote character detected: "
+CSVImport.tsx:345 CSV parsing completed: 9 rows, 22 columns
+CSVImport.tsx:346 Headers detected: Array(22)0: "place_id"1: "name"2: "description"3: "is_spending_on_ads"4: "reviews"5: "rating"6: "competitors"7: "website"8: "phone"9: "can_claim"10: "owner_name"11: "owner_profile_link"12: "featured_image"13: "main_category"14: "categories"15: "workday_timing"16: "is_temporarily_closed"17: "closed_on"18: "address"19: "review_keywords"20: "link"21: "query"length: 22[[Prototype]]: Array(0)
+CSVImport.tsx:371 CSV parsing completed: 9 valid rows from 9 total rows
+CSVImport.tsx:427 Auto-mapped "place_id" to "place_id"
+CSVImport.tsx:427 Auto-mapped "name" to "name"
+CSVImport.tsx:427 Auto-mapped "description" to "description"
+CSVImport.tsx:427 Auto-mapped "is_spending_on_ads" to "is_spending_on_ads"
+CSVImport.tsx:427 Auto-mapped "reviews" to "reviews"
+CSVImport.tsx:427 Auto-mapped "rating" to "rating"
+CSVImport.tsx:427 Auto-mapped "competitors" to "competitors"
+CSVImport.tsx:427 Auto-mapped "website" to "website"
+CSVImport.tsx:427 Auto-mapped "phone" to "phone"
+CSVImport.tsx:427 Auto-mapped "can_claim" to "can_claim"
+CSVImport.tsx:427 Auto-mapped "owner_name" to "name"
+CSVImport.tsx:427 Auto-mapped "owner_profile_link" to "owner_profile_link"
+CSVImport.tsx:427 Auto-mapped "featured_image" to "featured_image"
+CSVImport.tsx:427 Auto-mapped "main_category" to "main_category"
+CSVImport.tsx:427 Auto-mapped "categories" to "categories"
+CSVImport.tsx:427 Auto-mapped "workday_timing" to "workday_timing"
+CSVImport.tsx:427 Auto-mapped "is_temporarily_closed" to "is_temporarily_closed"
+CSVImport.tsx:427 Auto-mapped "closed_on" to "closed_on"
+CSVImport.tsx:427 Auto-mapped "address" to "address"
+CSVImport.tsx:427 Auto-mapped "review_keywords" to "review_keywords"
+CSVImport.tsx:457 No auto-mapping found for "link"
+CSVImport.tsx:427 Auto-mapped "query" to "query"
+CSVImport.tsx:933 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:934 Raw select value: gmb_url
+CSVImport.tsx:935 CSV column: link
+CSVImport.tsx:936 Current mapping: ObjectcreateCustomField: falsecsvHeader: "link"customFieldType: "text"fieldName: "gmb_url"[[Prototype]]: Object
+CSVImport.tsx:939 Processed value: gmb_url
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: gmb_url
+CSVImport.tsx:493 Index: 20
+CSVImport.tsx:517 Sanitized fieldName: gmb_url
+CSVImport.tsx:522 Updated mapping: ObjectcreateCustomField: falsecsvHeader: "link"customFieldType: "text"fieldName: "gmb_url"[[Prototype]]: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:942 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:568 Name mapping found: Array(2)0: {csvHeader: 'name', fieldName: 'name', createCustomField: false, customFieldType: 'text'}1: {csvHeader: 'owner_name', fieldName: 'name', createCustomField: false, customFieldType: 'text'}length: 2[[Prototype]]: Array(0)
+CSVImport.tsx:580 === STARTING IMPORT PROCESS ===
+CSVImport.tsx:608 CSV data rows: 9
+CSVImport.tsx:609 Mappings: Array(22)
+CSVImport.tsx:612 === GETTING USER INFO ===
+CSVImport.tsx:628 ✅ User found: 4467ca04-af24-4c9e-b26b-f3152a00f429
+CSVImport.tsx:648 ✅ Profile found, team_id: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+CSVImport.tsx:651 Custom fields to create: Array(0)length: 0[[Prototype]]: Array(0)
+CSVImport.tsx:666 === PROCESSING CSV DATA ===
+CSVImport.tsx:707 ✅ Processed CSV data, prepared leads: 9
+CSVImport.tsx:713 Sample lead: Objectaddress: "Meinekestrasse 8, 10719 Berlin, Jerman"custom_fields: {place_id: 'ChIJCcn3gIqaUE0RZVWMOLQSFd8', is_spending_on_ads: '1', reviews: '94', rating: '5', competitors: 'Name: DAHLER Berlin - Immobilienmakler Link: https…914?authuser=0&hl=id&entry=ttu Reviews: 9 reviews', …}description: "Wir verkaufen Ihre Immobilie. Bergen Real Estate - Ihr Immobilienmakler Berlin mit weniger Provision als marktublich: Bei uns zahlen Kaufer und Verkaufer in der Regel nur je 1,9% Provision* (inkl. ges. MwSt.) des Kaufpreises. Provisionsfrei fur Verkaufer sind Grundstucke & Mehrfamilienhauser. Wir sind spezialisiert auf eine neue zielgruppengerichtete Vermarktung von Immobilien an lokale oder internationale Kunden, auch ohne die Nutzung klassischer Verkaufskanale. Mit unserer Strategie sind wir schnell, innovativ und vor allem effektiv.  *Maklerprovisionen sind frei verhandelbar und konnen im Einzelfall hiervon abweichen."name: "Bergen Real Estate (Pemilik)"phone: "+49 30 84319777"status: "potential"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"website: "https://www.bergen-realestate.com/"[[Prototype]]: Object
+CSVImport.tsx:716 === CREATING IMPORT JOB IN SUPABASE ===
+CSVImport.tsx:733 Import job data: Objectcreated_by: "4467ca04-af24-4c9e-b26b-f3152a00f429"error_details: nullfailed_records: 0file_name: "TESTINGER.csv"processed_records: 0status: "processing"team_id: "e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0"total_records: 9undo_status: "active"[[Prototype]]: Object
+CSVImport.tsx:756 ✅ Import job created with ID: ff8df7f7-df4d-4fe5-922a-84cd4bb15c75
+CSVImport.tsx:764 === STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===
+CSVImport.tsx:765 Duplicate Detection Config: ObjectduplicateAction: "update"duplicateDetectionField: "none"[[Prototype]]: Object
+CSVImport.tsx:766 Sending data to Edge Function...
+CSVImport.tsx:790 ✅ Edge Function response: ObjectfailedRecords: 0processedRecords: 9success: true[[Prototype]]: Object
+CSVImport.tsx:820 🔄 Triggering automatic refresh of leads data...
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+CSVImport.tsx:827 🔄 Second refresh attempt...
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
+CSVImport.tsx:833 🔄 Final refresh attempt...
+CRMLayout.tsx:61 fetchData: Starting data fetch...
+CRMLayout.tsx:142 fetchDeals: Starting deals fetch...
+CRMLayout.tsx:130 fetchData: Finished data fetch.
