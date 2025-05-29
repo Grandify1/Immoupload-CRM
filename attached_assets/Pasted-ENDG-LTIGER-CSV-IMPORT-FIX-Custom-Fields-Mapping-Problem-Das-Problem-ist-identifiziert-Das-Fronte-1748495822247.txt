@@ -1,0 +1,99 @@
+ENDGÜLTIGER CSV IMPORT FIX - Custom Fields Mapping Problem
+Das Problem ist identifiziert:
+Das Frontend normalisiert Custom Field Namen ("gmb url" → "gmb_url"), aber die Edge Function sucht nach dem normalisierten Namen, während in der Datenbank der originale Name ("gmb url") steht. Dadurch können Custom Fields nicht zugeordnet werden und die Leads werden nicht korrekt gespeichert.
+KRITISCHE LÖSUNG - Edge Function Custom Field Matching reparieren:
+Schritt 1: Dual-Matching Implementieren
+Die Edge Function muss sowohl nach dem normalisierten Namen als auch nach dem originalen Namen suchen:
+typescript// In der Edge Function - Custom Field Suche erweitern:
+function findCustomField(customFields, fieldName) {
+  // Zuerst exakte Suche
+  let field = customFields.find(f => f.name === fieldName);
+  if (field) return field;
+  
+  // Dann normalisierte Suche
+  const normalizedFieldName = fieldName.toLowerCase().replace(/\s+/g, '_');
+  field = customFields.find(f => f.name.toLowerCase().replace(/\s+/g, '_') === normalizedFieldName);
+  if (field) return field;
+  
+  // Dann reverse normalisierte Suche
+  const denormalizedFieldName = fieldName.replace(/_/g, ' ');
+  field = customFields.find(f => f.name === denormalizedFieldName);
+  return field;
+}
+Schritt 2: Custom Fields Mapping Debug Logging
+Füge ausführliche Logs für Custom Field Matching hinzu:
+typescriptconsole.log('🔍 Custom Fields Debug:');
+console.log('Available custom fields:', customFields.map(f => f.name));
+console.log('Looking for field:', fieldName);
+console.log('Normalized version:', fieldName.toLowerCase().replace(/\s+/g, '_'));
+console.log('Match found:', foundField ? foundField.name : 'NONE');
+Schritt 3: Lead Custom Fields Struktur korrigieren
+Die Custom Fields werden in einem verschachtelten custom_fields Objekt gespeichert. Stelle sicher, dass die Edge Function die richtige Struktur verwendet:
+typescript// Korrigiere die Lead-Struktur in der Edge Function:
+const leadData = {
+  name: rowData.name,
+  phone: rowData.phone,
+  website: rowData.website,
+  address: rowData.address,
+  description: rowData.description,
+  status: 'potential',
+  team_id: teamId,
+  user_id: userId,
+  custom_fields: customFieldsData, // Hier müssen die Custom Fields rein
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
+Schritt 4: Custom Fields Werte-Mapping reparieren
+Das Frontend sendet Custom Fields als Objekt, die Edge Function muss diese korrekt verarbeiten:
+typescript// In der Edge Function - Custom Fields Verarbeitung:
+const customFieldsData = {};
+for (const [fieldName, value] of Object.entries(lead.custom_fields || {})) {
+  const customField = findCustomField(teamCustomFields, fieldName);
+  if (customField) {
+    customFieldsData[customField.name] = value;
+    console.log(`✅ Mapped custom field: ${fieldName} → ${customField.name} = ${value}`);
+  } else {
+    console.warn(`⚠️ Custom field not found: ${fieldName}`);
+  }
+}
+Schritt 5: Datenbank Insert Verification
+Nach jedem successful Insert, verifiziere dass die Custom Fields tatsächlich gespeichert wurden:
+typescript// Nach dem Insert:
+const { data: verifyData } = await supabaseAdmin
+  .from('leads')
+  .select('id, name, custom_fields')
+  .eq('id', insertResult.id)
+  .single();
+
+console.log(`✅ Verified inserted lead:`, verifyData);
+console.log(`Custom fields saved:`, verifyData.custom_fields);
+Schritt 6: Frontend Mapping Konsistenz
+Stelle sicher, dass das Frontend die gleiche Normalisierung verwendet wie die Edge Function erwartet:
+typescript// Im Frontend - konsistente Normalisierung:
+const normalizeFieldName = (name) => {
+  return name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+};
+Schritt 7: RLS Policy für Custom Fields
+Überprüfe, dass die Row Level Security Policy auch Custom Fields Zugriff erlaubt:
+sql-- In Supabase SQL Editor:
+SELECT * FROM leads WHERE team_id = 'e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0' ORDER BY created_at DESC LIMIT 5;
+Schritt 8: Atomare Transaction für Lead + Custom Fields
+Verwende eine Transaction um sicherzustellen, dass Lead und Custom Fields zusammen gespeichert werden:
+typescript// Edge Function - Transaction verwenden:
+const { data: leadResult, error: leadError } = await supabaseAdmin
+  .from('leads')
+  .insert({
+    ...leadBaseData,
+    custom_fields: customFieldsData
+  })
+  .select()
+  .single();
+DEBUGGING PRIORITÄT:
+Phase 1: Implementiere das dual-matching für Custom Fields
+Phase 2: Füge extensive Logging für Field-Matching hinzu
+Phase 3: Teste mit einem einzelnen Lead mit bekannten Custom Fields
+Phase 4: Verifiziere die Datenbank-Struktur der gespeicherten Leads
+ERWARTETES ERGEBNIS:
+Nach diesem Fix sollten die Custom Fields korrekt gemapped und die Leads erfolgreich in der Datenbank gespeichert werden. Das Problem liegt definitiv beim Custom Field Name Matching zwischen Frontend und Backend.
+KRITISCHER HINWEIS:
+Das Problem ist NICHT das Speichern der Leads generell, sondern das korrekte Mapping der Custom Fields. Sobald das Custom Field Matching funktioniert, werden die Leads erfolgreich gespeichert.
