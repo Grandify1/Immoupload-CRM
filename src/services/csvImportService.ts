@@ -154,7 +154,7 @@ export class SimpleCSVImportService {
           console.warn('Status check error:', error);
           statusCheckCount++;
         }
-      }, 2000);
+      }, 1000); // Check every second instead of every 2 seconds
 
       // Return das erwartete Format
       return {

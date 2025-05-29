@@ -24,8 +24,8 @@ interface CSVImportRequest {
   lastProcessedRow?: number;
 }
 
-const BATCH_SIZE = 100; // Process 100 leads at a time
-const MAX_EXECUTION_TIME = 50000; // 50 seconds (before 60s timeout)
+const BATCH_SIZE = 500; // Process 500 leads at a time for better performance
+const MAX_EXECUTION_TIME = 45000; // 45 seconds (safer margin before 60s timeout)
 
 serve(async (req) => {
   console.log('🚀 CSV Import Edge Function - Request method:', req.method);
@@ -148,7 +148,12 @@ serve(async (req) => {
     let updatedCount = 0;
     const errors: any[] = [];
 
-    // Process leads in batch
+    // Process leads in optimized batches
+    const leadsToInsert: any[] = [];
+    const leadsToUpdate: any[] = [];
+    const duplicateChecks = new Map();
+
+    // Pre-process all rows in the batch
     for (let i = 0; i < batchData.length; i++) {
       const rowIndex = startRow + i;
       const row = batchData[i];
@@ -168,43 +173,41 @@ serve(async (req) => {
           continue;
         }
 
-        // Handle duplicates
-        const duplicateAction = await handleDuplicates(supabaseAdmin, leadData, body.duplicateConfig, body.teamId);
-        
-        if (duplicateAction === 'skip') {
-          console.log(`⏭️ Skipping duplicate: ${leadData.name}`);
+        // Handle duplicates more efficiently
+        const detectionField = body.duplicateConfig.duplicateDetectionField;
+        const detectionValue = leadData[detectionField];
+
+        if (body.duplicateConfig.duplicateDetectionField === 'none' || !detectionValue) {
+          leadsToInsert.push(leadData);
           processedCount++;
-          continue;
-        }
-
-        // Insert or update lead
-        if (duplicateAction === 'update') {
-          const { error: updateError } = await supabaseAdmin
-            .from('leads')
-            .update(leadData)
-            .eq('team_id', body.teamId)
-            .eq(body.duplicateConfig.duplicateDetectionField, leadData[body.duplicateConfig.duplicateDetectionField]);
-
-          if (updateError) {
-            console.error(`❌ Update failed for row ${rowIndex}:`, updateError);
-            errors.push({ row: rowIndex, error: updateError.message, data: leadData });
-            failedCount++;
-          } else {
-            updatedCount++;
-            processedCount++;
-          }
         } else {
-          // Insert new lead
-          const { error: insertError } = await supabaseAdmin
-            .from('leads')
-            .insert([leadData]);
+          // Use a map to avoid duplicate database queries
+          const cacheKey = `${detectionField}:${detectionValue}`;
+          
+          if (!duplicateChecks.has(cacheKey)) {
+            const { data: existingLeads } = await supabaseAdmin
+              .from('leads')
+              .select('id')
+              .eq('team_id', body.teamId)
+              .eq(detectionField, detectionValue)
+              .limit(1);
 
-          if (insertError) {
-            console.error(`❌ Insert failed for row ${rowIndex}:`, insertError);
-            errors.push({ row: rowIndex, error: insertError.message, data: leadData });
-            failedCount++;
+            duplicateChecks.set(cacheKey, existingLeads && existingLeads.length > 0);
+          }
+
+          const isDuplicate = duplicateChecks.get(cacheKey);
+
+          if (isDuplicate) {
+            if (body.duplicateConfig.duplicateAction === 'skip') {
+              console.log(`⏭️ Skipping duplicate: ${leadData.name}`);
+              processedCount++;
+              continue;
+            } else if (body.duplicateConfig.duplicateAction === 'update') {
+              leadsToUpdate.push(leadData);
+              processedCount++;
+            }
           } else {
-            newCount++;
+            leadsToInsert.push(leadData);
             processedCount++;
           }
         }
@@ -212,6 +215,50 @@ serve(async (req) => {
       } catch (rowError) {
         console.error(`❌ Row processing failed for row ${rowIndex}:`, rowError);
         errors.push({ row: rowIndex, error: rowError.message, data: row });
+        failedCount++;
+      }
+    }
+
+    // Bulk insert new leads (much faster)
+    if (leadsToInsert.length > 0) {
+      console.log(`🚀 Bulk inserting ${leadsToInsert.length} new leads...`);
+      const { error: bulkInsertError } = await supabaseAdmin
+        .from('leads')
+        .insert(leadsToInsert);
+
+      if (bulkInsertError) {
+        console.error(`❌ Bulk insert failed:`, bulkInsertError);
+        failedCount += leadsToInsert.length;
+        errors.push({ 
+          row: 'bulk_insert', 
+          error: bulkInsertError.message, 
+          data: `${leadsToInsert.length} leads` 
+        });
+      } else {
+        newCount += leadsToInsert.length;
+        console.log(`✅ Successfully inserted ${leadsToInsert.length} new leads`);
+      }
+    }
+
+    // Handle updates individually (still needed for precise targeting)
+    for (const leadData of leadsToUpdate) {
+      try {
+        const { error: updateError } = await supabaseAdmin
+          .from('leads')
+          .update(leadData)
+          .eq('team_id', body.teamId)
+          .eq(body.duplicateConfig.duplicateDetectionField, leadData[body.duplicateConfig.duplicateDetectionField]);
+
+        if (updateError) {
+          console.error(`❌ Update failed:`, updateError);
+          errors.push({ row: 'update', error: updateError.message, data: leadData });
+          failedCount++;
+        } else {
+          updatedCount++;
+        }
+      } catch (updateRowError) {
+        console.error(`❌ Update row processing failed:`, updateRowError);
+        errors.push({ row: 'update', error: updateRowError.message, data: leadData });
         failedCount++;
       }
     }
@@ -241,23 +288,19 @@ serve(async (req) => {
       updateData.completed_at = new Date().toISOString();
       console.log('✅ Import completed!');
     } else {
-      // Schedule next batch by calling self
-      console.log('🔄 Scheduling next batch...');
+      // Schedule next batch immediately for faster processing
+      console.log('🔄 Scheduling next batch immediately...');
       
-      // Don't await - fire and forget to avoid timeout
-      setTimeout(async () => {
-        try {
-          await supabaseAdmin.functions.invoke('csv-import', {
-            body: {
-              ...body,
-              startRow: totalProcessedSoFar,
-              isInitialRequest: false
-            }
-          });
-        } catch (error) {
-          console.error('❌ Failed to schedule next batch:', error);
+      // Fire and forget - don't wait for response to avoid timeout
+      supabaseAdmin.functions.invoke('csv-import', {
+        body: {
+          ...body,
+          startRow: totalProcessedSoFar,
+          isInitialRequest: false
         }
-      }, 1000);
+      }).catch(error => {
+        console.error('❌ Failed to schedule next batch:', error);
+      });
     }
 
     await supabaseAdmin
