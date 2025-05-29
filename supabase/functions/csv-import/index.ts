@@ -15,35 +15,22 @@ function getCorsHeaders(request: Request): Record<string, string> {
     /^https:\/\/[a-f0-9-]+\.pike\.replit\.dev$/
   ];
 
-  let allowOrigin = '*'; // Fallback zu * für Entwicklung
+  // TEMPORARY FIX: Allow all origins during development
+  let allowOrigin = '*';
 
   if (origin) {
-    const isAllowed = allowedOrigins.some(allowed => {
-      const result = typeof allowed === 'string' ? allowed === origin : allowed.test(origin);
-      console.log(`🔍 Testing origin ${origin} against ${allowed}: ${result}`);
-      return result;
-    });
-
-    if (isAllowed) {
-      allowOrigin = origin;
-      console.log('✅ Origin allowed:', origin);
-    } else {
-      console.log('⚠️ Origin not in allowlist, using fallback:', origin);
-      // Für Replit Entwicklung, erlauben wir alle Replit Domains
-      if (origin.includes('replit.dev') || origin.includes('pike.replit.dev')) {
-        allowOrigin = origin;
-        console.log('✅ Replit domain detected, allowing:', origin);
-      }
-    }
+    console.log(`🔍 Request from origin: ${origin}`);
+    // Always allow the requesting origin for now
+    allowOrigin = origin;
+    console.log('✅ Origin allowed (development mode):', origin);
   }
 
   const headers = {
     'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-requested-with, accept, accept-encoding, accept-language, cache-control, pragma',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*',
     'Access-Control-Max-Age': '86400',
-    'Access-Control-Allow-Credentials': 'true',
-    'Vary': 'Origin'
+    'Access-Control-Allow-Credentials': 'true'
   };
 
   console.log('🔧 CORS Headers generated:', headers);
