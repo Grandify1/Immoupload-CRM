@@ -1,0 +1,242 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+CRMLayout.tsx:44 CRMLayout: Initial fetchData call
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 431 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 45
+SettingsView.tsx:86 Import jobs fetched successfully: 20 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(20)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:90 Job 15: Object
+SettingsView.tsx:90 Job 16: Object
+SettingsView.tsx:90 Job 17: Object
+SettingsView.tsx:90 Job 18: Object
+SettingsView.tsx:90 Job 19: Object
+SettingsView.tsx:90 Job 20: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+SettingsView.tsx:29 === FETCHING IMPORT JOBS ===
+SettingsView.tsx:30 Team ID: e75ccb9e-aca2-4bdb-bd41-2c994a7b16e0
+SettingsView.tsx:49 Total import jobs in database: 44
+SettingsView.tsx:86 Import jobs fetched successfully: 20 jobs found
+SettingsView.tsx:87 Raw import jobs data: Array(20)
+SettingsView.tsx:90 Job 1: Object
+SettingsView.tsx:90 Job 2: Object
+SettingsView.tsx:90 Job 3: Object
+SettingsView.tsx:90 Job 4: Object
+SettingsView.tsx:90 Job 5: Object
+SettingsView.tsx:90 Job 6: Object
+SettingsView.tsx:90 Job 7: Object
+SettingsView.tsx:90 Job 8: Object
+SettingsView.tsx:90 Job 9: Object
+SettingsView.tsx:90 Job 10: Object
+SettingsView.tsx:90 Job 11: Object
+SettingsView.tsx:90 Job 12: Object
+SettingsView.tsx:90 Job 13: Object
+SettingsView.tsx:90 Job 14: Object
+SettingsView.tsx:90 Job 15: Object
+SettingsView.tsx:90 Job 16: Object
+SettingsView.tsx:90 Job 17: Object
+SettingsView.tsx:90 Job 18: Object
+SettingsView.tsx:90 Job 19: Object
+SettingsView.tsx:90 Job 20: Object
+SettingsView.tsx:102 === FETCH IMPORT JOBS COMPLETE ===
+CRMLayout.tsx:61 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:154 fetchData: Successfully loaded 0 leads, 21 activities, 3 deals
+CRMLayout.tsx:164 fetchData: Finished optimized data fetch.
+CSVImport.tsx:114 === PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:115 Raw customFields: Array(20)
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:152 Processed custom field: Object
+CSVImport.tsx:166 Final lead custom fields: Array(20)
+CSVImport.tsx:167 === END PROCESSING LEAD CUSTOM FIELDS ===
+CSVImport.tsx:39 === CSVImport Custom Fields Debug ===
+CSVImport.tsx:40 All customFields received: Array(20)
+CSVImport.tsx:41 customFields is array? true
+CSVImport.tsx:42 customFields length: 20
+CSVImport.tsx:45 Lead custom fields: Array(20)
+CSVImport.tsx:46 First custom field example: Object
+CSVImport.tsx:50 Custom Field 0: Object
+CSVImport.tsx:50 Custom Field 1: Object
+CSVImport.tsx:50 Custom Field 2: Object
+CSVImport.tsx:50 Custom Field 3: Object
+CSVImport.tsx:50 Custom Field 4: Object
+CSVImport.tsx:50 Custom Field 5: Object
+CSVImport.tsx:50 Custom Field 6: Object
+CSVImport.tsx:50 Custom Field 7: Object
+CSVImport.tsx:50 Custom Field 8: Object
+CSVImport.tsx:50 Custom Field 9: Object
+CSVImport.tsx:50 Custom Field 10: Object
+CSVImport.tsx:50 Custom Field 11: Object
+CSVImport.tsx:50 Custom Field 12: Object
+CSVImport.tsx:50 Custom Field 13: Object
+CSVImport.tsx:50 Custom Field 14: Object
+CSVImport.tsx:50 Custom Field 15: Object
+CSVImport.tsx:50 Custom Field 16: Object
+CSVImport.tsx:50 Custom Field 17: Object
+CSVImport.tsx:50 Custom Field 18: Object
+CSVImport.tsx:50 Custom Field 19: Object
+CSVImport.tsx:82 === End Custom Fields Debug ===
+CSVImport.tsx:228 CSV delimiter detection: Array(4) Selected: ,
+CSVImport.tsx:248 CSV quote character detected: "
+CSVImport.tsx:345 CSV parsing completed: 9809 rows, 15 columns
+CSVImport.tsx:346 Headers detected: Array(15)
+CSVImport.tsx:371 CSV parsing completed: 9809 valid rows from 9809 total rows
+CSVImport.tsx:457 No auto-mapping found for "Keyword"
+CSVImport.tsx:427 Auto-mapped "Title" to "name"
+CSVImport.tsx:427 Auto-mapped "Average Rating" to "rating"
+CSVImport.tsx:427 Auto-mapped "Reviews" to "reviews"
+CSVImport.tsx:427 Auto-mapped "Address" to "address"
+CSVImport.tsx:427 Auto-mapped "Description" to "description"
+CSVImport.tsx:427 Auto-mapped "Website" to "website"
+CSVImport.tsx:457 No auto-mapping found for "Category"
+CSVImport.tsx:457 No auto-mapping found for "Timings"
+CSVImport.tsx:427 Auto-mapped "Phone Number" to "phone"
+CSVImport.tsx:457 No auto-mapping found for "Extra Services"
+CSVImport.tsx:457 No auto-mapping found for "Latitude"
+CSVImport.tsx:457 No auto-mapping found for "Longitude"
+CSVImport.tsx:457 No auto-mapping found for "Link"
+CSVImport.tsx:457 No auto-mapping found for "Data ID"
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: query
+CSVImport.tsx:754 CSV column: Keyword
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: query
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: query
+CSVImport.tsx:493 Index: 0
+CSVImport.tsx:517 Sanitized fieldName: query
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: main_category
+CSVImport.tsx:754 CSV column: Category
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: main_category
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: main_category
+CSVImport.tsx:493 Index: 7
+CSVImport.tsx:517 Sanitized fieldName: main_category
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: workday_timing
+CSVImport.tsx:754 CSV column: Timings
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: workday_timing
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: workday_timing
+CSVImport.tsx:493 Index: 8
+CSVImport.tsx:517 Sanitized fieldName: workday_timing
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: categories
+CSVImport.tsx:754 CSV column: Extra Services
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: categories
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: categories
+CSVImport.tsx:493 Index: 10
+CSVImport.tsx:517 Sanitized fieldName: categories
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: __skip__
+CSVImport.tsx:754 CSV column: Latitude
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: null
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: null
+CSVImport.tsx:493 Index: 11
+CSVImport.tsx:517 Sanitized fieldName: null
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: __skip__
+CSVImport.tsx:754 CSV column: Longitude
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: null
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: null
+CSVImport.tsx:493 Index: 12
+CSVImport.tsx:517 Sanitized fieldName: null
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: gmb_url
+CSVImport.tsx:754 CSV column: Link
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: gmb_url
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: gmb_url
+CSVImport.tsx:493 Index: 13
+CSVImport.tsx:517 Sanitized fieldName: gmb_url
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:752 === SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:753 Raw select value: __skip__
+CSVImport.tsx:754 CSV column: Data ID
+CSVImport.tsx:755 Current mapping: Object
+CSVImport.tsx:758 Processed value: null
+CSVImport.tsx:491 === HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:492 Original fieldName: null
+CSVImport.tsx:493 Index: 14
+CSVImport.tsx:517 Sanitized fieldName: null
+CSVImport.tsx:522 Updated mapping: Object
+CSVImport.tsx:523 === END HANDLE MAPPING CHANGE DEBUG ===
+CSVImport.tsx:761 === END SELECT FIELD MAPPING DEBUG ===
+CSVImport.tsx:568 Name mapping found: Array(1)
+CSVImport.tsx:663 Import Error: TypeError: Cannot read properties of undefined (reading 'processCSVImport')
+    at handleImport (CSVImport.tsx:625:51)
+handleImport @ CSVImport.tsx:663
