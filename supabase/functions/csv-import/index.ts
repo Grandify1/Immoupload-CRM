@@ -317,6 +317,7 @@ serve(async (req) => {
       
       try {
         console.log(`📝 Processing row ${rowIndex + 1}/${csvData.length}`);
+        console.log(`📋 Raw row data:`, row);
         
         const lead = {
           team_id: teamId,
@@ -389,8 +390,17 @@ serve(async (req) => {
         if (!lead.name || !lead.name.trim()) {
           console.warn(`⚠️ Skipping row ${rowIndex + 1} - no name provided`);
           console.log('Row data:', row);
+          console.log('Lead object:', lead);
           failedRecords++;
           detailedErrors.push(`Row ${rowIndex + 1}: Missing required name field`);
+          continue;
+        }
+
+        // Critical validation: Ensure team_id is valid UUID
+        if (!teamId || typeof teamId !== 'string' || teamId.length !== 36) {
+          console.error(`❌ Invalid team_id: "${teamId}"`);
+          failedRecords++;
+          detailedErrors.push(`Row ${rowIndex + 1}: Invalid team_id`);
           continue;
         }
 
@@ -502,6 +512,9 @@ serve(async (req) => {
           name: lead.name,
           email: lead.email,
           phone: lead.phone,
+          website: lead.website,
+          address: lead.address,
+          description: lead.description,
           team_id: lead.team_id,
           status: lead.status,
           custom_fields_count: Object.keys(lead.custom_fields).length,
@@ -514,6 +527,20 @@ serve(async (req) => {
           failedRecords++;
           detailedErrors.push(`Row ${rowIndex + 1}: Missing required fields (name or team_id)`);
           continue;
+        }
+
+        // Additional validation for data types
+        if (lead.email && typeof lead.email !== 'string') {
+          console.warn(`⚠️ Converting email to string for lead ${lead.name}`);
+          lead.email = String(lead.email);
+        }
+        if (lead.phone && typeof lead.phone !== 'string') {
+          console.warn(`⚠️ Converting phone to string for lead ${lead.name}`);
+          lead.phone = String(lead.phone);
+        }
+        if (lead.website && typeof lead.website !== 'string') {
+          console.warn(`⚠️ Converting website to string for lead ${lead.name}`);
+          lead.website = String(lead.website);
         }
         
         // Validate custom_fields is proper JSON
@@ -550,11 +577,36 @@ serve(async (req) => {
             custom_fields_sample: Object.entries(sanitizedCustomFields).slice(0, 2)
           });
           
+          // Log the exact data being sent to database
+          console.log(`🔍 EXACT DATA BEING INSERTED:`, JSON.stringify(finalLeadData, null, 2));
+          
+          // Test database connection before insert
+          console.log(`🔗 Testing database connection...`);
+          const { data: connectionTest, error: connectionTestError } = await supabaseAdmin
+            .from('leads')
+            .select('count')
+            .eq('team_id', teamId)
+            .limit(1);
+            
+          if (connectionTestError) {
+            console.error(`❌ Database connection test failed:`, connectionTestError);
+            failedRecords++;
+            detailedErrors.push(`Row ${rowIndex + 1}: Database connection failed - ${connectionTestError.message}`);
+            continue;
+          } else {
+            console.log(`✅ Database connection test successful`);
+          }
+
           // Atomic insert with transaction-like behavior
+          console.log(`🚀 EXECUTING INSERT OPERATION...`);
           const { data: insertResult, error: insertError } = await supabaseAdmin
             .from('leads')
             .insert([finalLeadData])
             .select('id, name, team_id, created_at, custom_fields');
+
+          console.log(`📤 Insert operation completed`);
+          console.log(`📤 Insert result:`, insertResult);
+          console.log(`📤 Insert error:`, insertError);
 
           if (insertError) {
             console.error(`❌ Insert failed for lead ${lead.name}:`, insertError);
@@ -563,12 +615,24 @@ serve(async (req) => {
               message: insertError.message,
               details: insertError.details,
               hint: insertError.hint,
-              custom_fields_attempted: Object.keys(sanitizedCustomFields)
+              custom_fields_attempted: Object.keys(sanitizedCustomFields),
+              lead_data_attempted: finalLeadData
             });
+            
+            // Try to understand the specific error
+            if (insertError.code === '23503') {
+              console.error(`❌ Foreign key constraint violation - likely invalid team_id or user_id`);
+            } else if (insertError.code === '23505') {
+              console.error(`❌ Unique constraint violation - duplicate data`);
+            } else if (insertError.code === '22P02') {
+              console.error(`❌ Invalid input syntax - data type mismatch`);
+            }
+            
             failedRecords++;
-            detailedErrors.push(`Row ${rowIndex + 1}: Insert failed - ${insertError.message}`);
+            detailedErrors.push(`Row ${rowIndex + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
           } else if (!insertResult || insertResult.length === 0) {
             console.error(`❌ Insert returned no data for lead ${lead.name}`);
+            console.error(`❌ This suggests the insert was silently ignored or failed`);
             failedRecords++;
             detailedErrors.push(`Row ${rowIndex + 1}: Insert returned no data`);
           } else {

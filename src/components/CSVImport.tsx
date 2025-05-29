@@ -113,7 +113,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
     try {
       console.log('=== PROCESSING LEAD CUSTOM FIELDS ===');
       console.log('Raw customFields:', customFields);
-      
+
       if (!customFields || !Array.isArray(customFields)) {
         console.log('No custom fields or not array');
         return [];
@@ -148,7 +148,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
               originalName: field.name,
               fieldType: field.field_type
             };
-            
+
             console.log('Processed custom field:', processedField);
             return processedField;
           } catch (error) {
@@ -491,9 +491,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('=== HANDLE MAPPING CHANGE DEBUG ===');
       console.log('Original fieldName:', fieldName);
       console.log('Index:', index);
-      
+
       const newMappings = [...mappings];
-      
+
       // Enhanced sanitization to prevent URI malformed errors
       let sanitizedFieldName = null;
       if (fieldName && fieldName !== '__skip__') {
@@ -507,26 +507,26 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '')
           .toLowerCase();
-        
+
         // Ensure it's not empty after sanitization
         if (!sanitizedFieldName) {
           sanitizedFieldName = `field_${index}`;
         }
       }
-      
+
       console.log('Sanitized fieldName:', sanitizedFieldName);
-      
+
       newMappings[index].fieldName = sanitizedFieldName;
       newMappings[index].createCustomField = false;
-      
+
       console.log('Updated mapping:', newMappings[index]);
       console.log('=== END HANDLE MAPPING CHANGE DEBUG ===');
-      
+
       setMappings(newMappings);
     } catch (error) {
       console.error('❌ Error in handleMappingChange:', error);
       console.error('Error stack:', error.stack);
-      
+
       // Fallback: Set safe default
       const newMappings = [...mappings];
       newMappings[index].fieldName = `safe_field_${index}`;
@@ -582,7 +582,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       // Show immediate feedback - close modal and show loading toast
       const { toast } = await import('sonner');
-      
+
       // Set loading state immediately
       setIsImporting(true);
 
@@ -764,85 +764,91 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
       console.log('=== STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===');
       console.log('Duplicate Detection Config:', duplicateConfig);
       console.log('Sending data to Edge Function...');
+      console.log('🔍 Data being sent to Edge Function:', {
+        csvDataLength: csvData.length,
+        mappingsCount: mappings.length,
+        teamId: profile.team_id,
+        userId: user.id,
+        jobId: importJob.id,
+        firstRowExample: csvData[0],
+        mappingsExample: mappings.slice(0, 3)
+      });
 
-      try {
-        const { data: functionResponse, error: functionError } = await supabase.functions.invoke('csv-import', {
-          body: {
-            csvData: csvData,
-            mappings: mappings,
-            duplicateConfig: duplicateConfig,
-            teamId: profile.team_id,
-            userId: user.id,
-            jobId: importJob?.id
-          }
-        });
+      const requestPayload = {
+        csvData: csvData,
+        mappings: mappings,
+        duplicateConfig: duplicateConfig,
+        teamId: profile.team_id,
+        userId: user.id,
+        jobId: importJob.id
+      };
 
-        if (functionError) {
-          console.error('❌ Edge Function error:', functionError);
-          toast.dismiss(loadingToastId);
-          toast.error('Import fehlgeschlagen', {
-            description: `Edge Function Fehler: ${functionError.message}`,
-            duration: 4000,
-          });
-          return;
-        }
+      console.log('📤 Full payload size:', JSON.stringify(requestPayload).length, 'bytes');
 
-        console.log('✅ Edge Function response:', functionResponse);
+      const { data: functionResponse, error: functionError } = await supabase.functions.invoke('csv-import', {
+        body: requestPayload
+      });
 
-        // Check if the response indicates success
-        if (functionResponse && functionResponse.success) {
-          // Dismiss loading toast and show detailed success
-          toast.dismiss(loadingToastId);
-          
-          const { processedRecords, newRecords, updatedRecords, failedRecords } = functionResponse;
-          
-          if (failedRecords > 0) {
-            toast.warning('Import mit Fehlern abgeschlossen', {
-              description: `${processedRecords} Leads verarbeitet (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert, ${failedRecords} Fehler)`,
-              duration: 6000,
-            });
-          } else {
-            toast.success('Import erfolgreich abgeschlossen!', {
-              description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
-              duration: 5000,
-            });
-          }
-        } else {
-          toast.dismiss(loadingToastId);
-          toast.error('Import fehlgeschlagen', {
-            description: 'Der Import konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
-            duration: 4000,
-          });
-        }
+      console.log('✅ Edge Function response:', functionResponse);
+      console.log('✅ Edge Function response data:', functionResponse);
+      console.log('✅ Edge Function response error:', functionError);
 
-        // Trigger refresh of leads data with multiple attempts
-        if (onRefresh) {
-          console.log('🔄 Triggering automatic refresh of leads data...');
-          
-          // Immediately refresh
-          onRefresh();
-          
-          // Retry after 2 seconds to ensure data is available
-          setTimeout(() => {
-            console.log('🔄 Second refresh attempt...');
-            onRefresh();
-          }, 2000);
-          
-          // Final retry after 5 seconds
-          setTimeout(() => {
-            console.log('🔄 Final refresh attempt...');
-            onRefresh();
-          }, 5000);
-        }
-
-      } catch (error: any) {
-        console.error('❌ Edge Function failed:', error);
+      if (functionError) {
+        console.error('❌ Edge Function error:', functionError);
         toast.dismiss(loadingToastId);
         toast.error('Import fehlgeschlagen', {
-          description: `Edge Function Fehler: ${error.message}`,
+          description: `Edge Function Fehler: ${functionError.message}`,
           duration: 4000,
         });
         return;
+      }
+
+      console.log('✅ Edge Function response:', functionResponse);
+
+      // Check if the response indicates success
+      if (functionResponse && functionResponse.success) {
+        // Dismiss loading toast and show detailed success
+        toast.dismiss(loadingToastId);
+
+        const { processedRecords, newRecords, updatedRecords, failedRecords } = functionResponse;
+
+        if (failedRecords > 0) {
+          toast.warning('Import mit Fehlern abgeschlossen', {
+            description: `${processedRecords} Leads verarbeitet (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert, ${failedRecords} Fehler)`,
+            duration: 6000,
+          });
+        } else {
+          toast.success('Import erfolgreich abgeschlossen!', {
+            description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
+            duration: 5000,
+          });
+        }
+      } else {
+        toast.dismiss(loadingToastId);
+        toast.error('Import fehlgeschlagen', {
+          description: 'Der Import konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.',
+          duration: 4000,
+        });
+      }
+
+      // Trigger refresh of leads data with multiple attempts
+      if (onRefresh) {
+        console.log('🔄 Triggering automatic refresh of leads data...');
+
+        // Immediately refresh
+        onRefresh();
+
+        // Retry after 2 seconds to ensure data is available
+        setTimeout(() => {
+          console.log('🔄 Second refresh attempt...');
+          onRefresh();
+        }, 2000);
+
+        // Final retry after 5 seconds
+        setTimeout(() => {
+          console.log('🔄 Final refresh attempt...');
+          onRefresh();
+        }, 5000);
       }
 
     } catch (error: any) {
@@ -934,10 +940,10 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                               console.log('Raw select value:', value);
                               console.log('CSV column:', mapping.csvHeader);
                               console.log('Current mapping:', mapping);
-                              
+
                               const processedValue = value === '__skip__' ? null : value;
                               console.log('Processed value:', processedValue);
-                              
+
                               handleMappingChange(index, processedValue);
                               console.log('=== END SELECT FIELD MAPPING DEBUG ===');
                             } catch (error) {
@@ -948,7 +954,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                                 csvHeader: mapping.csvHeader,
                                 stack: error.stack
                               });
-                              
+
                               // Emergency fallback
                               try {
                                 const emergencyValue = value === '__skip__' ? null : `emergency_field_${index}`;
@@ -1005,9 +1011,9 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                                 try {
                                   console.log('=== CUSTOM FIELD INPUT DEBUG ===');
                                   console.log('Input value:', e.target.value);
-                                  
+
                                   const newMappings = [...mappings];
-                                  
+
                                   // Enhanced sanitization to prevent URI errors
                                   const sanitizedValue = e.target.value
                                     .replace(/[äöüÄÖÜß]/g, (match) => {
@@ -1018,18 +1024,18 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
                                     .replace(/_+/g, '_')
                                     .replace(/^_|_$/g, '')
                                     .toLowerCase();
-                                  
+
                                   console.log('Sanitized value:', sanitizedValue);
-                                  
+
                                   newMappings[index].fieldName = sanitizedValue;
                                   setMappings(newMappings);
-                                  
+
                                   console.log('Updated mapping:', newMappings[index]);
                                   console.log('=== END CUSTOM FIELD INPUT DEBUG ===');
                                 } catch (error) {
                                   console.error('❌ Error in custom field input:', error);
                                   console.error('Error stack:', error.stack);
-                                  
+
                                   // Set safe fallback
                                   const newMappings = [...mappings];
                                   newMappings[index].fieldName = `custom_field_${index}`;
