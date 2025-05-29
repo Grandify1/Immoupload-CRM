@@ -1,0 +1,32 @@
+chunk-FJ2A54M7.js?v=957518e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+SalesPipelineSettings.tsx:1 SalesPipelineSettings.tsx: Datei wird verarbeitet
+2useAuth.tsx:38 Auth state changed: SIGNED_IN 4467ca04-af24-4c9e-b26b-f3152a00f429
+2useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:95 Profile fetch cooldown active, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+CRMLayout.tsx:45 CRMLayout: Initial fetchData call
+CRMLayout.tsx:62 fetchData: Starting optimized data fetch...
+CRMLayout.tsx:156 fetchData: Successfully loaded 1000 leads, 22 activities, 3 deals
+CRMLayout.tsx:166 fetchData: Finished optimized data fetch.
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:100 Profile fetch already in progress, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+EmailView.tsx:515 Loading emails from database...
+2EmailView.tsx:509 Skipping email load - too recent
+EmailView.tsx:530 Loaded 50 emails from database
+useAuth.tsx:38 Auth state changed: INITIAL_SESSION 4467ca04-af24-4c9e-b26b-f3152a00f429
+useProfile.tsx:100 Profile fetch already in progress, skipping...
+useProfile.tsx:160 ✅ Profile loaded successfully: Object
+useProfile.tsx:54 Skipping profile fetch - already have data for this user
+useAuth.tsx:34 Skipping duplicate INITIAL_SESSION event
+useProfile.tsx:54 Skipping profile fetch - already have data for this user
