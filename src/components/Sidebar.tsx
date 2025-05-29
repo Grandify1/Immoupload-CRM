@@ -12,7 +12,7 @@ interface SidebarProps {
   onFilterSelect: (filters: Record<string, any>) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({
+export const Sidebar: React.FC<SidebarProps> = React.memo(({
   activeSection,
   onSectionChange,
   savedFilters,
@@ -113,4 +113,4 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
     </div>
   );
-};
+});

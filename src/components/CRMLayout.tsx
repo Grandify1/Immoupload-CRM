@@ -46,8 +46,8 @@ const CRMLayout = () => {
     }
   }, [team]);
 
-  const fetchData = async () => {
-    if (!team) {
+  const fetchData = useCallback(async () => {
+    if (!team?.id) {
       console.log('fetchData: No team available, returning.');
       return;
     }
@@ -58,80 +58,114 @@ const CRMLayout = () => {
       return;
     }
 
-    console.log('fetchData: Starting data fetch...');
+    console.log('fetchData: Starting optimized data fetch...');
     setIsFetching(true);
     setLoading(true);
+    
     try {
-      // Gleichzeitiges Abrufen von Leads und Aktivitäten
-      const [leadsDataResult, activitiesDataResult] = await Promise.all([
-        supabase.from('leads').select('*').eq('team_id', team.id).order('updated_at', { ascending: false }),
-        supabase.from('activities').select('*').eq('team_id', team.id).order('created_at', { ascending: false })
+      // Optimierte Datenbankabfragen mit Limits und spezifischen Feldern
+      const [leadsDataResult, activitiesDataResult, dealsDataResult, savedFiltersResult, customFieldsResult, activityTemplatesResult] = await Promise.all([
+        supabase
+          .from('leads')
+          .select('id, team_id, name, email, phone, website, address, description, status, owner_id, custom_fields, created_at, updated_at')
+          .eq('team_id', team.id)
+          .order('updated_at', { ascending: false })
+          .limit(1000), // Limit für bessere Performance
+        supabase
+          .from('activities')
+          .select('id, team_id, entity_type, entity_id, type, title, content, author_id, template_id, template_data, created_at')
+          .eq('team_id', team.id)
+          .order('created_at', { ascending: false })
+          .limit(5000), // Limit für Activities
+        supabase
+          .from('deals')
+          .select('*')
+          .eq('team_id', team.id)
+          .order('updated_at', { ascending: false })
+          .limit(500),
+        supabase
+          .from('saved_filters')
+          .select('*')
+          .eq('team_id', team.id)
+          .order('created_at', { ascending: false })
+          .limit(100),
+        supabase
+          .from('custom_fields')
+          .select('*')
+          .eq('team_id', team.id)
+          .order('sort_order', { ascending: true })
+          .limit(50),
+        supabase
+          .from('activity_templates')
+          .select('*')
+          .eq('team_id', team.id)
+          .order('created_at', { ascending: false })
+          .limit(50)
       ]);
 
-      // Fehlerbehandlung für Leads
-      if (leadsDataResult.error) {
-        console.error(`Error fetching leads: ${leadsDataResult.error.message}`, leadsDataResult.error);
-        toast({
-          title: "Error",
-          description: "Failed to load leads",
-          variant: "destructive",
-        });
-        // Fortfahren mit leeren Leads, um andere Daten zu laden
-        leadsDataResult.data = [];
-      }
+      // Fehlerbehandlung für alle Abfragen
+      const handleDataResult = (result: any, dataType: string) => {
+        if (result.error) {
+          console.error(`Error fetching ${dataType}:`, result.error);
+          toast({
+            title: "Error",
+            description: `Failed to load ${dataType}`,
+            variant: "destructive",
+          });
+          return [];
+        }
+        return result.data || [];
+      };
 
-       // Fehlerbehandlung für Aktivitäten
-      if (activitiesDataResult.error) {
-        console.error(`Error fetching activities: ${activitiesDataResult.error.message}`, activitiesDataResult.error);
-        toast({
-          title: "Error",
-          description: "Failed to load activities",
-          variant: "destructive",
-        });
-        // Fortfahren mit leeren Aktivitäten
-        activitiesDataResult.data = [];
-      }
+      const leads = handleDataResult(leadsDataResult, 'leads') as Lead[];
+      const activities = handleDataResult(activitiesDataResult, 'activities') as Activity[];
+      const deals = handleDataResult(dealsDataResult, 'deals') as Deal[];
+      const savedFilters = handleDataResult(savedFiltersResult, 'saved filters') as SavedFilter[];
+      const customFields = handleDataResult(customFieldsResult, 'custom fields') as CustomField[];
+      const activityTemplates = handleDataResult(activityTemplatesResult, 'activity templates') as ActivityTemplate[];
 
-      const leads = (leadsDataResult.data || []) as Lead[];
-      const activities = (activitiesDataResult.data || []) as Activity[];
+      // Optimierte Aktivitäten-Zuordnung mit Map für bessere Performance
+      const activitiesMap = new Map<string, Activity[]>();
+      activities.forEach(activity => {
+        if (activity.entity_type === 'lead') {
+          const leadActivities = activitiesMap.get(activity.entity_id) || [];
+          leadActivities.push(activity);
+          activitiesMap.set(activity.entity_id, leadActivities);
+        }
+      });
 
-      // Aktivitäten den Leads zuordnen
+      // Leads mit Aktivitäten verknüpfen
       const leadsWithActivities = leads.map(lead => {
-        const relatedActivities = activities.filter(activity => 
-          activity.entity_type === 'lead' && activity.entity_id === lead.id
-        );
-        // Sortiere Aktivitäten nach Erstellungsdatum (neueste zuerst)
-        relatedActivities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const relatedActivities = activitiesMap.get(lead.id) || [];
+        // Sortierung bereits in der DB-Abfrage erfolgt
         return {
           ...lead,
-          activities: relatedActivities // Activities Feld zum Lead hinzufügen
+          activities: relatedActivities
         };
       });
 
-      // Zustände aktualisieren
+      // Batch-Update aller States
       setLeads(leadsWithActivities);
+      setDeals(deals);
+      setSavedFilters(savedFilters);
+      setCustomFields(customFields);
+      setActivityTemplates(activityTemplates);
 
-      // Weitere Fetches, die nicht direkt mit Leads/Aktivitäten verknüpft sind
-      await Promise.all([
-        fetchDeals(),
-        fetchSavedFilters(),
-        fetchCustomFields(),
-        fetchActivityTemplates()
-      ]);
+      console.log(`fetchData: Successfully loaded ${leads.length} leads, ${activities.length} activities, ${deals.length} deals`);
 
     } catch (error) {
-      console.error('An unexpected error occurred in fetchData:', error);
+      console.error('Critical error in fetchData:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while loading data",
         variant: "destructive",
       });
     } finally {
-      console.log('fetchData: Finished data fetch.');
+      console.log('fetchData: Finished optimized data fetch.');
       setIsFetching(false);
       setLoading(false);
     }
-  };
+  }, [team?.id, isFetching, toast]);
 
   const fetchDeals = async () => {
     if (!team) {

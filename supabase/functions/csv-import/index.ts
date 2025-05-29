@@ -143,7 +143,7 @@ serve(async (req) => {
     const totalBatches = Math.ceil(currentBatchData.length / BATCH_SIZE);
     console.log(`📦 Processing ${currentBatchData.length} leads in ${totalBatches} batches of ${BATCH_SIZE}`);
 
-    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+    for (let batchIndex = 0; batchIndex = totalBatches; batchIndex++) {
       const batchStart = batchIndex * BATCH_SIZE;
       const batchEnd = Math.min(batchStart + BATCH_SIZE, currentBatchData.length);
       const currentBatch = currentBatchData.slice(batchStart, batchEnd);
@@ -159,6 +159,7 @@ serve(async (req) => {
       // Process rows in parallel for better performance
       const batchPromises = currentBatch.map(async (row, i) => {
         const absoluteRowNumber = startRow + batchStart + i + 1;
+        let result = { processed: 0, newRecords: 0, updatedRecords: 0, failedRecords: 0, errors: [] as string[] };
 
         try {
           const row = currentBatch[i];

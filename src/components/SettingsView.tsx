@@ -488,7 +488,7 @@ const ImportJobsHistory: React.FC<ImportJobsHistoryProps> = React.memo(({ teamId
       </CardContent>
     </Card>
   );
-};
+});
 
 interface SettingsViewProps {
   customFields: CustomField[];
