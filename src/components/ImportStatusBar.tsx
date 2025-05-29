@@ -351,9 +351,23 @@ const ImportStatusBar: React.FC = () => {
                 </div>
                 
                 {/* Show batch progress for large imports */}
-                {importJob.status === 'processing' && importJob.error_details?.total_batches && (
-                  <div className="text-xs text-gray-500 text-center">
-                    Batch {importJob.error_details.current_batch || 1} von {importJob.error_details.total_batches}
+                {importJob.status === 'processing' && (
+                  <div className="text-xs text-gray-500 text-center space-y-1">
+                    {importJob.error_details?.total_batches && (
+                      <div>
+                        Batch {importJob.error_details.current_batch || 1} von {importJob.error_details.total_batches}
+                      </div>
+                    )}
+                    {importJob.error_details?.is_multi_batch_import && (
+                      <div className="text-blue-600 font-medium">
+                        Multi-Batch Import läuft...
+                      </div>
+                    )}
+                    {importJob.error_details?.current_function_call_rows && (
+                      <div>
+                        Zeilen: {importJob.error_details.current_function_call_rows}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

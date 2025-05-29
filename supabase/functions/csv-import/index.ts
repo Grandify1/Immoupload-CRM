@@ -28,10 +28,13 @@ interface ImportRequest {
   teamId: string;
   userId: string;
   jobId: string;
+  startRow?: number; // For continuation
+  isInitialRequest?: boolean; // Flag for first request
 }
 
-const BATCH_SIZE = 100; // Process in batches of 100 leads
-const MAX_EXECUTION_TIME = 50000; // 50 seconds (Edge Functions timeout at 60s)
+const BATCH_SIZE = 200; // Erhöht für bessere Performance
+const MAX_EXECUTION_TIME = 45000; // 45 Sekunden Safety Buffer
+const MAX_ROWS_PER_FUNCTION_CALL = 1000; // Maximum Zeilen pro Function Call
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -69,7 +72,7 @@ serve(async (req) => {
       );
     }
 
-    const { csvData, mappings, duplicateConfig, teamId, userId, jobId } = body;
+    const { csvData, mappings, duplicateConfig, teamId, userId, jobId, startRow = 0, isInitialRequest = true } = body;
 
     // Validate required fields
     if (!csvData || !mappings || !teamId || !userId) {
@@ -82,7 +85,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`📊 Processing ${csvData.length} rows for team ${teamId}`);
+    console.log(`📊 Processing ${csvData.length} total rows, starting from row ${startRow} for team ${teamId}`);
     console.log(`🔄 Duplicate config: ${duplicateConfig.duplicateDetectionField} -> ${duplicateConfig.duplicateAction}`);
 
     // Initialize Supabase Admin Client
@@ -102,6 +105,13 @@ serve(async (req) => {
     // Standard field names that map directly to database columns
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
 
+    // Bestimme den Arbeitsbereich für diese Function Call
+    const endRow = Math.min(startRow + MAX_ROWS_PER_FUNCTION_CALL, csvData.length);
+    const currentBatchData = csvData.slice(startRow, endRow);
+    const isLastBatch = endRow >= csvData.length;
+
+    console.log(`📦 Processing rows ${startRow + 1}-${endRow} (${currentBatchData.length} rows) - Last batch: ${isLastBatch}`);
+
     let totalProcessed = 0;
     let totalNewRecords = 0;
     let totalUpdatedRecords = 0;
@@ -110,9 +120,30 @@ serve(async (req) => {
 
     const startTime = Date.now();
 
+    // Lade aktuelle Statistiken wenn dies eine Fortsetzung ist
+    if (!isInitialRequest && jobId) {
+      try {
+        const { data: currentJob } = await supabaseAdmin
+          .from('import_jobs')
+          .select('processed_records, failed_records, error_details')
+          .eq('id', jobId)
+          .single();
+
+        if (currentJob) {
+          totalProcessed = currentJob.processed_records || 0;
+          totalFailedRecords = currentJob.failed_records || 0;
+          totalNewRecords = currentJob.error_details?.new_records || 0;
+          totalUpdatedRecords = currentJob.error_details?.updated_records || 0;
+          console.log(`📊 Continuing import: ${totalProcessed} already processed, ${totalFailedRecords} failed`);
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not load current job stats:', error);
+      }
+    }
+
     // Process data in batches
-    const totalBatches = Math.ceil(csvData.length / BATCH_SIZE);
-    console.log(`📦 Processing ${csvData.length} leads in ${totalBatches} batches of ${BATCH_SIZE}`);
+    const totalBatches = Math.ceil(currentBatchData.length / BATCH_SIZE);
+    console.log(`📦 Processing ${currentBatchData.length} leads in ${totalBatches} batches of ${BATCH_SIZE}`);
 
     for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
       // Check if we're approaching timeout
@@ -123,8 +154,8 @@ serve(async (req) => {
       }
 
       const batchStart = batchIndex * BATCH_SIZE;
-      const batchEnd = Math.min(batchStart + BATCH_SIZE, csvData.length);
-      const currentBatch = csvData.slice(batchStart, batchEnd);
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, currentBatchData.length);
+      const currentBatch = currentBatchData.slice(batchStart, batchEnd);
 
       console.log(`📦 Processing batch ${batchIndex + 1}/${totalBatches}: rows ${batchStart + 1}-${batchEnd}`);
 
@@ -138,7 +169,7 @@ serve(async (req) => {
       for (let i = 0; i < currentBatch.length; i++) {
         try {
           const row = currentBatch[i];
-          const rowNumber = batchStart + i + 1;
+          const absoluteRowNumber = startRow + batchStart + i + 1;
 
           // Build lead object from mappings
           const leadData: any = {
@@ -173,7 +204,7 @@ serve(async (req) => {
 
           // Ensure required fields and set defaults
           if (!leadData.name || !leadData.name.trim()) {
-            batchErrors.push(`Row ${rowNumber}: Missing required 'name' field`);
+            batchErrors.push(`Row ${absoluteRowNumber}: Missing required 'name' field`);
             batchFailedRecords++;
             continue;
           }
@@ -183,7 +214,7 @@ serve(async (req) => {
           }
 
           if (!leadData.team_id) {
-            batchErrors.push(`Row ${rowNumber}: Missing team_id`);
+            batchErrors.push(`Row ${absoluteRowNumber}: Missing team_id`);
             batchFailedRecords++;
             continue;
           }
@@ -199,7 +230,7 @@ serve(async (req) => {
               .single();
 
             if (duplicateError && duplicateError.code !== 'PGRST116') {
-              batchErrors.push(`Row ${rowNumber}: Duplicate check failed - ${duplicateError.message}`);
+              batchErrors.push(`Row ${absoluteRowNumber}: Duplicate check failed - ${duplicateError.message}`);
               batchFailedRecords++;
               continue;
             }
@@ -235,7 +266,7 @@ serve(async (req) => {
                 .eq('id', existingLead.id);
 
               if (updateError) {
-                batchErrors.push(`Row ${rowNumber}: Update failed - ${updateError.message}`);
+                batchErrors.push(`Row ${absoluteRowNumber}: Update failed - ${updateError.message}`);
                 batchFailedRecords++;
               } else {
                 batchUpdatedRecords++;
@@ -285,14 +316,14 @@ serve(async (req) => {
                 .single();
 
               if (fallbackError) {
-                batchErrors.push(`Row ${rowNumber}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+                batchErrors.push(`Row ${absoluteRowNumber}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
                 batchFailedRecords++;
               } else {
                 batchNewRecords++;
                 batchProcessed++;
               }
             } else {
-              batchErrors.push(`Row ${rowNumber}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+              batchErrors.push(`Row ${absoluteRowNumber}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
               batchFailedRecords++;
             }
           } else {
@@ -301,8 +332,8 @@ serve(async (req) => {
           }
 
         } catch (error) {
-          const rowNumber = batchStart + i + 1;
-          batchErrors.push(`Row ${rowNumber}: Unexpected error - ${error.message}`);
+          const absoluteRowNumber = startRow + batchStart + i + 1;
+          batchErrors.push(`Row ${absoluteRowNumber}: Unexpected error - ${error.message}`);
           batchFailedRecords++;
         }
       }
@@ -333,6 +364,8 @@ serve(async (req) => {
               progress_percent: progressPercent,
               current_batch: batchIndex + 1,
               total_batches: totalBatches,
+              current_function_call_rows: `${startRow + 1}-${endRow}`,
+              is_multi_batch_import: csvData.length > MAX_ROWS_PER_FUNCTION_CALL,
               errors: allErrors.length > 0 ? allErrors.slice(-50) : undefined // Keep last 50 errors
             },
             updated_at: new Date().toISOString()
@@ -357,8 +390,69 @@ serve(async (req) => {
       console.log(`✅ Batch ${batchIndex + 1}/${totalBatches} completed: +${batchNewRecords} new, +${batchUpdatedRecords} updated, +${batchFailedRecords} failed`);
     }
 
-    // Final status update
-    if (jobId) {
+    // Bestimme ob wir weitere Function Calls brauchen
+    const needsContinuation = !isLastBatch;
+    let continuationResponse = null;
+
+    if (needsContinuation) {
+      console.log(`🔄 Import needs continuation. Next batch starts at row ${endRow}`);
+      
+      // Trigger next batch asynchronously
+      try {
+        const nextBatchPayload = {
+          csvData: csvData,
+          mappings: mappings,
+          duplicateConfig: duplicateConfig,
+          teamId: teamId,
+          userId: userId,
+          jobId: jobId,
+          startRow: endRow,
+          isInitialRequest: false
+        };
+
+        console.log(`📤 Triggering next batch: rows ${endRow + 1}-${Math.min(endRow + MAX_ROWS_PER_FUNCTION_CALL, csvData.length)}`);
+
+        // Fire-and-forget next batch
+        const { error: continuationError } = await supabaseAdmin.functions.invoke('csv-import', {
+          body: nextBatchPayload
+        });
+
+        if (continuationError) {
+          console.error('❌ Failed to trigger continuation:', continuationError);
+          // Update job status to indicate continuation failed
+          if (jobId) {
+            await supabaseAdmin
+              .from('import_jobs')
+              .update({
+                status: 'completed_with_errors',
+                error_details: {
+                  summary: `Import paused after ${totalProcessed} records - continuation failed`,
+                  new_records: totalNewRecords,
+                  updated_records: totalUpdatedRecords,
+                  failed_records: totalFailedRecords,
+                  continuation_error: continuationError.message,
+                  processed_rows: `${startRow + 1}-${endRow}`,
+                  errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined
+                },
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', jobId);
+          }
+        } else {
+          console.log(`✅ Next batch triggered successfully`);
+          continuationResponse = {
+            continuation_triggered: true,
+            next_start_row: endRow,
+            remaining_rows: csvData.length - endRow
+          };
+        }
+      } catch (error) {
+        console.error('❌ Critical error triggering continuation:', error);
+      }
+    }
+
+    // Final status update for this function call
+    if (jobId && isLastBatch) {
       try {
         const finalStatus = totalFailedRecords === 0 ? 'completed' : 'completed_with_errors';
         const finalErrorDetails = {
@@ -368,6 +462,7 @@ serve(async (req) => {
           failed_records: totalFailedRecords,
           progress_percent: 100,
           total_batches: totalBatches,
+          multi_batch_import_completed: csvData.length > MAX_ROWS_PER_FUNCTION_CALL,
           errors: allErrors.length > 0 ? allErrors : undefined
         };
 
@@ -403,10 +498,14 @@ serve(async (req) => {
       jobId: jobId,
       batchesProcessed: Math.ceil(totalProcessed / BATCH_SIZE),
       executionTime: Date.now() - startTime,
+      currentBatchRows: `${startRow + 1}-${endRow}`,
+      isLastBatch: isLastBatch,
+      needsContinuation: needsContinuation,
+      continuation: continuationResponse,
       errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined // Return last 20 errors
     };
 
-    console.log('📊 Final Import Summary:', response);
+    console.log('📊 Function Call Summary:', response);
 
     return new Response(
       JSON.stringify(response),
@@ -431,7 +530,8 @@ serve(async (req) => {
             error_details: { 
               summary: 'Import failed due to critical error', 
               error: error.message,
-              stack: error.stack
+              stack: error.stack,
+              function_call_range: body.startRow ? `${body.startRow + 1}-${Math.min(body.startRow + MAX_ROWS_PER_FUNCTION_CALL, body.csvData?.length || 0)}` : 'unknown'
             },
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString()

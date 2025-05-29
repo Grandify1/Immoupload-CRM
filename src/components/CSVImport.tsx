@@ -763,8 +763,8 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         skipJobTracking = true;
       }
 
-      // Use Edge Function for background processing
-      console.log('=== STARTING BACKGROUND IMPORT WITH EDGE FUNCTION ===');
+      // Use Edge Function for background processing with Multi-Batch support
+      console.log('=== STARTING MULTI-BATCH IMPORT WITH EDGE FUNCTION ===');
       console.log('Duplicate Detection Config:', duplicateConfig);
       console.log('Sending data to Edge Function...');
       console.log('🔍 Data being sent to Edge Function:', {
@@ -773,6 +773,7 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         teamId: profile.team_id,
         userId: user.id,
         jobId: importJob.id,
+        isLargeImport: csvData.length > 1000,
         firstRowExample: csvData[0],
         mappingsExample: mappings.slice(0, 3)
       });
@@ -783,10 +784,16 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
         duplicateConfig: duplicateConfig,
         teamId: profile.team_id,
         userId: user.id,
-        jobId: importJob.id
+        jobId: importJob.id,
+        startRow: 0,
+        isInitialRequest: true
       };
 
       console.log('📤 Full payload size:', JSON.stringify(requestPayload).length, 'bytes');
+      
+      if (csvData.length > 1000) {
+        console.log('🔄 Large import detected - will be processed in multiple batches automatically');
+      }
 
       const { data: functionResponse, error: functionError } = await supabase.functions.invoke('csv-import', {
         body: requestPayload
@@ -810,25 +817,40 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
       // Check if the response indicates success
       if (functionResponse && functionResponse.success) {
-        // Mark this import as completed to prevent duplicate toast from ImportStatusBar
-        if (importJob?.id) {
-          // Trigger a custom event that ImportStatusBar can listen to
-          window.dispatchEvent(new CustomEvent('importCompleted', { 
-            detail: { importJobId: importJob.id } 
-          }));
-        }
+        const { processedRecords, newRecords, updatedRecords, failedRecords, needsContinuation, isLastBatch, totalRows } = functionResponse;
 
-        const { processedRecords, newRecords, updatedRecords, failedRecords } = functionResponse;
-
-        if (failedRecords > 0) {
-          toast.warning('Import mit Fehlern abgeschlossen', {
-            description: `${processedRecords} Leads verarbeitet (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert, ${failedRecords} Fehler)`,
-            duration: 6000,
+        if (needsContinuation) {
+          // Multi-batch import in progress
+          toast.success('Import gestartet!', {
+            description: `Großer Import erkannt (${totalRows} Zeilen). Wird automatisch in mehreren Batches verarbeitet. Fortschritt wird unten rechts angezeigt.`,
+            duration: 8000,
           });
+          
+          console.log('🔄 Multi-batch import started, monitoring progress via ImportStatusBar');
+        } else if (isLastBatch) {
+          // Final batch completed - trigger completion event
+          if (importJob?.id) {
+            window.dispatchEvent(new CustomEvent('importCompleted', { 
+              detail: { importJobId: importJob.id } 
+            }));
+          }
+
+          if (failedRecords > 0) {
+            toast.warning('Import mit Fehlern abgeschlossen', {
+              description: `${processedRecords} Leads verarbeitet (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert, ${failedRecords} Fehler)`,
+              duration: 6000,
+            });
+          } else {
+            toast.success('Import erfolgreich abgeschlossen!', {
+              description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
+              duration: 5000,
+            });
+          }
         } else {
-          toast.success('Import erfolgreich abgeschlossen!', {
-            description: `${processedRecords} Leads erfolgreich importiert (${newRecords || 0} neu, ${updatedRecords || 0} aktualisiert)`,
-            duration: 5000,
+          // Single batch completed but not the last one (should not happen in normal flow)
+          toast.info('Import Batch abgeschlossen', {
+            description: `${processedRecords} von ${totalRows} Leads verarbeitet. Import läuft weiter...`,
+            duration: 4000,
           });
         }
       } else {
