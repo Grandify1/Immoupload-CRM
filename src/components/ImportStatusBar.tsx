@@ -349,6 +349,13 @@ const ImportStatusBar: React.FC = () => {
                     </span>
                   )}
                 </div>
+                
+                {/* Show batch progress for large imports */}
+                {importJob.status === 'processing' && importJob.error_details?.total_batches && (
+                  <div className="text-xs text-gray-500 text-center">
+                    Batch {importJob.error_details.current_batch || 1} von {importJob.error_details.total_batches}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

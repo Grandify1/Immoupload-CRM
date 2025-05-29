@@ -1299,9 +1299,19 @@ const CSVImport: React.FC<CSVImportProps> = ({ isOpen, onClose, onImport, onAddC
 
         {step === 'preview' && (
           <div className="py-4 flex-1 overflow-hidden flex flex-col">
-            <p className="text-sm text-gray-600 mb-4">
-              Vorschau der ersten 5 zu importierenden Leads. Gesamt: {csvData.length} Leads.
-            </p>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">
+                Vorschau der ersten 5 zu importierenden Leads. Gesamt: {csvData.length} Leads.
+              </p>
+              {csvData.length > 1000 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Großer Import erkannt:</strong> {csvData.length} Leads werden in Batches von 100 verarbeitet. 
+                    Sie können den Fortschritt in der unteren rechten Ecke verfolgen.
+                  </p>
+                </div>
+              )}
+            </div>
 
             <div className="flex-1 overflow-auto border rounded-md">
               <div className="overflow-x-auto">

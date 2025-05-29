@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -28,6 +29,9 @@ interface ImportRequest {
   userId: string;
   jobId: string;
 }
+
+const BATCH_SIZE = 100; // Process in batches of 100 leads
+const MAX_EXECUTION_TIME = 50000; // 50 seconds (Edge Functions timeout at 60s)
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -98,173 +102,156 @@ serve(async (req) => {
     // Standard field names that map directly to database columns
     const standardFields = ['name', 'email', 'phone', 'website', 'address', 'description', 'status', 'owner_id'];
 
-    let processedRecords = 0;
-    let newRecords = 0;
-    let updatedRecords = 0;
-    let failedRecords = 0;
-    const errors: string[] = [];
+    let totalProcessed = 0;
+    let totalNewRecords = 0;
+    let totalUpdatedRecords = 0;
+    let totalFailedRecords = 0;
+    const allErrors: string[] = [];
 
-    // Process each CSV row
-    for (let i = 0; i < csvData.length; i++) {
-      try {
-        const row = csvData[i];
-        console.log(`📝 Processing row ${i + 1}/${csvData.length}`);
+    const startTime = Date.now();
 
-        // Build lead object from mappings
-        const leadData: any = {
-          team_id: teamId,
-          custom_fields: {}
-        };
+    // Process data in batches
+    const totalBatches = Math.ceil(csvData.length / BATCH_SIZE);
+    console.log(`📦 Processing ${csvData.length} leads in ${totalBatches} batches of ${BATCH_SIZE}`);
 
-        // Process each mapping
-        mappings.forEach((mapping, mappingIndex) => {
-          if (mapping.fieldName && mappingIndex < row.length) {
-            const value = row[mappingIndex]?.trim();
-            if (!value) return; // Skip empty values
+    for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+      // Check if we're approaching timeout
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime > MAX_EXECUTION_TIME) {
+        console.log(`⏰ Approaching timeout after ${elapsedTime}ms, stopping at batch ${batchIndex + 1}/${totalBatches}`);
+        break;
+      }
 
-            if (standardFields.includes(mapping.fieldName)) {
-              // Handle standard database fields
-              if (mapping.fieldName === 'status') {
-                // Ensure status is valid, default to 'potential'
-                const validStatuses = ['potential', 'contacted', 'qualified', 'closed'];
-                if (validStatuses.includes(value.toLowerCase())) {
-                  leadData[mapping.fieldName] = value.toLowerCase();
+      const batchStart = batchIndex * BATCH_SIZE;
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, csvData.length);
+      const currentBatch = csvData.slice(batchStart, batchEnd);
+
+      console.log(`📦 Processing batch ${batchIndex + 1}/${totalBatches}: rows ${batchStart + 1}-${batchEnd}`);
+
+      let batchProcessed = 0;
+      let batchNewRecords = 0;
+      let batchUpdatedRecords = 0;
+      let batchFailedRecords = 0;
+      const batchErrors: string[] = [];
+
+      // Process each row in the current batch
+      for (let i = 0; i < currentBatch.length; i++) {
+        try {
+          const row = currentBatch[i];
+          const rowNumber = batchStart + i + 1;
+
+          // Build lead object from mappings
+          const leadData: any = {
+            team_id: teamId,
+            custom_fields: {}
+          };
+
+          // Process each mapping
+          mappings.forEach((mapping, mappingIndex) => {
+            if (mapping.fieldName && mappingIndex < row.length) {
+              const value = row[mappingIndex]?.trim();
+              if (!value) return; // Skip empty values
+
+              if (standardFields.includes(mapping.fieldName)) {
+                // Handle standard database fields
+                if (mapping.fieldName === 'status') {
+                  const validStatuses = ['potential', 'contacted', 'qualified', 'closed'];
+                  if (validStatuses.includes(value.toLowerCase())) {
+                    leadData[mapping.fieldName] = value.toLowerCase();
+                  } else {
+                    leadData[mapping.fieldName] = 'potential';
+                  }
                 } else {
-                  leadData[mapping.fieldName] = 'potential';
+                  leadData[mapping.fieldName] = value;
                 }
               } else {
-                leadData[mapping.fieldName] = value;
+                // Handle custom fields
+                leadData.custom_fields[mapping.fieldName] = value;
               }
-            } else {
-              // Handle custom fields
-              leadData.custom_fields[mapping.fieldName] = value;
             }
-          }
-        });
+          });
 
-        // Ensure required fields and set defaults
-        if (!leadData.name || !leadData.name.trim()) {
-          errors.push(`Row ${i + 1}: Missing required 'name' field`);
-          failedRecords++;
-          continue;
-        }
-
-        // ALWAYS set default status to 'potential' if not provided or invalid
-        if (!leadData.status || !['potential', 'contacted', 'qualified', 'closed'].includes(leadData.status)) {
-          leadData.status = 'potential';
-        }
-
-        console.log(`📋 Lead data for row ${i + 1}:`, {
-          name: leadData.name,
-          status: leadData.status,
-          team_id: leadData.team_id,
-          customFieldsCount: Object.keys(leadData.custom_fields).length,
-          hasRequiredFields: !!(leadData.name && leadData.team_id && leadData.status)
-        });
-
-        // Validate required fields before proceeding
-        if (!leadData.team_id) {
-          console.error(`❌ Missing team_id for row ${i + 1}`);
-          errors.push(`Row ${i + 1}: Missing team_id`);
-          failedRecords++;
-          continue;
-        }
-
-        // Handle duplicate detection
-        let existingLead = null;
-        if (duplicateConfig.duplicateDetectionField !== 'none' && leadData[duplicateConfig.duplicateDetectionField]) {
-          console.log(`🔍 Checking for duplicates by ${duplicateConfig.duplicateDetectionField}: ${leadData[duplicateConfig.duplicateDetectionField]}`);
-
-          const { data: duplicateCheck, error: duplicateError } = await supabaseAdmin
-            .from('leads')
-            .select('id, name, email, phone, custom_fields')
-            .eq('team_id', teamId)
-            .eq(duplicateConfig.duplicateDetectionField, leadData[duplicateConfig.duplicateDetectionField])
-            .single();
-
-          if (duplicateError && duplicateError.code !== 'PGRST116') {
-            console.error(`❌ Error checking duplicates for row ${i + 1}:`, duplicateError);
-            errors.push(`Row ${i + 1}: Duplicate check failed - ${duplicateError.message}`);
-            failedRecords++;
+          // Ensure required fields and set defaults
+          if (!leadData.name || !leadData.name.trim()) {
+            batchErrors.push(`Row ${rowNumber}: Missing required 'name' field`);
+            batchFailedRecords++;
             continue;
           }
 
-          if (duplicateCheck) {
-            existingLead = duplicateCheck;
-            console.log(`🔄 Found duplicate lead: ${existingLead.name} (ID: ${existingLead.id})`);
+          if (!leadData.status || !['potential', 'contacted', 'qualified', 'closed'].includes(leadData.status)) {
+            leadData.status = 'potential';
           }
-        }
 
-        // Handle duplicate action
-        if (existingLead) {
-          if (duplicateConfig.duplicateAction === 'skip') {
-            console.log(`⏭️ Skipping duplicate: ${leadData.name}`);
-            processedRecords++;
+          if (!leadData.team_id) {
+            batchErrors.push(`Row ${rowNumber}: Missing team_id`);
+            batchFailedRecords++;
             continue;
-          } else if (duplicateConfig.duplicateAction === 'update') {
-            console.log(`🔄 Updating existing lead: ${existingLead.id}`);
+          }
 
-            // Merge custom fields
-            const mergedCustomFields = {
-              ...(existingLead.custom_fields || {}),
-              ...leadData.custom_fields
-            };
-
-            const updateData = {
-              ...leadData,
-              custom_fields: mergedCustomFields,
-              updated_at: new Date().toISOString()
-            };
-
-            delete updateData.team_id; // Don't update team_id
-
-            const { error: updateError } = await supabaseAdmin
+          // Handle duplicate detection
+          let existingLead = null;
+          if (duplicateConfig.duplicateDetectionField !== 'none' && leadData[duplicateConfig.duplicateDetectionField]) {
+            const { data: duplicateCheck, error: duplicateError } = await supabaseAdmin
               .from('leads')
-              .update(updateData)
-              .eq('id', existingLead.id);
+              .select('id, name, email, phone, custom_fields')
+              .eq('team_id', teamId)
+              .eq(duplicateConfig.duplicateDetectionField, leadData[duplicateConfig.duplicateDetectionField])
+              .single();
 
-            if (updateError) {
-              console.error(`❌ Error updating lead ${existingLead.id}:`, updateError);
-              errors.push(`Row ${i + 1}: Update failed - ${updateError.message}`);
-              failedRecords++;
-            } else {
-              console.log(`✅ Updated lead: ${leadData.name}`);
-              updatedRecords++;
-              processedRecords++;
+            if (duplicateError && duplicateError.code !== 'PGRST116') {
+              batchErrors.push(`Row ${rowNumber}: Duplicate check failed - ${duplicateError.message}`);
+              batchFailedRecords++;
+              continue;
             }
-            continue;
-          }
-          // For 'create_new', we continue with normal insert
-        }
 
-        // Insert new lead
-        console.log(`➕ Creating new lead: ${leadData.name}`);
-        console.log(`📊 Final lead data being inserted:`, JSON.stringify(leadData, null, 2));
-
-        // Add import job reference if available
-        if (jobId) {
-          leadData.import_job_id = jobId;
-        }
-
-        try {
-          // Validate lead data before insert
-          if (!leadData.name || !leadData.team_id || !leadData.status) {
-            console.error(`❌ Invalid lead data - missing required fields:`, {
-              hasName: !!leadData.name,
-              hasTeamId: !!leadData.team_id,
-              hasStatus: !!leadData.status
-            });
-            errors.push(`Row ${i + 1}: Missing required fields (name, team_id, or status)`);
-            failedRecords++;
-            continue;
+            if (duplicateCheck) {
+              existingLead = duplicateCheck;
+            }
           }
 
-          // CRITICAL FIX: Ensure custom_fields is valid JSON
+          // Handle duplicate action
+          if (existingLead) {
+            if (duplicateConfig.duplicateAction === 'skip') {
+              batchProcessed++;
+              continue;
+            } else if (duplicateConfig.duplicateAction === 'update') {
+              // Merge custom fields
+              const mergedCustomFields = {
+                ...(existingLead.custom_fields || {}),
+                ...leadData.custom_fields
+              };
+
+              const updateData = {
+                ...leadData,
+                custom_fields: mergedCustomFields,
+                updated_at: new Date().toISOString()
+              };
+
+              delete updateData.team_id; // Don't update team_id
+
+              const { error: updateError } = await supabaseAdmin
+                .from('leads')
+                .update(updateData)
+                .eq('id', existingLead.id);
+
+              if (updateError) {
+                batchErrors.push(`Row ${rowNumber}: Update failed - ${updateError.message}`);
+                batchFailedRecords++;
+              } else {
+                batchUpdatedRecords++;
+                batchProcessed++;
+              }
+              continue;
+            }
+            // For 'create_new', continue with normal insert
+          }
+
+          // Insert new lead
           if (!leadData.custom_fields || typeof leadData.custom_fields !== 'object') {
             leadData.custom_fields = {};
           }
 
-          // CRITICAL FIX: Validate and sanitize all field values
+          // Sanitize all field values
           const sanitizedLeadData = {
             team_id: leadData.team_id,
             name: String(leadData.name).trim(),
@@ -279,14 +266,6 @@ serve(async (req) => {
             import_job_id: jobId || null
           };
 
-          // Log exactly what we're trying to insert
-          console.log(`🔍 Attempting to insert lead for row ${i + 1}:`);
-          console.log(`   Name: "${sanitizedLeadData.name}"`);
-          console.log(`   Team ID: "${sanitizedLeadData.team_id}"`);
-          console.log(`   Status: "${sanitizedLeadData.status}"`);
-          console.log(`   Custom fields count: ${Object.keys(sanitizedLeadData.custom_fields || {}).length}`);
-          console.log(`   Sanitized data:`, JSON.stringify(sanitizedLeadData, null, 2));
-
           const { data: insertedLead, error: insertError } = await supabaseAdmin
             .from('leads')
             .insert([sanitizedLeadData])
@@ -294,22 +273,9 @@ serve(async (req) => {
             .single();
 
           if (insertError) {
-            console.error(`❌ Error inserting lead for row ${i + 1}:`, insertError);
-            console.error('📄 Lead data that failed:', JSON.stringify(leadData, null, 2));
-            console.error('🔍 Error details:', {
-              code: insertError.code,
-              message: insertError.message,
-              details: insertError.details,
-              hint: insertError.hint
-            });
-
             // Try fallback: Insert without custom_fields if that's the issue
-            // Replacing the code to enhance error recovery by using `sanitizedLeadData` in the fallback and adjust the row number in the log
             if (insertError.code === '23502' || insertError.message?.includes('custom_fields')) {
-              console.log(`🔄 Attempting fallback: Insert without custom_fields for row ${i + 1}`);
-              const fallbackData = {
-                ...sanitizedLeadData
-              };
+              const fallbackData = { ...sanitizedLeadData };
               delete fallbackData.custom_fields;
 
               const { data: fallbackLead, error: fallbackError } = await supabaseAdmin
@@ -319,111 +285,128 @@ serve(async (req) => {
                 .single();
 
               if (fallbackError) {
-                console.error(`❌ Fallback also failed for row ${i + 1}:`, fallbackError);
-                errors.push(`Row ${i + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
-                failedRecords++;
+                batchErrors.push(`Row ${rowNumber}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+                batchFailedRecords++;
               } else {
-                console.log(`✅ Fallback success for row ${i + 1}: ${fallbackLead.name} (ID: ${fallbackLead.id})`);
-                newRecords++;
-                processedRecords++;
+                batchNewRecords++;
+                batchProcessed++;
               }
             } else {
-              errors.push(`Row ${i + 1}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
-              failedRecords++;
+              batchErrors.push(`Row ${rowNumber}: Insert failed - ${insertError.message} (Code: ${insertError.code})`);
+              batchFailedRecords++;
             }
           } else {
-            console.log(`✅ Created new lead: ${insertedLead.name} (ID: ${insertedLead.id}, Status: ${insertedLead.status}, Team: ${insertedLead.team_id})`);
-            newRecords++;
-            processedRecords++;
+            batchNewRecords++;
+            batchProcessed++;
           }
-        } catch (error) {
-          console.error(`❌ Unexpected error inserting lead for row ${i + 1}:`, error);
-          console.error('📄 Lead data that failed:', JSON.stringify(leadData, null, 2));
-          errors.push(`Row ${i + 1}: Unexpected insert error - ${error.message}`);
-          failedRecords++;
-        }
 
-      } catch (error) {
-        console.error(`❌ Unexpected error processing row ${i + 1}:`, error);
-        errors.push(`Row ${i + 1}: Unexpected error - ${error.message}`);
-        failedRecords++;
+        } catch (error) {
+          const rowNumber = batchStart + i + 1;
+          batchErrors.push(`Row ${rowNumber}: Unexpected error - ${error.message}`);
+          batchFailedRecords++;
+        }
       }
+
+      // Update totals
+      totalProcessed += batchProcessed;
+      totalNewRecords += batchNewRecords;
+      totalUpdatedRecords += batchUpdatedRecords;
+      totalFailedRecords += batchFailedRecords;
+      allErrors.push(...batchErrors);
+
+      // Update progress in database after each batch
+      if (jobId) {
+        try {
+          const progressPercent = Math.round((totalProcessed / csvData.length) * 100);
+          
+          const progressUpdate = {
+            processed_records: totalProcessed,
+            failed_records: totalFailedRecords,
+            status: totalProcessed >= csvData.length ? 
+              (totalFailedRecords === 0 ? 'completed' : 'completed_with_errors') : 
+              'processing',
+            error_details: {
+              summary: `Batch ${batchIndex + 1}/${totalBatches} completed: ${totalProcessed}/${csvData.length} processed`,
+              new_records: totalNewRecords,
+              updated_records: totalUpdatedRecords,
+              failed_records: totalFailedRecords,
+              progress_percent: progressPercent,
+              current_batch: batchIndex + 1,
+              total_batches: totalBatches,
+              errors: allErrors.length > 0 ? allErrors.slice(-50) : undefined // Keep last 50 errors
+            },
+            updated_at: new Date().toISOString()
+          };
+
+          // Add completed_at if finished
+          if (totalProcessed >= csvData.length) {
+            progressUpdate.completed_at = new Date().toISOString();
+          }
+
+          await supabaseAdmin
+            .from('import_jobs')
+            .update(progressUpdate)
+            .eq('id', jobId);
+
+          console.log(`✅ Progress updated: ${progressPercent}% (${totalProcessed}/${csvData.length})`);
+        } catch (updateError) {
+          console.error('❌ Failed to update progress:', updateError);
+        }
+      }
+
+      console.log(`✅ Batch ${batchIndex + 1}/${totalBatches} completed: +${batchNewRecords} new, +${batchUpdatedRecords} updated, +${batchFailedRecords} failed`);
     }
 
-    // Update import job status
+    // Final status update
     if (jobId) {
       try {
-        const jobStatus = failedRecords === 0 ? 'completed' : 'completed_with_errors';
-        const errorDetails = {
-          summary: `Import completed: ${processedRecords} processed, ${newRecords} new, ${updatedRecords} updated, ${failedRecords} failed`,
-          new_records: newRecords,
-          updated_records: updatedRecords,
-          failed_records: failedRecords,
-          errors: errors.length > 0 ? errors : undefined
+        const finalStatus = totalFailedRecords === 0 ? 'completed' : 'completed_with_errors';
+        const finalErrorDetails = {
+          summary: `Import completed: ${totalProcessed} processed, ${totalNewRecords} new, ${totalUpdatedRecords} updated, ${totalFailedRecords} failed`,
+          new_records: totalNewRecords,
+          updated_records: totalUpdatedRecords,
+          failed_records: totalFailedRecords,
+          progress_percent: 100,
+          total_batches: totalBatches,
+          errors: allErrors.length > 0 ? allErrors : undefined
         };
 
-        console.log(`🔄 Updating import job ${jobId} with status: ${jobStatus}`);
-        console.log(`📊 Job update data:`, {
-          status: jobStatus,
-          processed_records: processedRecords,
-          failed_records: failedRecords,
-          error_details: errorDetails,
-          total_records: csvData.length
-        });
-
-        // Force the update with all required fields - CRITICAL FIX
-        const updateData = {
-          status: jobStatus,
-          processed_records: processedRecords,
-          failed_records: failedRecords,
+        const finalUpdate = {
+          status: finalStatus,
+          processed_records: totalProcessed,
+          failed_records: totalFailedRecords,
           total_records: csvData.length,
-          error_details: errorDetails,
+          error_details: finalErrorDetails,
           completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
 
-        console.log(`🔍 Final update data being sent:`, updateData);
-
-        // CRITICAL: Use update to properly set the completed_at field
-        const { data: updatedJob, error: jobUpdateError } = await supabaseAdmin
+        await supabaseAdmin
           .from('import_jobs')
-          .update(updateData)
-          .eq('id', jobId)
-          .select()
-          .single();
+          .update(finalUpdate)
+          .eq('id', jobId);
 
-        if (jobUpdateError) {
-          console.error('❌ Failed to update import job:', jobUpdateError);
-          console.error('❌ Job update error details:', {
-            code: jobUpdateError.code,
-            message: jobUpdateError.message,
-            details: jobUpdateError.details,
-            hint: jobUpdateError.hint
-          });
-        } else {
-          console.log(`✅ Import job ${jobId} updated successfully with status: ${jobStatus}`);
-          console.log(`✅ Updated job data:`, updatedJob);
-        }
+        console.log(`✅ Import job ${jobId} final update completed with status: ${finalStatus}`);
       } catch (error) {
-        console.error('❌ Error updating import job:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Failed to update final import job status:', error);
       }
     }
 
     // Prepare response
     const response = {
       success: true,
-      processedRecords,
-      newRecords,
-      updatedRecords,
-      failedRecords,
+      processedRecords: totalProcessed,
+      newRecords: totalNewRecords,
+      updatedRecords: totalUpdatedRecords,
+      failedRecords: totalFailedRecords,
       totalRows: csvData.length,
       jobId: jobId,
-      errors: errors.length > 0 ? errors : undefined
+      batchesProcessed: Math.ceil(totalProcessed / BATCH_SIZE),
+      executionTime: Date.now() - startTime,
+      errors: allErrors.length > 0 ? allErrors.slice(-20) : undefined // Return last 20 errors
     };
 
     console.log('📊 Final Import Summary:', response);
-    console.log(`✅ Import completed successfully: ${newRecords} new leads, ${updatedRecords} updated leads, ${failedRecords} failed`);
 
     return new Response(
       JSON.stringify(response),
@@ -445,8 +428,13 @@ serve(async (req) => {
           .from('import_jobs')
           .update({
             status: 'failed',
-            error_details: { summary: 'Import failed due to critical error', error: error.message },
-            completed_at: new Date().toISOString()
+            error_details: { 
+              summary: 'Import failed due to critical error', 
+              error: error.message,
+              stack: error.stack
+            },
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           })
           .eq('id', body.jobId);
       } catch (jobError) {
